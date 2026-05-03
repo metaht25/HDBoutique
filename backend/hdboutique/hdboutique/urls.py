@@ -22,6 +22,10 @@ urlpatterns = [
     
     #este apartado nos dice que la api (puerta principal del sistema)
     #include (...) = tunel que lleva a una area especifica
-    path('api/', include('ubicaciones.api.urls'))
-    
+    path('api/', include('ubicaciones.api.urls')),
+    path('api/personas/', include('personas.api.urls')),
+    path('api/productos/', include('productos.api.urls')),
+    path('api/proveedores/', include('proveedores.api.urls')),
+    path('api/compras/', include('compras.api.urls')),
+    path('api/ventas/', include('ventas.api.urls')),
 ]
