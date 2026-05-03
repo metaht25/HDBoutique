@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o0ts+59zn&0^a%g0f0&(qr9q!58c*86jm55sa$e%tb%9bfwen&'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-local-dev-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
 # Application definition
@@ -87,12 +88,12 @@ WSGI_APPLICATION = 'hdboutique.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'HDBoutique',
-        'HOST': r'CRIS-LENIN-18\SQLEXPRESS01', #la r significa raw string o cadena cruda, sirve para que no se interpretene los caracteres especiales,se toman tal cual estan
-        'PORT': '',
+        'NAME': config('DB_NAME', default='HDBoutique'),
+        'HOST': config('DB_HOST', default='localhost\\SQLEXPRESS'),
+        'PORT': config('DB_PORT', default=''),
         'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'extra_params': 'Trusted_Connection=yes;',
+            'driver': config('DB_DRIVER', default='ODBC Driver 17 for SQL Server'),
+            'extra_params': f"Trusted_Connection={config('DB_TRUSTED_CONNECTION', default='yes')};",
         },
     }
 }
