@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # H&D Boutique
 
 Sistema web administrativo local para la tienda familiar H&D Boutique.
@@ -187,3 +188,7 @@ Cada colaborador debe:
 9. Levantar el servidor con `python manage.py runserver`.
 
 Nunca deben subir su archivo `.env`.
+=======
+# HDboutique
+Aqui vamos a subir los avances de cada uno, lo bueno de cada es que para evitar dependencias, servidores locales, vamos a crear archivos para que se instalen de inmediato, y cada quien trabaja desde su maquina local
+>>>>>>> 35b066f18c8b25d9b11b10b6ae332173005482d2
