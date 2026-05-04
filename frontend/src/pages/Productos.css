@@ -19,6 +19,75 @@
   color: #6b7280;
 }
 
+.productos-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.buscador-productos {
+  width: min(100%, 340px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buscador-productos span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buscador-productos input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font-size: 15px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.buscador-productos input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.filtro-productos {
+  display: inline-flex;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.filtro-productos button {
+  min-height: 42px;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 14px;
+}
+
+.filtro-productos button:last-child {
+  border-right: none;
+}
+
+.filtro-productos button:hover {
+  background-color: #f9fafb;
+}
+
+.filtro-productos button.activo {
+  background-color: #1f2937;
+  color: white;
+}
+
 .productos-resumen {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -136,6 +205,25 @@ tbody tr:hover {
 }
 
 @media (max-width: 900px) {
+  .productos-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: stretch;
+  }
+
+  .buscador-productos {
+    width: 100%;
+  }
+
+  .filtro-productos {
+    width: 100%;
+  }
+
+  .filtro-productos button {
+    flex: 1;
+    padding: 0 10px;
+  }
+
   .productos-resumen {
     grid-template-columns: 1fr;
   }

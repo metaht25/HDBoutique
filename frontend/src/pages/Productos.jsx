@@ -34,6 +34,8 @@ function Productos() {
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('todos')
 
   useEffect(() => {
     async function cargarProductos() {
@@ -63,6 +65,22 @@ function Productos() {
     return stock > 0 && stock <= STOCK_BAJO_LIMITE
   }).length
 
+  const terminoBusqueda = busqueda.trim().toLowerCase()
+  const productosFiltrados = productos.filter((producto) => {
+    const nombreCoincide = terminoBusqueda
+      ? String(producto.nombre ?? '').toLowerCase().includes(terminoBusqueda)
+      : true
+    const stock = obtenerStock(producto)
+    const bajoStock = stock > 0 && stock <= STOCK_BAJO_LIMITE
+    const disponible = stock > STOCK_BAJO_LIMITE
+    const estadoCoincide =
+      filtroEstado === 'todos' ||
+      (filtroEstado === 'disponibles' && disponible) ||
+      (filtroEstado === 'bajo-stock' && bajoStock)
+
+    return nombreCoincide && estadoCoincide
+  })
+
   if (cargando) {
     return (
       <div className="productos-page">
@@ -88,6 +106,45 @@ function Productos() {
         </div>
       </div>
 
+      <div className="productos-toolbar">
+        <label className="buscador-productos" htmlFor="buscar-productos">
+          <span>Buscar producto</span>
+          <input
+            id="buscar-productos"
+            type="search"
+            placeholder="Nombre del producto"
+            value={busqueda}
+            onChange={(event) => setBusqueda(event.target.value)}
+          />
+        </label>
+
+        <div className="filtro-productos" aria-label="Filtrar productos por estado">
+          <button
+            className={filtroEstado === 'todos' ? 'activo' : ''}
+            type="button"
+            onClick={() => setFiltroEstado('todos')}
+          >
+            Todos
+          </button>
+
+          <button
+            className={filtroEstado === 'disponibles' ? 'activo' : ''}
+            type="button"
+            onClick={() => setFiltroEstado('disponibles')}
+          >
+            Disponibles
+          </button>
+
+          <button
+            className={filtroEstado === 'bajo-stock' ? 'activo' : ''}
+            type="button"
+            onClick={() => setFiltroEstado('bajo-stock')}
+          >
+            Bajo stock
+          </button>
+        </div>
+      </div>
+
       <div className="productos-resumen">
         <div className="resumen-card">
           <span>Total productos</span>
@@ -106,8 +163,12 @@ function Productos() {
       </div>
 
       <div className="table-container">
-        {productos.length === 0 ? (
-          <div className="productos-estado">No hay productos registrados.</div>
+        {productosFiltrados.length === 0 ? (
+          <div className="productos-estado">
+            {productos.length === 0
+              ? 'No hay productos registrados.'
+              : 'No se encontraron productos con esos filtros.'}
+          </div>
         ) : (
           <table>
             <thead>
@@ -121,7 +182,7 @@ function Productos() {
             </thead>
 
             <tbody>
-              {productos.map((producto) => {
+              {productosFiltrados.map((producto) => {
                 const stock = obtenerStock(producto)
                 const agotado = stock <= 0
                 const bajoStock = stock > 0 && stock <= STOCK_BAJO_LIMITE
