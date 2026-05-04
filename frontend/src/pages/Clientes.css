@@ -4,6 +4,7 @@
 
 .clientes-header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
@@ -17,6 +18,189 @@
 .clientes-page p {
   margin-bottom: 0;
   color: #6b7280;
+}
+
+.nuevo-cliente-button {
+  min-height: 42px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1f2937;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 16px;
+}
+
+.nuevo-cliente-button:hover {
+  background-color: #111827;
+}
+
+.cliente-form {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  margin-bottom: 22px;
+  padding: 18px;
+}
+
+.cliente-form.editando {
+  border-color: #2563eb;
+}
+
+.cliente-form-header {
+  margin-bottom: 16px;
+}
+
+.cliente-form-header h3 {
+  color: #111827;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.cliente-form-header span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.cliente-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cliente-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cliente-form label span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cliente-form input,
+.cliente-form select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font-size: 15px;
+  min-height: 42px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.cliente-form input:focus,
+.cliente-form select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.cliente-form input.input-error,
+.cliente-form select.input-error {
+  border-color: #dc2626;
+}
+
+.cliente-form input.input-error:focus,
+.cliente-form select.input-error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
+.field-error {
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.direccion-section {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 18px;
+  padding-top: 18px;
+}
+
+.direccion-section-header {
+  margin-bottom: 16px;
+}
+
+.direccion-section-header h4 {
+  color: #111827;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.direccion-section-header span,
+.direccion-pendiente {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.direccion-pendiente {
+  align-self: end;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 11px 12px;
+}
+
+.direccion-exacta-field {
+  grid-column: span 1;
+}
+
+.cliente-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.cliente-form-actions button {
+  min-height: 42px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1f2937;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 16px;
+}
+
+.cliente-form-actions button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.cliente-form-actions .button-secundario {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.cliente-form-actions .button-secundario:hover {
+  background-color: #e5e7eb;
+}
+
+.cliente-form-feedback {
+  margin-bottom: 18px;
+}
+
+.form-message {
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-message.success {
+  color: #166534;
+}
+
+.form-message.error {
+  color: #b91c1c;
 }
 
 .clientes-resumen {
@@ -92,7 +276,7 @@
 .clientes-table-container table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 860px;
+  min-width: 980px;
 }
 
 .clientes-table-container thead {
@@ -132,6 +316,28 @@
   color: #374151;
 }
 
+.acciones-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.acciones-cliente button {
+  min-height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.acciones-cliente button:hover {
+  background-color: #f9fafb;
+}
+
 .clientes-estado {
   padding: 24px;
   color: #6b7280;
@@ -144,6 +350,24 @@
 }
 
 @media (max-width: 900px) {
+  .clientes-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nuevo-cliente-button {
+    width: 100%;
+  }
+
+  .cliente-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cliente-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .clientes-resumen {
     grid-template-columns: 1fr;
   }
