@@ -28,6 +28,10 @@
   padding: 18px;
 }
 
+.producto-form.editando {
+  border-color: #2563eb;
+}
+
 .producto-form-header {
   margin-bottom: 16px;
 }
@@ -119,6 +123,15 @@
 .producto-form-actions button:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
+}
+
+.producto-form-actions .button-secundario {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.producto-form-actions .button-secundario:hover {
+  background-color: #e5e7eb;
 }
 
 .form-message {
@@ -247,7 +260,7 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  min-width: 880px;
 }
 
 thead {
@@ -276,6 +289,19 @@ tbody tr:last-child td {
 
 tbody tr:hover {
   background-color: #f9fafb;
+}
+
+tbody tr.producto-inactivo {
+  background-color: #f9fafb;
+  opacity: 0.72;
+}
+
+tbody tr.producto-inactivo td {
+  color: #9ca3af;
+}
+
+.producto-inactivo .producto-nombre {
+  text-decoration: line-through;
 }
 
 .producto-nombre {
@@ -307,6 +333,57 @@ tbody tr:hover {
 .badge.danger {
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.badge.inactive {
+  background-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.acciones-producto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.acciones-producto button {
+  min-height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.acciones-producto button:hover {
+  background-color: #f9fafb;
+}
+
+.acciones-producto button.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.acciones-producto button.danger:hover {
+  background-color: #fef2f2;
+}
+
+.acciones-producto button.success {
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.acciones-producto button.success:hover {
+  background-color: #f0fdf4;
+}
+
+.acciones-producto button:disabled {
+  border-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 
 .productos-estado {

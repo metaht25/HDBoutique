@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  actualizarProducto,
   crearProducto,
   obtenerCategorias,
   obtenerProductos,
@@ -32,6 +33,32 @@ function obtenerListaProductos(data) {
 
 function obtenerStock(producto) {
   return Number(producto.cantidadstock ?? producto.stock ?? 0)
+}
+
+function obtenerIdProducto(producto) {
+  return producto.id_producto ?? producto.id
+}
+
+function obtenerValorFormulario(valor) {
+  return valor === null || valor === undefined ? '' : String(valor)
+}
+
+function productoEstaActivo(producto, estadosLocalesProductos) {
+  const idProducto = obtenerIdProducto(producto)
+
+  if (typeof estadosLocalesProductos[idProducto] === 'boolean') {
+    return estadosLocalesProductos[idProducto]
+  }
+
+  if (typeof producto.activo === 'boolean') {
+    return producto.activo
+  }
+
+  if (typeof producto.estado === 'string') {
+    return producto.estado.toLowerCase() !== 'inactivo'
+  }
+
+  return true
 }
 
 function obtenerIdCategoria(categoria) {
@@ -121,6 +148,8 @@ function Productos() {
   const [mensajeFormulario, setMensajeFormulario] = useState('')
   const [errorFormulario, setErrorFormulario] = useState('')
   const [erroresFormulario, setErroresFormulario] = useState(ERRORES_INICIALES)
+  const [productoEditandoId, setProductoEditandoId] = useState(null)
+  const [estadosLocalesProductos, setEstadosLocalesProductos] = useState({})
 
   async function refrescarProductos() {
     const data = await obtenerProductos()
@@ -177,6 +206,59 @@ function Productos() {
     }))
   }
 
+  function cancelarEdicion() {
+    setProductoEditandoId(null)
+    setNuevoProducto(PRODUCTO_INICIAL)
+    setErroresFormulario(ERRORES_INICIALES)
+    setMensajeFormulario('')
+    setErrorFormulario('')
+  }
+
+  function editarProducto(producto) {
+    setProductoEditandoId(obtenerIdProducto(producto))
+    setNuevoProducto({
+      nombre: obtenerValorFormulario(producto.nombre),
+      cantidadstock: obtenerValorFormulario(producto.cantidadstock),
+      stock: obtenerValorFormulario(producto.stock),
+      preciounitario: obtenerValorFormulario(producto.preciounitario),
+      id_categoria: obtenerValorFormulario(producto.id_categoria),
+      id_talla: obtenerValorFormulario(producto.id_talla),
+    })
+    setErroresFormulario(ERRORES_INICIALES)
+    setMensajeFormulario('')
+    setErrorFormulario('')
+  }
+
+  function desactivarProducto(producto) {
+    const confirmar = window.confirm(
+      `¿Deseas desactivar el producto "${producto.nombre || 'Sin nombre'}"?`,
+    )
+
+    if (!confirmar) {
+      return
+    }
+
+    const idProducto = obtenerIdProducto(producto)
+
+    setEstadosLocalesProductos((productosActuales) => ({
+      ...productosActuales,
+      [idProducto]: false,
+    }))
+
+    if (productoEditandoId === idProducto) {
+      cancelarEdicion()
+    }
+  }
+
+  function activarProducto(producto) {
+    const idProducto = obtenerIdProducto(producto)
+
+    setEstadosLocalesProductos((productosActuales) => ({
+      ...productosActuales,
+      [idProducto]: true,
+    }))
+  }
+
   async function guardarProducto(event) {
     event.preventDefault()
     setMensajeFormulario('')
@@ -193,23 +275,38 @@ function Productos() {
     setGuardando(true)
     setErroresFormulario(ERRORES_INICIALES)
 
+    const datosProducto = {
+      nombre: nuevoProducto.nombre.trim(),
+      cantidadstock: Number(nuevoProducto.cantidadstock),
+      stock: Number(nuevoProducto.stock),
+      preciounitario: Number(nuevoProducto.preciounitario),
+      id_categoria: Number(nuevoProducto.id_categoria),
+      id_talla: Number(nuevoProducto.id_talla),
+    }
+
     try {
-      await crearProducto({
-        nombre: nuevoProducto.nombre.trim(),
-        cantidadstock: Number(nuevoProducto.cantidadstock),
-        stock: Number(nuevoProducto.stock),
-        preciounitario: Number(nuevoProducto.preciounitario),
-        id_categoria: Number(nuevoProducto.id_categoria),
-        id_talla: Number(nuevoProducto.id_talla),
-      })
+      if (productoEditandoId !== null) {
+        await actualizarProducto(productoEditandoId, datosProducto)
+      } else {
+        await crearProducto(datosProducto)
+      }
 
       setNuevoProducto(PRODUCTO_INICIAL)
+      setProductoEditandoId(null)
       setErroresFormulario(ERRORES_INICIALES)
-      setMensajeFormulario('Producto guardado correctamente')
+      setMensajeFormulario(
+        productoEditandoId !== null
+          ? 'Producto actualizado correctamente'
+          : 'Producto guardado correctamente',
+      )
       await refrescarProductos()
     } catch (error) {
       console.error(error)
-      setErrorFormulario('No se pudo guardar el producto')
+      setErrorFormulario(
+        productoEditandoId !== null
+          ? 'No se pudo actualizar el producto'
+          : 'No se pudo guardar el producto',
+      )
     } finally {
       setGuardando(false)
     }
@@ -232,13 +329,15 @@ function Productos() {
     const nombreCoincide = terminoBusqueda
       ? String(producto.nombre ?? '').toLowerCase().includes(terminoBusqueda)
       : true
+    const activo = productoEstaActivo(producto, estadosLocalesProductos)
     const stock = obtenerStock(producto)
     const bajoStock = stock > 0 && stock <= STOCK_BAJO_LIMITE
     const disponible = stock > STOCK_BAJO_LIMITE
     const estadoCoincide =
       filtroEstado === 'todos' ||
-      (filtroEstado === 'disponibles' && disponible) ||
-      (filtroEstado === 'bajo-stock' && bajoStock)
+      (filtroEstado === 'disponibles' && activo && disponible) ||
+      (filtroEstado === 'bajo-stock' && activo && bajoStock) ||
+      (filtroEstado === 'no-disponibles' && !activo)
 
     return nombreCoincide && estadoCoincide
   })
@@ -268,10 +367,18 @@ function Productos() {
         </div>
       </div>
 
-      <form className="producto-form" onSubmit={guardarProducto} noValidate>
+      <form
+        className={`producto-form ${productoEditandoId !== null ? 'editando' : ''}`}
+        onSubmit={guardarProducto}
+        noValidate
+      >
         <div className="producto-form-header">
-          <h3>Nuevo producto</h3>
-          <span>Completa los datos para registrarlo en inventario.</span>
+          <h3>{productoEditandoId !== null ? 'Editar producto' : 'Nuevo producto'}</h3>
+          <span>
+            {productoEditandoId !== null
+              ? 'Actualiza los datos del producto seleccionado.'
+              : 'Completa los datos para registrarlo en inventario.'}
+          </span>
         </div>
 
         <div className="producto-form-grid">
@@ -395,8 +502,18 @@ function Productos() {
           </div>
 
           <button type="submit" disabled={guardando}>
-            {guardando ? 'Guardando...' : 'Guardar producto'}
+            {guardando
+              ? 'Guardando...'
+              : productoEditandoId !== null
+                ? 'Actualizar producto'
+                : 'Guardar producto'}
           </button>
+
+          {productoEditandoId !== null && (
+            <button className="button-secundario" type="button" onClick={cancelarEdicion}>
+              Cancelar
+            </button>
+          )}
         </div>
       </form>
 
@@ -436,6 +553,14 @@ function Productos() {
           >
             Bajo stock
           </button>
+
+          <button
+            className={filtroEstado === 'no-disponibles' ? 'activo' : ''}
+            type="button"
+            onClick={() => setFiltroEstado('no-disponibles')}
+          >
+            No disponibles
+          </button>
         </div>
       </div>
 
@@ -472,24 +597,34 @@ function Productos() {
                 <th>Precio unitario</th>
                 <th>Stock</th>
                 <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
 
             <tbody>
               {productosFiltrados.map((producto) => {
+                const activo = productoEstaActivo(producto, estadosLocalesProductos)
                 const stock = obtenerStock(producto)
                 const agotado = stock <= 0
                 const bajoStock = stock > 0 && stock <= STOCK_BAJO_LIMITE
-                const estadoClase = agotado ? 'danger' : bajoStock ? 'warning' : 'success'
-                const estadoTexto = agotado
-                  ? 'Agotado'
-                  : bajoStock
-                    ? 'Bajo stock'
-                    : 'Disponible'
+                const estadoClase = !activo
+                  ? 'inactive'
+                  : agotado
+                    ? 'danger'
+                    : bajoStock
+                      ? 'warning'
+                      : 'success'
+                const estadoTexto = !activo
+                  ? 'No disponible'
+                  : agotado
+                    ? 'Agotado'
+                    : bajoStock
+                      ? 'Bajo stock'
+                      : 'Disponible'
 
                 return (
-                  <tr key={producto.id_producto}>
-                    <td>{producto.id_producto}</td>
+                  <tr className={!activo ? 'producto-inactivo' : ''} key={obtenerIdProducto(producto)}>
+                    <td>{obtenerIdProducto(producto)}</td>
                     <td className="producto-nombre">{producto.nombre || 'Sin nombre'}</td>
                     <td>{formatearPrecio(producto.preciounitario)}</td>
                     <td>{stock}</td>
@@ -497,6 +632,30 @@ function Productos() {
                       <span className={`badge ${estadoClase}`}>
                         {estadoTexto}
                       </span>
+                    </td>
+                    <td>
+                      <div className="acciones-producto">
+                        <button type="button" onClick={() => editarProducto(producto)}>
+                          Editar
+                        </button>
+                        {activo ? (
+                          <button
+                            className="danger"
+                            type="button"
+                            onClick={() => desactivarProducto(producto)}
+                          >
+                            Desactivar
+                          </button>
+                        ) : (
+                          <button
+                            className="success"
+                            type="button"
+                            onClick={() => activarProducto(producto)}
+                          >
+                            Activar
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )

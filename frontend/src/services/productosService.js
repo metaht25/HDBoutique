@@ -28,6 +28,22 @@ export async function crearProducto(producto) {
   return respuesta.json()
 }
 
+export async function actualizarProducto(idProducto, producto) {
+  const respuesta = await fetch(`${API_URL}${idProducto}/`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(producto),
+  })
+
+  if (!respuesta.ok) {
+    throw new Error('Error al actualizar producto')
+  }
+
+  return respuesta.json()
+}
+
 export async function obtenerCategorias() {
   const respuesta = await fetch(CATEGORIAS_URL)
 
