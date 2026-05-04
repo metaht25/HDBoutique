@@ -40,6 +40,24 @@ function obtenerIdCliente(cliente) {
   return cliente.id_cliente ?? cliente.id_persona ?? cliente.id
 }
 
+function clienteEstaActivo(cliente, estadosLocalesClientes) {
+  const idCliente = obtenerIdCliente(cliente)
+
+  if (typeof estadosLocalesClientes[idCliente] === 'boolean') {
+    return estadosLocalesClientes[idCliente]
+  }
+
+  if (typeof cliente.activo === 'boolean') {
+    return cliente.activo
+  }
+
+  if (typeof cliente.estado === 'string') {
+    return cliente.estado.toLowerCase() !== 'inactivo'
+  }
+
+  return true
+}
+
 function obtenerNombre(cliente) {
   return cliente.nombre ?? cliente.nombres ?? cliente.primer_nombre ?? ''
 }
@@ -191,6 +209,7 @@ function Clientes() {
   const [mensajeFormulario, setMensajeFormulario] = useState('')
   const [errorFormulario, setErrorFormulario] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const [estadosLocalesClientes, setEstadosLocalesClientes] = useState({})
 
   async function refrescarClientes() {
     const clientesData = await obtenerClientes()
@@ -291,6 +310,36 @@ function Clientes() {
     setErroresFormulario(ERRORES_INICIALES)
     setMensajeFormulario('')
     setErrorFormulario('')
+  }
+
+  function desactivarCliente(cliente) {
+    const confirmar = window.confirm(
+      `Deseas desactivar el cliente "${obtenerNombre(cliente) || 'Sin nombre'}"?`,
+    )
+
+    if (!confirmar) {
+      return
+    }
+
+    const idCliente = obtenerIdCliente(cliente)
+
+    setEstadosLocalesClientes((clientesActuales) => ({
+      ...clientesActuales,
+      [idCliente]: false,
+    }))
+
+    if (clienteEditandoId === idCliente) {
+      cancelarFormulario()
+    }
+  }
+
+  function activarCliente(cliente) {
+    const idCliente = obtenerIdCliente(cliente)
+
+    setEstadosLocalesClientes((clientesActuales) => ({
+      ...clientesActuales,
+      [idCliente]: true,
+    }))
   }
 
   async function guardarCliente(event) {
@@ -680,6 +729,7 @@ function Clientes() {
                 <th>Telefono</th>
                 <th>Tipo de cliente</th>
                 <th>Direccion</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -687,9 +737,10 @@ function Clientes() {
             <tbody>
               {clientesFiltrados.map((cliente) => {
                 const idCliente = obtenerIdCliente(cliente)
+                const activo = clienteEstaActivo(cliente, estadosLocalesClientes)
 
                 return (
-                  <tr key={idCliente}>
+                  <tr className={!activo ? 'cliente-inactivo' : ''} key={idCliente}>
                     <td>{idCliente}</td>
                     <td className="cliente-nombre">{obtenerNombre(cliente) || 'Sin nombre'}</td>
                     <td>{obtenerApellido(cliente) || 'Sin apellido'}</td>
@@ -701,10 +752,32 @@ function Clientes() {
                     </td>
                     <td>{obtenerDireccion(cliente) || 'No registrada'}</td>
                     <td>
+                      <span className={`badge ${activo ? 'success' : 'inactive'}`}>
+                        {activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td>
                       <div className="acciones-cliente">
                         <button type="button" onClick={() => editarCliente(cliente)}>
                           Editar
                         </button>
+                        {activo ? (
+                          <button
+                            className="danger"
+                            type="button"
+                            onClick={() => desactivarCliente(cliente)}
+                          >
+                            Desactivar
+                          </button>
+                        ) : (
+                          <button
+                            className="success"
+                            type="button"
+                            onClick={() => activarCliente(cliente)}
+                          >
+                            Activar
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

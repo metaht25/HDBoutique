@@ -276,7 +276,7 @@
 .clientes-table-container table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 980px;
+  min-width: 1060px;
 }
 
 .clientes-table-container thead {
@@ -307,6 +307,19 @@
   background-color: #f9fafb;
 }
 
+.clientes-table-container tbody tr.cliente-inactivo {
+  background-color: #f9fafb;
+  opacity: 0.72;
+}
+
+.clientes-table-container tbody tr.cliente-inactivo td {
+  color: #9ca3af;
+}
+
+.cliente-inactivo .cliente-nombre {
+  text-decoration: line-through;
+}
+
 .cliente-nombre {
   font-weight: 600;
 }
@@ -314,6 +327,16 @@
 .badge.neutral {
   background-color: #e5e7eb;
   color: #374151;
+}
+
+.badge.success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge.inactive {
+  background-color: #e5e7eb;
+  color: #4b5563;
 }
 
 .acciones-cliente {
@@ -336,6 +359,24 @@
 
 .acciones-cliente button:hover {
   background-color: #f9fafb;
+}
+
+.acciones-cliente button.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.acciones-cliente button.danger:hover {
+  background-color: #fef2f2;
+}
+
+.acciones-cliente button.success {
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.acciones-cliente button.success:hover {
+  background-color: #f0fdf4;
 }
 
 .clientes-estado {
