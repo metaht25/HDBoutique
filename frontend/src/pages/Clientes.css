@@ -1,0 +1,158 @@
+.clientes-page {
+  max-width: 1180px;
+}
+
+.clientes-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.clientes-page h2 {
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.clientes-page p {
+  margin-bottom: 0;
+  color: #6b7280;
+}
+
+.clientes-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.resumen-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  padding: 18px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.resumen-card span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.resumen-card strong {
+  color: #111827;
+  font-size: 28px;
+}
+
+.clientes-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.buscador-clientes {
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buscador-clientes span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buscador-clientes input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font-size: 15px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.buscador-clientes input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.clientes-table-container {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.clientes-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 860px;
+}
+
+.clientes-table-container thead {
+  background-color: #f9fafb;
+}
+
+.clientes-table-container th,
+.clientes-table-container td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.clientes-table-container th {
+  font-size: 14px;
+  color: #374151;
+}
+
+.clientes-table-container td {
+  color: #111827;
+}
+
+.clientes-table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.clientes-table-container tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.cliente-nombre {
+  font-weight: 600;
+}
+
+.badge.neutral {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.clientes-estado {
+  padding: 24px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+@media (max-width: 900px) {
+  .clientes-resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .clientes-toolbar {
+    justify-content: stretch;
+  }
+
+  .buscador-clientes {
+    width: 100%;
+  }
+}

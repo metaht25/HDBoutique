@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Clientes from '../pages/Clientes'
 import Dashboard from '../pages/Dashboard'
 import Productos from '../pages/Productos'
 import './MainLayout.css'
@@ -15,6 +16,10 @@ function MainLayout() {
       return <Productos />
     }
 
+    if (paginaActual === 'clientes') {
+      return <Clientes />
+    }
+
     return <Dashboard />
   }
 
@@ -25,6 +30,10 @@ function MainLayout() {
 
     if (paginaActual === 'productos') {
       return 'Productos'
+    }
+
+    if (paginaActual === 'clientes') {
+      return 'Clientes'
     }
 
     return 'Dashboard'
@@ -44,7 +53,9 @@ function MainLayout() {
             Productos
           </button>
 
-          <button>Clientes</button>
+          <button onClick={() => setPaginaActual('clientes')}>
+            Clientes
+          </button>
           <button>Ventas</button>
           <button>Compras</button>
           <button>Proveedores</button>
