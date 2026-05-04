@@ -19,6 +19,122 @@
   color: #6b7280;
 }
 
+.producto-form {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  margin-bottom: 22px;
+  padding: 18px;
+}
+
+.producto-form-header {
+  margin-bottom: 16px;
+}
+
+.producto-form-header h3 {
+  color: #111827;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.producto-form-header span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.producto-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.producto-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.producto-form label span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.producto-form input,
+.producto-form select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font-size: 15px;
+  min-height: 42px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.producto-form input:focus,
+.producto-form select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.producto-form input.input-error,
+.producto-form select.input-error {
+  border-color: #dc2626;
+}
+
+.producto-form input.input-error:focus,
+.producto-form select.input-error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
+.field-error {
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.producto-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.producto-form-actions button {
+  min-height: 42px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1f2937;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 16px;
+}
+
+.producto-form-actions button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.form-message {
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-message.success {
+  color: #166534;
+}
+
+.form-message.error {
+  color: #b91c1c;
+}
+
 .productos-toolbar {
   display: flex;
   align-items: flex-end;
@@ -205,6 +321,15 @@ tbody tr:hover {
 }
 
 @media (max-width: 900px) {
+  .producto-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .producto-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .productos-toolbar {
     align-items: stretch;
     flex-direction: column;

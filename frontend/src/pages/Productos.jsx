@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react'
-import { obtenerProductos } from '../services/productosService'
+import {
+  crearProducto,
+  obtenerCategorias,
+  obtenerProductos,
+  obtenerTallas,
+} from '../services/productosService'
 import './Productos.css'
 
 const STOCK_BAJO_LIMITE = 10
+const PRODUCTO_INICIAL = {
+  nombre: '',
+  cantidadstock: '',
+  stock: '',
+  preciounitario: '',
+  id_categoria: '',
+  id_talla: '',
+}
+const ERRORES_INICIALES = {}
 
 function obtenerListaProductos(data) {
   if (Array.isArray(data)) {
@@ -20,6 +34,22 @@ function obtenerStock(producto) {
   return Number(producto.cantidadstock ?? producto.stock ?? 0)
 }
 
+function obtenerIdCategoria(categoria) {
+  return categoria.id_categoria ?? categoria.id ?? ''
+}
+
+function obtenerNombreCategoria(categoria) {
+  return categoria.nombre ?? categoria.categoria ?? categoria.descripcion ?? 'Categoria sin nombre'
+}
+
+function obtenerIdTalla(talla) {
+  return talla.id_talla ?? talla.id ?? ''
+}
+
+function obtenerNombreTalla(talla) {
+  return talla.nombre ?? talla.talla ?? talla.descripcion ?? 'Talla sin nombre'
+}
+
 function formatearPrecio(precio) {
   const valor = Number(precio ?? 0)
 
@@ -30,18 +60,80 @@ function formatearPrecio(precio) {
   }).format(Number.isNaN(valor) ? 0 : valor)
 }
 
+function validarProducto(producto) {
+  const errores = {}
+  const nombre = producto.nombre.trim()
+  const precioUnitario = Number(producto.preciounitario)
+  const cantidadStock = Number(producto.cantidadstock)
+  const stock = Number(producto.stock)
+
+  if (!nombre) {
+    errores.nombre = 'El nombre del producto es obligatorio.'
+  }
+
+  if (!producto.id_categoria) {
+    errores.id_categoria = 'Selecciona una categoria.'
+  }
+
+  if (!producto.id_talla) {
+    errores.id_talla = 'Selecciona una talla.'
+  }
+
+  if (producto.preciounitario === '') {
+    errores.preciounitario = 'El precio unitario es obligatorio.'
+  } else if (Number.isNaN(precioUnitario) || precioUnitario <= 0) {
+    errores.preciounitario = 'El precio unitario debe ser mayor que 0.'
+  }
+
+  if (producto.cantidadstock === '') {
+    errores.cantidadstock = 'La cantidad stock es obligatoria.'
+  } else if (Number.isNaN(cantidadStock) || cantidadStock < 0) {
+    errores.cantidadstock = 'La cantidad stock debe ser mayor o igual a 0.'
+  }
+
+  if (producto.stock === '') {
+    errores.stock = 'El stock es obligatorio.'
+  } else if (Number.isNaN(stock) || stock < 0) {
+    errores.stock = 'El stock debe ser mayor o igual a 0.'
+  }
+
+  if (
+    !errores.cantidadstock &&
+    !errores.stock &&
+    stock > cantidadStock
+  ) {
+    errores.stock = 'El stock no debe ser mayor que la cantidad stock.'
+  }
+
+  return errores
+}
+
 function Productos() {
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('todos')
+  const [categorias, setCategorias] = useState([])
+  const [tallas, setTallas] = useState([])
+  const [nuevoProducto, setNuevoProducto] = useState(PRODUCTO_INICIAL)
+  const [guardando, setGuardando] = useState(false)
+  const [mensajeFormulario, setMensajeFormulario] = useState('')
+  const [errorFormulario, setErrorFormulario] = useState('')
+  const [erroresFormulario, setErroresFormulario] = useState(ERRORES_INICIALES)
+
+  async function refrescarProductos() {
+    const data = await obtenerProductos()
+    setProductos(obtenerListaProductos(data))
+    setError('')
+  }
 
   useEffect(() => {
-    async function cargarProductos() {
+    async function cargarProductosIniciales() {
       try {
         const data = await obtenerProductos()
         setProductos(obtenerListaProductos(data))
+        setError('')
       } catch (error) {
         console.error(error)
         setError('No se pudieron cargar los productos')
@@ -50,8 +142,78 @@ function Productos() {
       }
     }
 
-    cargarProductos()
+    cargarProductosIniciales()
   }, [])
+
+  useEffect(() => {
+    async function cargarOpcionesFormulario() {
+      try {
+        const [categoriasData, tallasData] = await Promise.all([
+          obtenerCategorias(),
+          obtenerTallas(),
+        ])
+
+        setCategorias(obtenerListaProductos(categoriasData))
+        setTallas(obtenerListaProductos(tallasData))
+      } catch (error) {
+        console.error(error)
+        setErrorFormulario('No se pudieron cargar las categorias o tallas')
+      }
+    }
+
+    cargarOpcionesFormulario()
+  }, [])
+
+  function actualizarNuevoProducto(event) {
+    const { name, value } = event.target
+
+    setNuevoProducto((productoActual) => ({
+      ...productoActual,
+      [name]: value,
+    }))
+    setErroresFormulario((erroresActuales) => ({
+      ...erroresActuales,
+      [name]: '',
+    }))
+  }
+
+  async function guardarProducto(event) {
+    event.preventDefault()
+    setMensajeFormulario('')
+    setErrorFormulario('')
+
+    const errores = validarProducto(nuevoProducto)
+
+    if (Object.values(errores).some(Boolean)) {
+      setErroresFormulario(errores)
+      setErrorFormulario('Revisa los campos marcados antes de guardar.')
+      return
+    }
+
+    setGuardando(true)
+    setErroresFormulario(ERRORES_INICIALES)
+
+    try {
+      await crearProducto({
+        nombre: nuevoProducto.nombre.trim(),
+        cantidadstock: Number(nuevoProducto.cantidadstock),
+        stock: Number(nuevoProducto.stock),
+        preciounitario: Number(nuevoProducto.preciounitario),
+        id_categoria: Number(nuevoProducto.id_categoria),
+        id_talla: Number(nuevoProducto.id_talla),
+      })
+
+      setNuevoProducto(PRODUCTO_INICIAL)
+      setErroresFormulario(ERRORES_INICIALES)
+      setMensajeFormulario('Producto guardado correctamente')
+      await refrescarProductos()
+    } catch (error) {
+      console.error(error)
+      setErrorFormulario('No se pudo guardar el producto')
+    } finally {
+      setGuardando(false)
+    }
+  }
 
   const totalProductos = productos.length
 
@@ -105,6 +267,138 @@ function Productos() {
           <p>Listado general de productos registrados en inventario.</p>
         </div>
       </div>
+
+      <form className="producto-form" onSubmit={guardarProducto} noValidate>
+        <div className="producto-form-header">
+          <h3>Nuevo producto</h3>
+          <span>Completa los datos para registrarlo en inventario.</span>
+        </div>
+
+        <div className="producto-form-grid">
+          <label>
+            <span>Nombre</span>
+            <input
+              className={erroresFormulario.nombre ? 'input-error' : ''}
+              name="nombre"
+              type="text"
+              value={nuevoProducto.nombre}
+              onChange={actualizarNuevoProducto}
+            />
+            {erroresFormulario.nombre && (
+              <small className="field-error">{erroresFormulario.nombre}</small>
+            )}
+          </label>
+
+          <label>
+            <span>Cantidad stock</span>
+            <input
+              className={erroresFormulario.cantidadstock ? 'input-error' : ''}
+              min="0"
+              name="cantidadstock"
+              type="number"
+              value={nuevoProducto.cantidadstock}
+              onChange={actualizarNuevoProducto}
+            />
+            {erroresFormulario.cantidadstock && (
+              <small className="field-error">{erroresFormulario.cantidadstock}</small>
+            )}
+          </label>
+
+          <label>
+            <span>Stock</span>
+            <input
+              className={erroresFormulario.stock ? 'input-error' : ''}
+              min="0"
+              name="stock"
+              type="number"
+              value={nuevoProducto.stock}
+              onChange={actualizarNuevoProducto}
+            />
+            {erroresFormulario.stock && (
+              <small className="field-error">{erroresFormulario.stock}</small>
+            )}
+          </label>
+
+          <label>
+            <span>Precio unitario</span>
+            <input
+              className={erroresFormulario.preciounitario ? 'input-error' : ''}
+              min="0"
+              name="preciounitario"
+              step="0.01"
+              type="number"
+              value={nuevoProducto.preciounitario}
+              onChange={actualizarNuevoProducto}
+            />
+            {erroresFormulario.preciounitario && (
+              <small className="field-error">{erroresFormulario.preciounitario}</small>
+            )}
+          </label>
+
+          <label>
+            <span>Categoria</span>
+            <select
+              className={erroresFormulario.id_categoria ? 'input-error' : ''}
+              name="id_categoria"
+              value={nuevoProducto.id_categoria}
+              onChange={actualizarNuevoProducto}
+            >
+              <option value="">Selecciona una categoria</option>
+              {categorias.map((categoria) => {
+                const idCategoria = obtenerIdCategoria(categoria)
+
+                return (
+                  <option key={idCategoria} value={idCategoria}>
+                    {obtenerNombreCategoria(categoria)}
+                  </option>
+                )
+              })}
+            </select>
+            {erroresFormulario.id_categoria && (
+              <small className="field-error">{erroresFormulario.id_categoria}</small>
+            )}
+          </label>
+
+          <label>
+            <span>Talla</span>
+            <select
+              className={erroresFormulario.id_talla ? 'input-error' : ''}
+              name="id_talla"
+              value={nuevoProducto.id_talla}
+              onChange={actualizarNuevoProducto}
+            >
+              <option value="">Selecciona una talla</option>
+              {tallas.map((talla) => {
+                const idTalla = obtenerIdTalla(talla)
+
+                return (
+                  <option key={idTalla} value={idTalla}>
+                    {obtenerNombreTalla(talla)}
+                  </option>
+                )
+              })}
+            </select>
+            {erroresFormulario.id_talla && (
+              <small className="field-error">{erroresFormulario.id_talla}</small>
+            )}
+          </label>
+        </div>
+
+        <div className="producto-form-actions">
+          <div>
+            {mensajeFormulario && (
+              <span className="form-message success">{mensajeFormulario}</span>
+            )}
+            {errorFormulario && (
+              <span className="form-message error">{errorFormulario}</span>
+            )}
+          </div>
+
+          <button type="submit" disabled={guardando}>
+            {guardando ? 'Guardando...' : 'Guardar producto'}
+          </button>
+        </div>
+      </form>
 
       <div className="productos-toolbar">
         <label className="buscador-productos" htmlFor="buscar-productos">
