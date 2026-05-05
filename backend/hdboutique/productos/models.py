@@ -9,6 +9,7 @@ class Productos(models.Model):
     nombre = models.CharField(db_column='Nombre', max_length=40, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
     cantidadstock = models.IntegerField(db_column='CantidadStock', blank=True, null=True)  # Field name made lowercase.
     stock = models.IntegerField(db_column='Stock', blank=True, null=True)  # Field name made lowercase.
+    preciounitario = models.DecimalField(db_column='PrecioUnitario', max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
         managed = False
