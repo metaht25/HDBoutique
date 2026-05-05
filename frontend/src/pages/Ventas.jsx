@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
+  crearDetalleVenta,
+  crearVenta,
   obtenerClientesVentas,
   obtenerDetallesVentas,
   obtenerEmpleadosVentas,
@@ -86,6 +88,18 @@ function obtenerPrecioDetalle(detalle) {
   return Number.isNaN(precio) ? 0 : precio
 }
 
+function obtenerPrecioProducto(producto) {
+  const precio = Number(producto.preciounitario ?? 0)
+
+  return Number.isNaN(precio) ? 0 : precio
+}
+
+function obtenerStock(producto) {
+  const stock = Number(producto.stock ?? producto.cantidadstock ?? 0)
+
+  return Number.isNaN(stock) ? 0 : stock
+}
+
 function formatearFecha(fecha) {
   if (!fecha) {
     return 'Sin fecha'
@@ -129,6 +143,17 @@ function Ventas() {
   const [busqueda, setBusqueda] = useState('')
   const [fechaFiltro, setFechaFiltro] = useState('')
   const [ventaSeleccionadaId, setVentaSeleccionadaId] = useState(null)
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [formularioVenta, setFormularioVenta] = useState({
+    fechaventa: new Date().toISOString().slice(0, 10),
+    id_cliente: '',
+    id_empleado: '',
+    id_producto: '',
+    cantidad: '',
+  })
+  const [productosVenta, setProductosVenta] = useState([])
+  const [erroresFormulario, setErroresFormulario] = useState([])
+  const [guardandoVenta, setGuardandoVenta] = useState(false)
 
   useEffect(() => {
     async function cargarVentas() {
@@ -162,6 +187,28 @@ function Ventas() {
 
     cargarVentas()
   }, [])
+
+  async function cargarDatosVentas() {
+    const [
+      ventasData,
+      clientesData,
+      empleadosData,
+      detallesVentasData,
+      productosData,
+    ] = await Promise.all([
+      obtenerVentas(),
+      obtenerClientesVentas(),
+      obtenerEmpleadosVentas(),
+      obtenerDetallesVentas(),
+      obtenerProductosVentas(),
+    ])
+
+    setVentas(obtenerLista(ventasData))
+    setClientes(obtenerLista(clientesData))
+    setEmpleados(obtenerLista(empleadosData))
+    setDetallesVentas(obtenerLista(detallesVentasData))
+    setProductos(obtenerLista(productosData))
+  }
 
   const fechaActual = new Date().toISOString().slice(0, 10)
   const totalVentas = ventas.length
@@ -200,11 +247,180 @@ function Ventas() {
   const totalDetalleSeleccionado = detallesVentaSeleccionada.reduce((acumulador, detalle) => {
     return acumulador + obtenerCantidadDetalle(detalle) * obtenerPrecioDetalle(detalle)
   }, 0)
+  const productoSeleccionado = productos.find((producto) => {
+    return String(obtenerIdProducto(producto)) === String(formularioVenta.id_producto)
+  })
+  const totalNuevaVenta = productosVenta.reduce((acumulador, producto) => {
+    return acumulador + producto.subtotal
+  }, 0)
 
   function alternarDetalleVenta(idVenta) {
     setVentaSeleccionadaId((idActual) => {
       return String(idActual) === String(idVenta) ? null : idVenta
     })
+  }
+
+  function actualizarFormulario(campo, valor) {
+    setFormularioVenta((formularioActual) => ({
+      ...formularioActual,
+      [campo]: valor,
+    }))
+    setErroresFormulario([])
+  }
+
+  function cambiarClienteVenta(idCliente) {
+    if (productosVenta.length > 0 && idCliente !== formularioVenta.id_cliente) {
+      const confirmarCambio = window.confirm(
+        'Cambiar el cliente limpiara los productos agregados a esta venta. Desea continuar?',
+      )
+
+      if (!confirmarCambio) {
+        return
+      }
+
+      setProductosVenta([])
+    }
+
+    actualizarFormulario('id_cliente', idCliente)
+  }
+
+  function agregarProductoVenta() {
+    const errores = []
+    const producto = productoSeleccionado
+    const cantidad = Number(formularioVenta.cantidad)
+
+    if (!producto) {
+      errores.push('Seleccione un producto.')
+    }
+
+    if (!formularioVenta.cantidad || Number.isNaN(cantidad) || cantidad <= 0) {
+      errores.push('La cantidad debe ser mayor que 0.')
+    }
+
+    if (producto && cantidad > obtenerStock(producto)) {
+      errores.push('La cantidad no puede ser mayor que el stock disponible.')
+    }
+
+    const productoYaAgregado = productosVenta.some((item) => {
+      return String(item.id_producto) === String(obtenerIdProducto(producto ?? {}))
+    })
+
+    if (productoYaAgregado) {
+      errores.push('Este producto ya fue agregado a la venta.')
+    }
+
+    if (errores.length > 0) {
+      setErroresFormulario(errores)
+      return
+    }
+
+    const precioUnitario = obtenerPrecioProducto(producto)
+    const productoVenta = {
+      id_producto: obtenerIdProducto(producto),
+      nombre: producto.nombre ?? `Producto #${obtenerIdProducto(producto)}`,
+      stock: obtenerStock(producto),
+      cantidad,
+      preciounitario: precioUnitario,
+      subtotal: cantidad * precioUnitario,
+    }
+
+    setProductosVenta((productosActuales) => [...productosActuales, productoVenta])
+    setFormularioVenta((formularioActual) => ({
+      ...formularioActual,
+      id_producto: '',
+      cantidad: '',
+    }))
+    setErroresFormulario([])
+  }
+
+  function quitarProductoVenta(idProducto) {
+    setProductosVenta((productosActuales) => {
+      return productosActuales.filter((producto) => {
+        return String(producto.id_producto) !== String(idProducto)
+      })
+    })
+  }
+
+  function validarVenta() {
+    const errores = []
+
+    if (!formularioVenta.fechaventa) {
+      errores.push('La fecha de venta es obligatoria.')
+    }
+
+    if (!formularioVenta.id_cliente) {
+      errores.push('Seleccione un cliente.')
+    }
+
+    if (!formularioVenta.id_empleado) {
+      errores.push('Seleccione un empleado o cajero.')
+    }
+
+    if (productosVenta.length === 0) {
+      errores.push('Agregue al menos un producto a la venta.')
+    }
+
+    return errores
+  }
+
+  function obtenerIdVentaCreada(ventaCreada) {
+    return ventaCreada.id_venta ?? ventaCreada.id
+  }
+
+  async function guardarNuevaVenta(event) {
+    event.preventDefault()
+
+    const errores = validarVenta()
+
+    if (errores.length > 0) {
+      setErroresFormulario(errores)
+      return
+    }
+
+    setGuardandoVenta(true)
+    setErroresFormulario([])
+
+    try {
+      const ventaCreada = await crearVenta({
+        fechaventa: formularioVenta.fechaventa,
+        total: totalNuevaVenta,
+        id_cliente: formularioVenta.id_cliente,
+        id_empleado: formularioVenta.id_empleado,
+      })
+      const idVentaCreada = obtenerIdVentaCreada(ventaCreada)
+
+      if (!idVentaCreada) {
+        throw new Error('La venta se creo, pero no se recibio el ID de venta.')
+      }
+
+      for (const producto of productosVenta) {
+        await crearDetalleVenta({
+          cantidad: producto.cantidad,
+          preciounitario: producto.preciounitario,
+          id_venta: idVentaCreada,
+          id_producto: producto.id_producto,
+        })
+      }
+
+      await cargarDatosVentas()
+      setFormularioVenta({
+        fechaventa: new Date().toISOString().slice(0, 10),
+        id_cliente: '',
+        id_empleado: '',
+        id_producto: '',
+        cantidad: '',
+      })
+      setProductosVenta([])
+      setMostrarFormulario(false)
+      setVentaSeleccionadaId(idVentaCreada)
+    } catch (error) {
+      console.error(error)
+      setErroresFormulario([
+        error.message || 'No se pudo guardar la venta. Revise los datos e intente nuevamente.',
+      ])
+    } finally {
+      setGuardandoVenta(false)
+    }
   }
 
   if (cargando) {
@@ -230,6 +446,14 @@ function Ventas() {
           <h2>Ventas</h2>
           <p>Listado general de ventas registradas.</p>
         </div>
+
+        <button
+          className="nueva-venta-button"
+          type="button"
+          onClick={() => setMostrarFormulario((valorActual) => !valorActual)}
+        >
+          {mostrarFormulario ? 'Ocultar formulario' : 'Nueva venta'}
+        </button>
       </div>
 
       <div className="ventas-resumen">
@@ -253,6 +477,173 @@ function Ventas() {
           <strong>{formatearMoneda(totalVendido)}</strong>
         </div>
       </div>
+
+      {mostrarFormulario && (
+        <section className="nueva-venta-panel">
+          <div className="nueva-venta-header">
+            <div>
+              <h3>Nueva venta</h3>
+              <span>Seleccione cliente, cajero y productos para registrar la venta.</span>
+            </div>
+
+            <strong>{formatearMoneda(totalNuevaVenta)}</strong>
+          </div>
+
+          <form className="nueva-venta-form" onSubmit={guardarNuevaVenta}>
+            {erroresFormulario.length > 0 && (
+              <div className="ventas-form-errors">
+                {erroresFormulario.map((mensaje) => (
+                  <p key={mensaje}>{mensaje}</p>
+                ))}
+              </div>
+            )}
+
+            <div className="venta-form-grid">
+              <label htmlFor="venta-fecha">
+                <span>Fecha de venta</span>
+                <input
+                  id="venta-fecha"
+                  type="date"
+                  value={formularioVenta.fechaventa}
+                  onChange={(event) => actualizarFormulario('fechaventa', event.target.value)}
+                />
+              </label>
+
+              <label htmlFor="venta-cliente">
+                <span>Cliente</span>
+                <select
+                  id="venta-cliente"
+                  value={formularioVenta.id_cliente}
+                  onChange={(event) => cambiarClienteVenta(event.target.value)}
+                >
+                  <option value="">Seleccione un cliente</option>
+                  {clientes.map((cliente) => (
+                    <option key={obtenerIdCliente(cliente)} value={obtenerIdCliente(cliente)}>
+                      {obtenerNombrePersona(cliente)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label htmlFor="venta-empleado">
+                <span>Empleado/Cajero</span>
+                <select
+                  id="venta-empleado"
+                  value={formularioVenta.id_empleado}
+                  onChange={(event) => actualizarFormulario('id_empleado', event.target.value)}
+                >
+                  <option value="">Seleccione un empleado</option>
+                  {empleados.map((empleado) => (
+                    <option key={obtenerIdEmpleado(empleado)} value={obtenerIdEmpleado(empleado)}>
+                      {obtenerNombrePersona(empleado)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="venta-producto-grid">
+              <label htmlFor="venta-producto">
+                <span>Producto</span>
+                <select
+                  id="venta-producto"
+                  value={formularioVenta.id_producto}
+                  onChange={(event) => actualizarFormulario('id_producto', event.target.value)}
+                >
+                  <option value="">Seleccione un producto</option>
+                  {productos.map((producto) => (
+                    <option key={obtenerIdProducto(producto)} value={obtenerIdProducto(producto)}>
+                      {producto.nombre ?? `Producto #${obtenerIdProducto(producto)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label htmlFor="venta-cantidad">
+                <span>Cantidad</span>
+                <input
+                  id="venta-cantidad"
+                  type="number"
+                  min="1"
+                  value={formularioVenta.cantidad}
+                  onChange={(event) => actualizarFormulario('cantidad', event.target.value)}
+                />
+              </label>
+
+              <div className="producto-seleccionado-info">
+                <span>Precio</span>
+                <strong>
+                  {productoSeleccionado
+                    ? formatearMoneda(obtenerPrecioProducto(productoSeleccionado))
+                    : formatearMoneda(0)}
+                </strong>
+              </div>
+
+              <div className="producto-seleccionado-info">
+                <span>Stock disponible</span>
+                <strong>{productoSeleccionado ? obtenerStock(productoSeleccionado) : 0}</strong>
+              </div>
+
+              <button
+                className="agregar-producto-button"
+                type="button"
+                onClick={agregarProductoVenta}
+              >
+                Agregar producto
+              </button>
+            </div>
+
+            <div className="productos-venta-table">
+              {productosVenta.length === 0 ? (
+                <div className="ventas-estado">Agregue productos para calcular el total.</div>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio unitario</th>
+                      <th>Subtotal</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {productosVenta.map((producto) => (
+                      <tr key={producto.id_producto}>
+                        <td className="detalle-producto">{producto.nombre}</td>
+                        <td>{producto.cantidad}</td>
+                        <td>{formatearMoneda(producto.preciounitario)}</td>
+                        <td>{formatearMoneda(producto.subtotal)}</td>
+                        <td>
+                          <button
+                            className="quitar-producto-button"
+                            type="button"
+                            onClick={() => quitarProductoVenta(producto.id_producto)}
+                          >
+                            Quitar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div className="nueva-venta-footer">
+              <div>
+                <span>Total general</span>
+                <strong>{formatearMoneda(totalNuevaVenta)}</strong>
+              </div>
+
+              <button className="guardar-venta-button" type="submit" disabled={guardandoVenta}>
+                {guardandoVenta ? 'Guardando...' : 'Guardar venta'}
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
 
       <div className="ventas-toolbar">
         <label className="buscador-ventas" htmlFor="buscar-ventas">

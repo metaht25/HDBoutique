@@ -4,6 +4,22 @@ const CLIENTES_URL = '/api/personas/clientes/'
 const EMPLEADOS_URL = '/api/personas/empleados/'
 const PRODUCTOS_URL = '/api/productos/productos/'
 
+async function enviarDatos(url, datos, mensajeError) {
+  const respuesta = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(datos),
+  })
+
+  if (!respuesta.ok) {
+    throw new Error(mensajeError)
+  }
+
+  return respuesta.json()
+}
+
 export async function obtenerVentas() {
   const respuesta = await fetch(VENTAS_URL)
 
@@ -52,4 +68,12 @@ export async function obtenerProductosVentas() {
   }
 
   return respuesta.json()
+}
+
+export function crearVenta(datosVenta) {
+  return enviarDatos(VENTAS_URL, datosVenta, 'Error al crear la venta')
+}
+
+export function crearDetalleVenta(datosDetalle) {
+  return enviarDatos(DETALLES_VENTAS_URL, datosDetalle, 'Error al crear el detalle de venta')
 }
