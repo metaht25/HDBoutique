@@ -3,6 +3,7 @@ import Clientes from '../pages/Clientes'
 import Compras from '../pages/Compras'
 import Dashboard from '../pages/Dashboard'
 import Productos from '../pages/Productos'
+import Proveedores from '../pages/Proveedores'
 import Ventas from '../pages/Ventas'
 import './MainLayout.css'
 
@@ -30,6 +31,10 @@ function MainLayout() {
       return <Compras />
     }
 
+    if (paginaActual === 'proveedores') {
+      return <Proveedores />
+    }
+
     return <Dashboard />
   }
 
@@ -52,6 +57,10 @@ function MainLayout() {
 
     if (paginaActual === 'compras') {
       return 'Compras'
+    }
+
+    if (paginaActual === 'proveedores') {
+      return 'Proveedores'
     }
 
     return 'Dashboard'
@@ -80,7 +89,9 @@ function MainLayout() {
           <button onClick={() => setPaginaActual('compras')}>
             Compras
           </button>
-          <button>Proveedores</button>
+          <button onClick={() => setPaginaActual('proveedores')}>
+            Proveedores
+          </button>
           <button>Caja</button>
           <button>Reportes</button>
         </nav>

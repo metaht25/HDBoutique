@@ -1,0 +1,158 @@
+.proveedores-page {
+  max-width: 1180px;
+}
+
+.proveedores-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.proveedores-page h2 {
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.proveedores-page p {
+  margin-bottom: 0;
+  color: #6b7280;
+}
+
+.proveedores-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.resumen-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  padding: 18px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.resumen-card span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.resumen-card strong {
+  color: #111827;
+  font-size: 28px;
+}
+
+.resumen-card.alerta strong {
+  color: #b45309;
+}
+
+.proveedores-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.buscador-proveedores {
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buscador-proveedores span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buscador-proveedores input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font-size: 15px;
+  min-height: 42px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.buscador-proveedores input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.proveedores-table-container {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.proveedores-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 920px;
+}
+
+.proveedores-table-container thead {
+  background-color: #f9fafb;
+}
+
+.proveedores-table-container th,
+.proveedores-table-container td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.proveedores-table-container th {
+  font-size: 14px;
+  color: #374151;
+}
+
+.proveedores-table-container td {
+  color: #111827;
+}
+
+.proveedores-table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.proveedores-table-container tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.proveedor-empresa {
+  font-weight: 600;
+}
+
+.proveedores-estado {
+  padding: 24px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+@media (max-width: 900px) {
+  .proveedores-resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .proveedores-toolbar {
+    justify-content: stretch;
+  }
+
+  .buscador-proveedores {
+    width: 100%;
+  }
+}
