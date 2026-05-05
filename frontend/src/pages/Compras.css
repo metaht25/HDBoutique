@@ -97,7 +97,7 @@
 .compras-table-container table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1020px;
+  min-width: 1140px;
 }
 
 .compras-table-container thead {
@@ -133,6 +133,91 @@
 }
 
 .compra-proveedor {
+  font-weight: 600;
+}
+
+.detalle-compra-button {
+  min-height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.detalle-compra-button:hover {
+  background-color: #f9fafb;
+}
+
+.detalle-compra-panel {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.detalle-compra-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detalle-compra-header h3 {
+  color: #111827;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.detalle-compra-header span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.detalle-compra-header strong {
+  color: #111827;
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+.detalle-compra-table-container {
+  overflow-x: auto;
+}
+
+.detalle-compra-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.detalle-compra-table-container thead {
+  background-color: #f9fafb;
+}
+
+.detalle-compra-table-container th,
+.detalle-compra-table-container td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detalle-compra-table-container th {
+  font-size: 14px;
+  color: #374151;
+}
+
+.detalle-compra-table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.detalle-producto-proveedor {
   font-weight: 600;
 }
 
@@ -182,6 +267,11 @@
 
   .buscador-compras {
     width: 100%;
+  }
+
+  .detalle-compra-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

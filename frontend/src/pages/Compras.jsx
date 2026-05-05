@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import {
   obtenerCompras,
+  obtenerDetallesCompras,
   obtenerEmpleadosCompras,
+  obtenerProductosCompras,
+  obtenerProductosProveedoresCompras,
   obtenerProveedoresCompras,
 } from '../services/comprasService'
 import './Compras.css'
@@ -68,6 +71,40 @@ function obtenerCostoEnvio(compra) {
   return Number.isNaN(costo) ? 0 : costo
 }
 
+function obtenerIdProducto(producto) {
+  return producto.id_producto ?? producto.id
+}
+
+function obtenerIdProductoProveedor(productoProveedor) {
+  return productoProveedor.id_productoproveedor ?? productoProveedor.id_producto_proveedor ?? productoProveedor.id
+}
+
+function obtenerProductoProveedorDetalle(idProductoProveedor, productosProveedores) {
+  return productosProveedores.find((item) => {
+    return String(obtenerIdProductoProveedor(item)) === String(idProductoProveedor)
+  })
+}
+
+function obtenerNombreProductoProveedor(idProductoProveedor, productosProveedores, productos) {
+  const productoProveedor = obtenerProductoProveedorDetalle(idProductoProveedor, productosProveedores)
+
+  if (!productoProveedor) {
+    return `Producto-proveedor #${idProductoProveedor}`
+  }
+
+  const idProducto = productoProveedor.id_producto
+
+  if (typeof idProducto === 'object') {
+    return idProducto.nombre ?? `Producto-proveedor #${idProductoProveedor}`
+  }
+
+  const producto = productos.find((item) => {
+    return String(obtenerIdProducto(item)) === String(idProducto)
+  })
+
+  return producto ? producto.nombre ?? `Producto #${idProducto}` : `Producto-proveedor #${idProductoProveedor}`
+}
+
 function formatearFecha(fecha) {
   return fecha || 'Pendiente'
 }
@@ -94,24 +131,41 @@ function compraPendienteRevision(compra) {
 
 function Compras() {
   const [compras, setCompras] = useState([])
+  const [detallesCompras, setDetallesCompras] = useState([])
   const [proveedores, setProveedores] = useState([])
   const [empleados, setEmpleados] = useState([])
+  const [productosProveedores, setProductosProveedores] = useState([])
+  const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
+  const [compraSeleccionadaId, setCompraSeleccionadaId] = useState(null)
 
   useEffect(() => {
     async function cargarCompras() {
       try {
-        const [comprasData, proveedoresData, empleadosData] = await Promise.all([
+        const [
+          comprasData,
+          proveedoresData,
+          empleadosData,
+          detallesComprasData,
+          productosProveedoresData,
+          productosData,
+        ] = await Promise.all([
           obtenerCompras(),
           obtenerProveedoresCompras(),
           obtenerEmpleadosCompras(),
+          obtenerDetallesCompras(),
+          obtenerProductosProveedoresCompras(),
+          obtenerProductosCompras(),
         ])
 
         setCompras(obtenerLista(comprasData))
         setProveedores(obtenerLista(proveedoresData))
         setEmpleados(obtenerLista(empleadosData))
+        setDetallesCompras(obtenerLista(detallesComprasData))
+        setProductosProveedores(obtenerLista(productosProveedoresData))
+        setProductos(obtenerLista(productosData))
       } catch (error) {
         console.error(error)
         setError('No se pudieron cargar las compras')
@@ -142,6 +196,21 @@ function Compras() {
       ? proveedor.includes(terminoBusqueda) || idCompra.includes(terminoBusqueda)
       : true
   })
+
+  const compraSeleccionada = compras.find((compra) => {
+    return String(compra.id_compra) === String(compraSeleccionadaId)
+  })
+  const detallesCompraSeleccionada = compraSeleccionadaId
+    ? detallesCompras.filter((detalle) => {
+        return String(detalle.id_compra) === String(compraSeleccionadaId)
+      })
+    : []
+
+  function alternarDetalleCompra(idCompra) {
+    setCompraSeleccionadaId((idActual) => {
+      return String(idActual) === String(idCompra) ? null : idCompra
+    })
+  }
 
   if (cargando) {
     return (
@@ -221,6 +290,7 @@ function Compras() {
                 <th>Fecha de compra</th>
                 <th>Costo de envio</th>
                 <th>Fecha de relleno</th>
+                <th>Acciones</th>
               </tr>
             </thead>
 
@@ -243,6 +313,17 @@ function Compras() {
                     <td>{formatearFecha(obtenerFechaCompra(compra))}</td>
                     <td>{formatearMoneda(obtenerCostoEnvio(compra))}</td>
                     <td>{formatearFecha(obtenerFechaRelleno(compra))}</td>
+                    <td>
+                      <button
+                        className="detalle-compra-button"
+                        type="button"
+                        onClick={() => alternarDetalleCompra(compra.id_compra)}
+                      >
+                        {String(compraSeleccionadaId) === String(compra.id_compra)
+                          ? 'Ocultar detalle'
+                          : 'Ver detalle'}
+                      </button>
+                    </td>
                   </tr>
                 )
               })}
@@ -250,6 +331,55 @@ function Compras() {
           </table>
         )}
       </div>
+
+      {compraSeleccionadaId && (
+        <section className="detalle-compra-panel">
+          <div className="detalle-compra-header">
+            <div>
+              <h3>Detalle de compra #{compraSeleccionadaId}</h3>
+              <span>
+                {compraSeleccionada
+                  ? `${formatearFecha(obtenerFechaCompra(compraSeleccionada))} · ${obtenerNombreProveedor(compraSeleccionada.id_proveedor, proveedores)}`
+                  : 'Compra seleccionada'}
+              </span>
+            </div>
+
+            <strong>{detallesCompraSeleccionada.length} items</strong>
+          </div>
+
+          {detallesCompraSeleccionada.length === 0 ? (
+            <div className="compras-estado">No hay detalles registrados para esta compra.</div>
+          ) : (
+            <div className="detalle-compra-table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID detalle</th>
+                    <th>Producto o producto-proveedor</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {detallesCompraSeleccionada.map((detalle) => (
+                    <tr key={detalle.id_detallecompra}>
+                      <td>{detalle.id_detallecompra}</td>
+                      <td className="detalle-producto-proveedor">
+                        {obtenerNombreProductoProveedor(
+                          detalle.id_productoproveedor,
+                          productosProveedores,
+                          productos,
+                        )}
+                      </td>
+                      <td>{detalle.cantidad ?? 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }
