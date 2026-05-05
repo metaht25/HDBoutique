@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
   obtenerClientesVentas,
+  obtenerDetallesVentas,
   obtenerEmpleadosVentas,
+  obtenerProductosVentas,
   obtenerVentas,
 } from '../services/ventasService'
 import './Ventas.css'
@@ -60,6 +62,30 @@ function obtenerTotalVenta(venta) {
   return Number.isNaN(total) ? 0 : total
 }
 
+function obtenerIdProducto(producto) {
+  return producto.id_producto ?? producto.id
+}
+
+function obtenerNombreProducto(idProducto, productos) {
+  const producto = productos.find((item) => {
+    return String(obtenerIdProducto(item)) === String(idProducto)
+  })
+
+  return producto ? producto.nombre ?? `Producto #${idProducto}` : `Producto #${idProducto}`
+}
+
+function obtenerCantidadDetalle(detalle) {
+  const cantidad = Number(detalle.cantidad ?? 0)
+
+  return Number.isNaN(cantidad) ? 0 : cantidad
+}
+
+function obtenerPrecioDetalle(detalle) {
+  const precio = Number(detalle.preciounitario ?? 0)
+
+  return Number.isNaN(precio) ? 0 : precio
+}
+
 function formatearFecha(fecha) {
   if (!fecha) {
     return 'Sin fecha'
@@ -94,25 +120,38 @@ function esMismoMes(fechaVenta, fechaReferencia) {
 
 function Ventas() {
   const [ventas, setVentas] = useState([])
+  const [detallesVentas, setDetallesVentas] = useState([])
   const [clientes, setClientes] = useState([])
   const [empleados, setEmpleados] = useState([])
+  const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [fechaFiltro, setFechaFiltro] = useState('')
+  const [ventaSeleccionadaId, setVentaSeleccionadaId] = useState(null)
 
   useEffect(() => {
     async function cargarVentas() {
       try {
-        const [ventasData, clientesData, empleadosData] = await Promise.all([
+        const [
+          ventasData,
+          clientesData,
+          empleadosData,
+          detallesVentasData,
+          productosData,
+        ] = await Promise.all([
           obtenerVentas(),
           obtenerClientesVentas(),
           obtenerEmpleadosVentas(),
+          obtenerDetallesVentas(),
+          obtenerProductosVentas(),
         ])
 
         setVentas(obtenerLista(ventasData))
         setClientes(obtenerLista(clientesData))
         setEmpleados(obtenerLista(empleadosData))
+        setDetallesVentas(obtenerLista(detallesVentasData))
+        setProductos(obtenerLista(productosData))
       } catch (error) {
         console.error(error)
         setError('No se pudieron cargar las ventas')
@@ -149,6 +188,24 @@ function Ventas() {
 
     return coincideBusqueda && coincideFecha
   })
+
+  const ventaSeleccionada = ventas.find((venta) => {
+    return String(venta.id_venta) === String(ventaSeleccionadaId)
+  })
+  const detallesVentaSeleccionada = ventaSeleccionadaId
+    ? detallesVentas.filter((detalle) => {
+        return String(detalle.id_venta) === String(ventaSeleccionadaId)
+      })
+    : []
+  const totalDetalleSeleccionado = detallesVentaSeleccionada.reduce((acumulador, detalle) => {
+    return acumulador + obtenerCantidadDetalle(detalle) * obtenerPrecioDetalle(detalle)
+  }, 0)
+
+  function alternarDetalleVenta(idVenta) {
+    setVentaSeleccionadaId((idActual) => {
+      return String(idActual) === String(idVenta) ? null : idVenta
+    })
+  }
 
   if (cargando) {
     return (
@@ -242,6 +299,7 @@ function Ventas() {
                 <th>Cliente</th>
                 <th>Empleado/Cajero</th>
                 <th>Total</th>
+                <th>Acciones</th>
               </tr>
             </thead>
 
@@ -255,12 +313,76 @@ function Ventas() {
                   </td>
                   <td>{obtenerNombreEmpleado(venta.id_empleado, empleados)}</td>
                   <td>{formatearMoneda(obtenerTotalVenta(venta))}</td>
+                  <td>
+                    <button
+                      className="detalle-venta-button"
+                      type="button"
+                      onClick={() => alternarDetalleVenta(venta.id_venta)}
+                    >
+                      {String(ventaSeleccionadaId) === String(venta.id_venta)
+                        ? 'Ocultar detalle'
+                        : 'Ver detalle'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {ventaSeleccionadaId && (
+        <section className="detalle-venta-panel">
+          <div className="detalle-venta-header">
+            <div>
+              <h3>Detalle de venta #{ventaSeleccionadaId}</h3>
+              <span>
+                {ventaSeleccionada
+                  ? `${formatearFecha(obtenerFechaVenta(ventaSeleccionada))} · ${obtenerNombreCliente(ventaSeleccionada.id_cliente, clientes)}`
+                  : 'Venta seleccionada'}
+              </span>
+            </div>
+
+            <strong>{formatearMoneda(totalDetalleSeleccionado)}</strong>
+          </div>
+
+          {detallesVentaSeleccionada.length === 0 ? (
+            <div className="ventas-estado">No hay detalles registrados para esta venta.</div>
+          ) : (
+            <div className="detalle-venta-table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {detallesVentaSeleccionada.map((detalle) => {
+                    const cantidad = obtenerCantidadDetalle(detalle)
+                    const precio = obtenerPrecioDetalle(detalle)
+                    const subtotal = cantidad * precio
+
+                    return (
+                      <tr key={detalle.id_detalleventa}>
+                        <td className="detalle-producto">
+                          {obtenerNombreProducto(detalle.id_producto, productos)}
+                        </td>
+                        <td>{cantidad}</td>
+                        <td>{formatearMoneda(precio)}</td>
+                        <td>{formatearMoneda(subtotal)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }
