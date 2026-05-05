@@ -5,6 +5,7 @@ import Compras from '../pages/Compras'
 import Dashboard from '../pages/Dashboard'
 import Productos from '../pages/Productos'
 import Proveedores from '../pages/Proveedores'
+import Reportes from '../pages/Reportes'
 import Ventas from '../pages/Ventas'
 import './MainLayout.css'
 
@@ -40,6 +41,10 @@ function MainLayout() {
       return <Caja />
     }
 
+    if (paginaActual === 'reportes') {
+      return <Reportes />
+    }
+
     return <Dashboard />
   }
 
@@ -70,6 +75,10 @@ function MainLayout() {
 
     if (paginaActual === 'caja') {
       return 'Caja'
+    }
+
+    if (paginaActual === 'reportes') {
+      return 'Reportes'
     }
 
     return 'Dashboard'
@@ -104,7 +113,9 @@ function MainLayout() {
           <button onClick={() => setPaginaActual('caja')}>
             Caja
           </button>
-          <button>Reportes</button>
+          <button onClick={() => setPaginaActual('reportes')}>
+            Reportes
+          </button>
         </nav>
       </aside>
 
