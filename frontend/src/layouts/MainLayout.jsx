@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Clientes from '../pages/Clientes'
+import Compras from '../pages/Compras'
 import Dashboard from '../pages/Dashboard'
 import Productos from '../pages/Productos'
 import Ventas from '../pages/Ventas'
@@ -25,6 +26,10 @@ function MainLayout() {
       return <Ventas />
     }
 
+    if (paginaActual === 'compras') {
+      return <Compras />
+    }
+
     return <Dashboard />
   }
 
@@ -43,6 +48,10 @@ function MainLayout() {
 
     if (paginaActual === 'ventas') {
       return 'Ventas'
+    }
+
+    if (paginaActual === 'compras') {
+      return 'Compras'
     }
 
     return 'Dashboard'
@@ -68,7 +77,9 @@ function MainLayout() {
           <button onClick={() => setPaginaActual('ventas')}>
             Ventas
           </button>
-          <button>Compras</button>
+          <button onClick={() => setPaginaActual('compras')}>
+            Compras
+          </button>
           <button>Proveedores</button>
           <button>Caja</button>
           <button>Reportes</button>

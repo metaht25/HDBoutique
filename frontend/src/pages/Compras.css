@@ -1,0 +1,192 @@
+.compras-page {
+  max-width: 1180px;
+}
+
+.compras-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.compras-page h2 {
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.compras-page p {
+  margin-bottom: 0;
+  color: #6b7280;
+}
+
+.compras-resumen {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.resumen-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  padding: 18px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.resumen-card span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.resumen-card strong {
+  color: #111827;
+  font-size: 28px;
+}
+
+.resumen-card.alerta strong {
+  color: #b45309;
+}
+
+.compras-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.buscador-compras {
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buscador-compras span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buscador-compras input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font-size: 15px;
+  min-height: 42px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.buscador-compras input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.compras-table-container {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.compras-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1020px;
+}
+
+.compras-table-container thead {
+  background-color: #f9fafb;
+}
+
+.compras-table-container th,
+.compras-table-container td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.compras-table-container th {
+  font-size: 14px;
+  color: #374151;
+}
+
+.compras-table-container td {
+  color: #111827;
+}
+
+.compras-table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.compras-table-container tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.compras-table-container tbody tr.compra-pendiente {
+  background-color: #fffbeb;
+}
+
+.compra-proveedor {
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge.success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge.warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.compras-estado {
+  padding: 24px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+@media (max-width: 1000px) {
+  .compras-resumen {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .compras-toolbar {
+    justify-content: stretch;
+  }
+
+  .buscador-compras {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .compras-resumen {
+    grid-template-columns: 1fr;
+  }
+}
