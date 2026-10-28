@@ -1,7 +1,7 @@
-"""HTTP adapter and serializer characterization; persistence is deliberately excluded."""
+"""HTTP adapter and serializer characterization without persistence."""
 
-from decimal import Decimal
 import json
+from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import expectedFailure
@@ -12,7 +12,6 @@ from django.test import SimpleTestCase
 from django.urls import resolve
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory, force_authenticate
-
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "legacy_contracts.json"
 CONTRACTS = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))["resources"]
@@ -56,7 +55,9 @@ class LegacyAdapterContractTests(SimpleTestCase):
             with self.subTest(resource=contract["path"]):
                 view = resolve(contract["path"]).func
                 with patch.object(
-                    view.cls, "get_queryset", return_value=[sample_instance(contract)],
+                    view.cls,
+                    "get_queryset",
+                    return_value=[sample_instance(contract)],
                 ):
                     response = view(self.authenticated_request("get", contract["path"]))
                 self.assertEqual(response.status_code, 200)
@@ -74,12 +75,18 @@ class LegacyAdapterContractTests(SimpleTestCase):
     def test_detail_returns_one_flat_object(self):
         for contract in CONTRACTS:
             with self.subTest(resource=contract["path"]):
-                path = f"{contract['path']}{contract['example'][contract['primary_key']]}/"
+                path = (
+                    f"{contract['path']}{contract['example'][contract['primary_key']]}/"
+                )
                 match = resolve(path)
                 with patch.object(
-                    match.func.cls, "get_object", return_value=sample_instance(contract),
+                    match.func.cls,
+                    "get_object",
+                    return_value=sample_instance(contract),
                 ):
-                    response = match.func(self.authenticated_request("get", path), **match.kwargs)
+                    response = match.func(
+                        self.authenticated_request("get", path), **match.kwargs
+                    )
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.data, contract["example"])
 
@@ -89,15 +96,27 @@ class LegacyAdapterContractTests(SimpleTestCase):
                 serializer = resolve(contract["path"]).func.cls.serializer_class()
                 self.assertEqual(set(serializer.fields), set(contract["example"]))
                 self.assertEqual(
-                    {name for name, field in serializer.fields.items() if field.required},
+                    {
+                        name
+                        for name, field in serializer.fields.items()
+                        if field.required
+                    },
                     set(contract["required_fields"]),
                 )
                 self.assertEqual(
-                    {name for name, field in serializer.fields.items() if field.allow_null},
+                    {
+                        name
+                        for name, field in serializer.fields.items()
+                        if field.allow_null
+                    },
                     set(contract["nullable_fields"]),
                 )
                 self.assertEqual(
-                    {name for name, field in serializer.fields.items() if field.read_only},
+                    {
+                        name
+                        for name, field in serializer.fields.items()
+                        if field.read_only
+                    },
                     {contract["primary_key"]},
                 )
 
@@ -107,7 +126,9 @@ class LegacyAdapterContractTests(SimpleTestCase):
                 continue
             with self.subTest(resource=contract["path"]):
                 view = resolve(contract["path"]).func
-                response = view(self.authenticated_request("post", contract["path"], {}))
+                response = view(
+                    self.authenticated_request("post", contract["path"], {})
+                )
                 self.assertEqual(response.status_code, 400)
                 self.assertEqual(set(response.data), set(contract["required_fields"]))
                 for errors in response.data.values():
@@ -133,7 +154,7 @@ class KnownDefectRegressionTests(SimpleTestCase):
 
     @expectedFailure
     def test_sale_item_supports_fractional_unit_prices_defect_d03(self):
-        """D03: expected failure until the legacy integer price contract is corrected."""
+        """D03: expected failure until sale item prices support decimals."""
         serializer = resolve("/api/ventas/detalles-ventas/").func.cls.serializer_class()
         self.assertEqual(
             serializer.fields["preciounitario"].run_validation("199.50"),

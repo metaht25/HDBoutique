@@ -1,0 +1,70 @@
+[project]
+name = "hdboutique-backend"
+version = "0.1.0"
+description = "HDBoutique inventory, purchase and sales management backend"
+readme = "README.md"
+requires-python = ">=3.13.15,<3.14"
+dependencies = [
+    "alembic>=1,<2",
+    "fastapi<1",
+    "psycopg[binary]>=3,<4",
+    "pydantic>=2,<3",
+    "pydantic-settings>=2,<3",
+    "sqlalchemy>=2,<3",
+    "uvicorn<1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2,<3",
+    "mypy>=2.4.0",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.3",
+]
+legacy = [
+    "asgiref==3.11.1",
+    "django==6.0.4",
+    "djangorestframework==3.17.1",
+    "mssql-django==1.7.1",
+    "pyodbc==5.3.0",
+    "python-decouple==3.8",
+    "pytz==2026.1.post1",
+    "sqlparse==0.5.5",
+    "tzdata==2026.2",
+]
+
+[tool.uv]
+required-version = "==0.12.10"
+package = false
+default-groups = ["dev", "legacy"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-config --strict-markers"
+filterwarnings = ["error"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+src = ["."]
+extend-exclude = ["hdboutique", "modelos_bd.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.13"
+files = ["app"]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90

@@ -1,0 +1,1 @@
+"""HDBoutique FastAPI application."""

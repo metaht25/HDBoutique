@@ -17,6 +17,8 @@ __pycache__/
 pip-wheel-metadata/
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
 .coverage
 htmlcov/
 

@@ -2,9 +2,8 @@
 
 import ast
 import json
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 LEGACY_ROOT = PROJECT_ROOT / "backend" / "hdboutique"
@@ -20,7 +19,8 @@ def declared_fields(model_label: str) -> dict[str, dict[str, str | bool]]:
     app_name, model_name = model_label.split(".")
     tree = parse_source(LEGACY_ROOT / app_name / "models.py")
     model = next(
-        node for node in tree.body
+        node
+        for node in tree.body
         if isinstance(node, ast.ClassDef) and node.name == model_name
     )
     fields = {}
@@ -35,17 +35,25 @@ def declared_fields(model_label: str) -> dict[str, dict[str, str | bool]]:
         options = {keyword.arg: keyword.value for keyword in call.keywords}
         fields[node.targets[0].id] = {
             "type": call.func.attr,
-            "nullable": ast.literal_eval(options["null"]) if "null" in options else False,
-            "blank": ast.literal_eval(options["blank"]) if "blank" in options else False,
+            "nullable": ast.literal_eval(options["null"])
+            if "null" in options
+            else False,
+            "blank": ast.literal_eval(options["blank"])
+            if "blank" in options
+            else False,
             "primary_key": (
                 ast.literal_eval(options["primary_key"])
-                if "primary_key" in options else False
+                if "primary_key" in options
+                else False
             ),
         }
     # El modelo Ofrece espera una PK implicita de Django; no confirma la PK fisica.
     if not any(field["primary_key"] for field in fields.values()):
         fields["id"] = {
-            "type": "AutoField", "nullable": False, "blank": False, "primary_key": True,
+            "type": "AutoField",
+            "nullable": False,
+            "blank": False,
+            "primary_key": True,
         }
     return fields
 
@@ -79,7 +87,9 @@ class DeclaredApiContractTests(unittest.TestCase):
                     paths.add(f"/{prefix}{resource}/")
         expected_paths = [contract["path"] for contract in CONTRACTS]
         self.assertEqual(
-            len(expected_paths), len(set(expected_paths)), "Duplicate paths in fixture",
+            len(expected_paths),
+            len(set(expected_paths)),
+            "Duplicate paths in fixture",
         )
         self.assertEqual(paths, set(expected_paths))
 
@@ -98,8 +108,11 @@ class DeclaredApiContractTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     {
-                        name for name, field in fields.items()
-                        if not (field["primary_key"] or field["nullable"] or field["blank"])
+                        name
+                        for name, field in fields.items()
+                        if not (
+                            field["primary_key"] or field["nullable"] or field["blank"]
+                        )
                     },
                     set(contract["required_fields"]),
                 )

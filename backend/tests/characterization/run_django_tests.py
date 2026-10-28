@@ -2,16 +2,24 @@
 
 import importlib.util
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 def main() -> int:
     required_modules = ("django", "rest_framework")
-    missing = [name for name in required_modules if importlib.util.find_spec(name) is None]
+    missing = [
+        name for name in required_modules if importlib.util.find_spec(name) is None
+    ]
     if missing:
-        print("Tests not run. Missing dependencies: " + ", ".join(missing), file=sys.stderr)
-        print("No dependencies were installed. See docs/characterization.md.", file=sys.stderr)
+        print(
+            "Tests not run. Missing dependencies: " + ", ".join(missing),
+            file=sys.stderr,
+        )
+        print(
+            "No dependencies were installed. See docs/characterization.md.",
+            file=sys.stderr,
+        )
         return 2
 
     test_root = Path(__file__).resolve().parent
@@ -21,6 +29,7 @@ def main() -> int:
     os.environ["DJANGO_SETTINGS_MODULE"] = "isolated_settings"
 
     import django
+
     django.setup()
 
     from django.conf import settings
