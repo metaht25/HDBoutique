@@ -10,12 +10,6 @@ from app.core.config import Settings
 from app.main import create_app
 
 
-@pytest.fixture(autouse=True)
-def isolate_settings_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("HDB_APP_NAME", "HDB_ENVIRONMENT", "HDB_DEBUG"):
-        monkeypatch.delenv(name, raising=False)
-
-
 @pytest.mark.parametrize("path", ["/health/live", "/health/ready"])
 def test_health_reports_process_scope(path: str) -> None:
     with TestClient(create_app(Settings(environment="test"))) as client:
