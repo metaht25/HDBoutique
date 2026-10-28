@@ -3,6 +3,9 @@
 !uv.lock
 !.python-version
 !README.md
+!alembic.ini
+!migrations/
+!migrations/**
 !app/
 !app/**
 !tests/

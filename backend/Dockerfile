@@ -27,6 +27,8 @@ RUN groupadd --gid 10001 app && \
 WORKDIR /workspace/backend
 COPY --from=dependencies /opt/venv /opt/venv
 COPY --chown=app:app app ./app
+COPY --chown=app:app alembic.ini ./
+COPY --chown=app:app migrations ./migrations
 USER app
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=5 \

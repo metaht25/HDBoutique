@@ -10,6 +10,8 @@ services:
     read_only: false
     volumes:
       - ./backend/app:/workspace/backend/app:ro
+      - ./backend/alembic.ini:/workspace/backend/alembic.ini:ro
+      - ./backend/migrations:/workspace/backend/migrations
   db:
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
