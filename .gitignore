@@ -10,6 +10,7 @@ ENV/
 !.env.example
 !.env.docker.example
 backups/
+migration-artifacts/
 
 # Python
 __pycache__/

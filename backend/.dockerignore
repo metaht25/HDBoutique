@@ -12,6 +12,8 @@
 !tests/**
 !hdboutique/
 !hdboutique/**
+!data_migration/
+!data_migration/**
 **/.env
 **/.env.*
 **/__pycache__/

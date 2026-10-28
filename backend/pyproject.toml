@@ -58,7 +58,7 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
 python_version = "3.13"
-files = ["app"]
+files = ["app", "data_migration"]
 strict = true
 plugins = ["pydantic.mypy"]
 

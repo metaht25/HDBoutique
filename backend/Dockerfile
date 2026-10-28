@@ -40,6 +40,7 @@ COPY --from=uv /uv /usr/local/bin/uv
 COPY --from=development-dependencies --chown=app:app /opt/venv /opt/venv
 COPY --chown=app:app pyproject.toml uv.lock .python-version README.md ./
 COPY --chown=app:app tests ./tests
+COPY --chown=app:app data_migration ./data_migration
 COPY --chown=app:app hdboutique ./hdboutique
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_CACHE_DIR=/tmp/uv-cache \
