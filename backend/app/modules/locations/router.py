@@ -2,10 +2,11 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Depends, Query, Response
 
 from app.api.dependencies import DatabaseSession
 from app.api.schemas import ErrorResponse
+from app.modules.identity.dependencies import authorize_business_request
 from app.modules.locations.schemas import (
     AddressCreate,
     AddressPatch,
@@ -21,8 +22,11 @@ from app.modules.locations.service import LocationsService
 
 router = APIRouter(
     prefix="/api/v1",
+    dependencies=[Depends(authorize_business_request)],
     tags=["locations"],
-    responses={status: {"model": ErrorResponse} for status in (404, 409, 422, 503)},
+    responses={
+        status: {"model": ErrorResponse} for status in (401, 403, 404, 409, 422, 503)
+    },
 )
 
 

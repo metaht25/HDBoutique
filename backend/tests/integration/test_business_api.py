@@ -11,8 +11,11 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import Settings
 from app.infrastructure.database.session import create_session_factory
 from app.main import create_app
+from app.modules.identity.models import UserAccount
+from app.modules.identity.security import hash_password
 from app.modules.locations.schemas import DepartmentCreate
 from app.modules.locations.service import LocationsService
+from tests.identity_helpers import SYNTHETIC_PASSWORD, TEST_ORIGIN, login
 
 pytestmark = pytest.mark.postgres
 
@@ -33,14 +36,33 @@ RESOURCES = [
 
 @pytest.fixture
 def business_client(database_connection: Connection) -> Iterator[TestClient]:
-    application = create_app(Settings(environment="test", business_api_enabled=True))
+    application = create_app(
+        Settings(
+            environment="test",
+            business_api_enabled=True,
+            auth_origin=TEST_ORIGIN,
+        )
+    )
 
     application.state.session_factory = sessionmaker(
         bind=database_connection,
         expire_on_commit=False,
         join_transaction_mode="create_savepoint",
     )
-    with TestClient(application) as client:
+    with application.state.session_factory.begin() as session:
+        session.add(
+            UserAccount(
+                username="synthetic-admin",
+                password_hash=hash_password(SYNTHETIC_PASSWORD),
+                role="Administrator",
+                is_active=True,
+                employee_id=None,
+            )
+        )
+    with TestClient(
+        application, base_url=TEST_ORIGIN, headers={"Origin": TEST_ORIGIN}
+    ) as client:
+        login(client, "synthetic-admin")
         yield client
 
 

@@ -1,6 +1,7 @@
 """Typed configuration isolated from the legacy Django settings."""
 
 from typing import Literal, Self
+from urllib.parse import urlsplit
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,6 +20,8 @@ class Settings(BaseSettings):
     environment: Literal["development", "test", "production"] = "development"
     debug: bool = False
     business_api_enabled: bool = False
+    auth_origin: str = "http://localhost:8001"
+    session_cookie_secure: bool = True
     database_host: str | None = Field(default=None, min_length=1)
     database_port: int = Field(default=5432, ge=1, le=65535)
     database_name: str | None = Field(default=None, min_length=1)
@@ -27,8 +30,25 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_debug(self) -> Self:
-        if self.environment == "production" and self.business_api_enabled:
-            raise ValueError("Business API requires phase 8 permissions in production")
+        origin = urlsplit(self.auth_origin)
+        if (
+            origin.scheme not in {"http", "https"}
+            or not origin.netloc
+            or origin.path
+            or origin.query
+            or origin.fragment
+            or origin.username is not None
+            or origin.password is not None
+        ):
+            raise ValueError("Auth origin must be an exact HTTP(S) origin without path")
+        if (
+            self.environment == "production"
+            and self.business_api_enabled
+            and (not self.session_cookie_secure or origin.scheme != "https")
+        ):
+            raise ValueError(
+                "Production authentication requires HTTPS and Secure cookies"
+            )
         if self.environment == "production" and self.debug:
             raise ValueError("Debug mode must be disabled in production")
         database_values = (
