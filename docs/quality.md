@@ -35,7 +35,7 @@ Los comandos verificados estan en [development.md](development.md). La suite
 Django conserva un expectedFailure para D03; no implica que el defecto se haya
 corregido ni que todas las operaciones de negocio esten probadas.
 
-Las pruebas de persistencia/concurrencia se ejecutaran con PostgreSQL aislado,
+Las pruebas de persistencia/concurrencia deben usar PostgreSQL aislado,
 sin sustituir sus bloqueos por SQLite. No importar configuracion productiva para
 obtener una conexion de prueba.
 
@@ -48,6 +48,19 @@ Ver [Docker](docker.md) y los resultados de [caracterizacion](characterization.m
 El frontend incorporara pruebas de componentes y recorridos E2E en su fase.
 Las herramientas se eligen por su funcion; no se agregan dependencias de testing
 a la aplicacion final de produccion.
+
+Fase 5 incorpora compose.test.yaml como entorno independiente: PostgreSQL tmpfs,
+sin puertos, claves sinteticas, --run-postgres explicito y guardas de base vacia.
+Se comprueban upgrade/downgrade/upgrade, metadata sin drift, las 17 tablas con
+datos sinteticos, Decimal, nulabilidad/fechas, identidades, rechazo de huerfanos
+y borrado referenciado, commit visible desde otra conexion y rollback.
+El SQL offline se prueba sin conexion. La suite habitual sin la opcion omite
+siete casos PostgreSQL; no equivale a ejecutar esas verificaciones.
+
+La fuente de comandos de esquema e integracion es [migration.md](migration.md).
+La cobertura de app incluye declaraciones ORM: un 100% de esas lineas no demuestra
+por si solo reglas de compra/venta, cobertura de cada DDL o concurrencia. Esos
+casos permanecen en sus fases, con datos aislados y reglas aprobadas.
 
 ## Seguridad e integridad
 

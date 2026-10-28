@@ -30,8 +30,18 @@ uv export --locked --only-group legacy --no-hashes --no-emit-project --output-fi
 SQLAlchemy y Psycopg comprueban conectividad PostgreSQL en readiness cuando hay
 configuracion de base. Dockerfile ofrece objetivos development/runtime usando uv;
 Compose y sus comandos estan en la [guia Docker](../docs/docker.md).
-No hay modelos nuevos ni migraciones ejecutadas. Los 17 modelos Django son
-unmanaged; el esquema SQLAlchemy/Alembic corresponde a fase 5.
+Desde fase 5 hay 17 modelos SQLAlchemy tipados en app/modules/, metadata comun,
+session factory y revision Alembic 0001_compatibility. La base PostgreSQL local de
+desarrollo tiene el esquema inicial vacio; los historicos no se han trasladado.
+Los 17 modelos Django siguen siendo unmanaged e independientes de ese esquema.
+Las reglas ambiguas se conservan pendientes, con ambas existencias y direccion
+ligada solo a departamento.
+
+Alembic se ejecuta explicitamente con `uv run --locked python -m alembic ...`.
+Comandos, guardas y pruebas PostgreSQL desechables en
+[migraciones](../docs/migration.md). Pytest sin --run-postgres omite la integracion;
+usar compose.test.yaml para ejecutarla. En este Windows usar Docker por el bloqueo
+de la extension nativa de SQLAlchemy; no modificar la politica del equipo.
 
 - [Guia de desarrollo y uv](../docs/development.md).
 - [Contratos actuales](../docs/legacy-api-contracts.md).

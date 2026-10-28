@@ -50,9 +50,11 @@ fuente actual; cualquier actualizacion requiere cambio intencionado y pruebas.
 | Django / DRF / mssql-django | 6.0.4 / 3.17.1 / 1.7.1 |
 | pyodbc / python-decouple | 5.3.0 / 3.8 |
 
-SQLAlchemy y Psycopg disponen desde fase 4 de un engine perezoso para comprobar
-la conexion a PostgreSQL. Alembic esta instalado; esquema y migraciones siguen
-pendientes de fase 5. Ver [Docker](docker.md) para el entorno local completo.
+SQLAlchemy y Psycopg disponen de engine perezoso. Desde fase 5 hay 17 modelos,
+session factory y Alembic con revision inicial 0001_compatibility. Se mantiene la
+estructura legacy ambigua segun el acuerdo del usuario; reglas y datos historicos
+siguen pendientes. Ver [modelo](data-model.md), [migraciones](migration.md) y
+[Docker](docker.md).
 
 ## Comandos backend
 
@@ -78,9 +80,18 @@ Pytest incluye esa suite mediante un subproceso con settings dummy. No usa SQL
 Server, no crea una base y no ejecuta migraciones. Ver
 [characterization.md](characterization.md) para limites y el fallo esperado D03.
 
+Los comandos Pytest anteriores, sin --run-postgres, omiten los siete casos de
+integracion PostgreSQL. Para la suite completa usar compose.test.yaml con proyecto
+aislado, configuracion HDB_TEST_DATABASE_* y PostgreSQL temporal, segun
+[migracion](migration.md#pruebas-aisladas-de-esquema-y-persistencia).
+
 En este Windows el lanzador pytest.exe fue bloqueado por Control de aplicaciones.
 El comando python -m pytest dentro de uv fue verificado; no requiere cambiar la
 politica de Windows. Se utiliza el mismo patron para Uvicorn.
+
+Desde fase 4, Control de aplicaciones de este equipo tambien bloquea una DLL de
+SQLAlchemy. Las pruebas actuales y la API con persistencia deben ejecutarse dentro
+del contenedor Linux; el cambio de lanzador no resuelve ese bloqueo nativo.
 
 ## Iniciar FastAPI
 
@@ -200,9 +211,11 @@ sincronizacion bloqueada, cache y usuario sin privilegios. Runtime excluye dev y
 legacy; development los incluye para pruebas. No se inician migraciones durante
 el arranque y no se conecta SQL Server desde este entorno.
 
+Alembic se ejecuta explicitamente despues de arrancar PostgreSQL; los comandos
+y la generacion/revision de cambios estan en [migration.md](migration.md).
 CI utilizara los comandos de calidad de esta guia y el mismo bloqueo. Su
-configuracion y ejecucion remota no se afirman implementadas. Las pruebas de base
-real se agregan con PostgreSQL aislado. Ver [quality.md](quality.md) y
+configuracion y ejecucion remota no se afirman implementadas. Las pruebas de
+persistencia ya usan PostgreSQL aislado en Compose. Ver [quality.md](quality.md) y
 [migration.md](migration.md).
 
 ## Problemas frecuentes

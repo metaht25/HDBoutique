@@ -19,6 +19,13 @@ si esta configurado y live sigue comprobando solo proceso. No importa settings
 Django. La nueva aplicacion se ejecuta en
 8001 para mantener el frontend y Django en su contrato actual de 8000.
 
+Desde fase 5, Base comparte metadata y nombres de restricciones; models.py registra
+17 modelos tipados de siete funcionalidades. session.py configura sessionmaker,
+guardada en el estado de FastAPI sin abrir sesiones/conexiones al importar.
+Alembic versiona la estructura; 0001_compatibility conserva el modelo inicial
+acordado, sin decidir las reglas ambiguas. El detalle esta en
+[data-model.md](data-model.md) y [ADR 0004](decisions/0004-compatible-schema-foundation.md).
+
 pyproject.toml y uv.lock gestionan ambos backends. Las dependencias legacy quedan
 en su grupo temporal y requirements.txt es una exportacion generada. Las decisiones
 tecnicas de esta base estan en [ADR 0002](decisions/0002-backend-foundation.md).
@@ -115,8 +122,11 @@ se crean segun necesidad. domain.py se reserva para reglas centrales; no generar
 archivos vacios ni capas de paso. El backend legacy permanece durante la sustitucion.
 La fase 3 creo la base uv/FastAPI y pruebas; fase 4 incorpora conexion tecnica,
 Dockerfile/.dockerignore, compose.yaml, compose.dev.yaml e infra/postgres y
-scripts. Modulos de negocio, migraciones y reorganizacion de frontend siguen
-pendientes. No se generan carpetas vacias para capas futuras.
+scripts. Fase 5 agrega Base, registro ORM, session factory, los modelos de catalog,
+locations, customers, staff, suppliers, purchases y sales y migrations/ con Alembic.
+compose.test.yaml verifica esquema/persistencia en PostgreSQL desechable. Routers,
+servicios y repositorios de negocio y reorganizacion frontend siguen pendientes;
+no se generan capas vacias o repositorios genericos para rellenar el arbol.
 
 ## Fronteras y compatibilidad
 
@@ -142,6 +152,7 @@ texto de administrador actual representa una sesion real.
 Docker utiliza uv durante la construccion, usuario sin privilegios y claves
 locales externas a la imagen. Compose desarrollo publica puertos solo en loopback.
 La [guia Docker](docker.md) cubre salud, persistencia y respaldo local.
-CI y migraciones controladas siguen pendientes. Ver
+Las migraciones se ejecutan explicitamente segun [migration.md](migration.md);
+CI sigue pendiente. Ver
 [development.md](development.md), [quality.md](quality.md) y
 [migration.md](migration.md).

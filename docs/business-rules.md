@@ -73,6 +73,14 @@ Todas B01-B14 permanecen pendientes. La autorizacion para ejecutar esta fase no
 aprueba ninguna de sus alternativas. Las fases documentales y la preparacion del
 entorno pueden continuar; el trabajo dependiente debe respetar estos limites.
 
+Acuerdo de fase 5: el usuario eligio conservar la estructura actual como esquema
+inicial de compatibilidad y dejar las reglas pendientes explicitas. Se mantienen
+ambas existencias independientes y la direccion ligada solo al departamento.
+Esto no resuelve el significado de B01 ni adopta una nueva relacion B08. No se
+infieren recepciones, saldos, estados, roles o costes historicos. El esquema base
+se describe en [data-model.md](data-model.md) y evolucionara por Alembic cuando
+se acuerde cada regla pertinente.
+
 ## Ejemplos sinteticos y preguntas de aceptacion
 
 1. **Venta integral sin ambiguedad monetaria:** producto 109, precio 200.00,

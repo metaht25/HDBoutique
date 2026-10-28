@@ -13,7 +13,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 2 | AGENTS, guias y convenciones | Completada en documentacion: enlaces y diff revisados; B01-B14 siguen pendientes |
 | 3 | uv, FastAPI minimo y calidad | Completada: entorno, calidad, pruebas y arranque verificados; D03 sigue esperado |
 | 4 | Docker, Compose y PostgreSQL local | Completada: 7cb3f92 y 9def699; construccion, conexion, persistencia y restauracion sintetica verificadas; ver [Docker](docker.md) y [resultados](characterization.md#verificacion-de-fase-4) |
-| 5 | Modelos SQLAlchemy y migraciones Alembic | Pendiente |
+| 5 | Modelos SQLAlchemy y migraciones Alembic | Completada como esquema inicial de compatibilidad acordado: 17 modelos, revision 0001_compatibility y 38 pruebas aprobadas; ver [modelo](data-model.md) y [resultados](characterization.md#verificacion-de-fase-5) |
 | 6 | Herramientas y ensayos de migracion SQL Server | Pendiente; requiere origen autorizado |
 | 7 | Modulos fundamentales FastAPI | Pendiente |
 | 8 | Autenticacion y autorizacion | Pendiente |
@@ -55,6 +55,10 @@ No presentar una propuesta documental como una herramienta ya implementada.
 - Las decisiones B01-B14 viven en [business-rules.md](business-rules.md). Resolver
   solo las que condicionen el incremento; las demas no impiden documentar o crear
   el entorno base. No dar por aprobados roles, reglas de deuda o nuevas funciones.
+- En fase 5 el usuario eligio una base inicial de compatibilidad: ambas existencias
+  y direccion ligada a departamento, sin fijar semantica de B01/B08. El cierre de
+  esa fase verifica estructura y Alembic; las reglas comerciales pendientes se
+  incorporaran mediante nuevas revisiones antes de habilitar los casos de uso.
 - Si la fase 6 espera un origen autorizado, pueden prepararse otras piezas
   independientes cuando el usuario lo solicite; no certificar migracion real.
 - Durante fase 7 la nueva API permanece en entorno de desarrollo/pruebas hasta

@@ -32,7 +32,7 @@ identificadores espanoles fuera de esa frontera.
 ## Python y tipado
 
 - Seguir PEP 8 con longitud de proyecto de 88 caracteres para codigo nuevo. Ruff
-  esta configurado para app y pruebas; Django legacy queda fuera de su alcance
+  esta configurado para app, pruebas y migraciones; Django legacy queda fuera de su alcance
   para evitar reformateos masivos. mypy comprueba app en modo estricto.
 - Agregar type hints a funciones nuevas de aplicacion, argumentos, retornos y
   contratos importantes. Preferir tipos concretos y modelos tipados a diccionarios
@@ -62,7 +62,7 @@ repositorios genericos universales, microservicios o eventos sin necesidad real.
 
 ## Dinero, cantidades y fechas
 
-- Backend: Decimal para dinero y NUMERIC en el esquema futuro; no float para
+- Backend: Decimal para dinero y NUMERIC en el esquema; no float para
   importes. Definir redondeo con B03 antes de implementar calculos financieros.
 - Mantener decimales como texto en respuestas compatibles. Los calculos de UI
   son orientativos; el servidor valida y calcula los valores persistidos.
@@ -71,6 +71,11 @@ repositorios genericos universales, microservicios o eventos sin necesidad real.
 - Diferenciar fecha comercial de instante. Mantener fechas legacy como DATE;
   nuevos instantes con zona horaria y presentacion de negocio en America/Managua.
 - No sustituir nulos por ceros ni inferir valores historicos automaticamente.
+
+La base ORM usa Mapped/mapped_column y convenciones compartidas de PK/FK/indices.
+Los modelos nuevos se registran explicitamente para Alembic; no emiten DDL al
+importarse. Las revisiones ya aplicadas se conservan; ampliar mediante una nueva
+revision revisada/probada. Ver [modelo](data-model.md) y [migraciones](migration.md).
 
 ## API y errores
 

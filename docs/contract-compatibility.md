@@ -3,6 +3,10 @@
 Estado: propuesta de nombres y estrategia; no implementa endpoints ni aprueba
 reglas nuevas. Origen: [contratos actuales](legacy-api-contracts.md).
 
+Actualizacion de fase 5: las tablas/modelos nuevos ya usan estos nombres en
+persistencia, con las precisiones siguientes. Las rutas HTTP y los contratos
+JSON nuevos continúan siendo propuestas; Django conserva todos sus contratos.
+
 ## Rutas
 
 | Recurso actual | Ruta candidata en ingles | Tratamiento |
@@ -27,10 +31,12 @@ reglas nuevas. Origen: [contratos actuales](legacy-api-contracts.md).
 
 ## Campos
 
-Estos nombres son traducciones propuestas, no un esquema aprobado. Las flechas
-no autorizan conversiones de datos ni descartes de columnas.
+Estos nombres describen el mapeo de almacenamiento inicial de fase 5; no publican
+contratos HTTP nuevos. No autorizan conversiones o descartes de historicos, que
+requieren el origen y los ensayos de fase 6. El usuario confirmo preservar la
+estructura ambigua inicial, sin resolver B01/B08.
 
-| Contexto | Campos actuales -> candidatos |
+| Contexto | Campos actuales -> almacenamiento inicial |
 | --- | --- |
 | PK de cada recurso | `id_departamento -> department_id`, `id_municipio -> municipality_id`, `id_direccion -> address_id`, `id_tipo_cliente -> customer_type_id`, `id_cliente -> customer_id`, `id_empleado -> employee_id`, `id_deuda -> payment_id`, `id_categoria -> category_id`, `id_talla -> size_id`, `id_producto -> product_id`, `id_proveedor -> supplier_id`, `id_productoproveedor -> supplier_product_id`, `id_compra -> purchase_id`, `id_detallecompra -> purchase_item_id`, `id_venta -> sale_id`, `id_detalleventa -> sale_item_id` |
 | FK | Aplicar los mismos nombres segun entidad referenciada; mantener valores de IDs |
@@ -38,17 +44,25 @@ no autorizan conversiones de datos ni descartes de columnas.
 | Tipo de cliente | `tipo -> name` |
 | Cliente/empleado | `nombres -> first_names`, `apellidos -> last_names`, `numerotelefono` o `numerotelefonico -> phone_number` |
 | Empleado | `correoprofesional -> work_email`, `cargo -> job_title`, `fechainicio -> start_date`, `fechafin -> end_date` |
-| Abono | `fecha_abono -> payment_date`, `abono -> amount`; `payment_id` sujeto a decision de negocio |
+| Abono | `fecha_abono -> payment_date`, `abono -> amount`; registro tecnico inicial, sin inferir deuda o saldo B06 |
 | Categoria/talla | `categoria -> name`, `talla -> name` |
 | Producto | `nombre -> name`, `preciounitario -> unit_price` |
-| Existencias | `cantidadstock` y `stock`: sin equivalencia semantica aprobada; conservar ambos en el mapeo de migracion hasta decidir |
+| Existencias | `cantidadstock -> legacy_stock_quantity`, `stock -> legacy_stock`; ambos INTEGER anulables, sin equivalencia semantica aprobada |
 | Proveedor | `nombreempresa -> company_name`, `nombrecontacto -> contact_first_names`, `apellidocontacto -> contact_last_names`, `numerotelefono -> phone_number`, `correoprofesional -> work_email` |
 | Producto de proveedor | `preciodecompra -> purchase_price`; conservar relacion con producto |
-| Ofrece | `id -> offering_id` solo si se confirma identidad; alternativa pendiente en inventario fisico |
+| Ofrece | `offering_id` es la identidad nueva del destino. Copiar `id` de origen solo si se confirma fisicamente; no deduplicar pares ni inventar ese ID origen |
 | Compra | `fechacompra -> purchase_date`, `fecharevision -> review_date`, `fecharelleno -> refill_date`, `costodeenvio -> shipping_cost` |
 | Detalle de compra | `cantidad -> quantity`; coste historico nuevo requiere decision, no se reconstruye con precio actual |
 | Venta | `fechaventa -> sale_date`, `total -> total` |
 | Detalle de venta | `cantidad -> quantity`, `preciounitario -> unit_price`; corregir incompatibilidad de decimales |
+
+unit_price en sale_items usa NUMERIC(12,2) para admitir centavos sin reducir el
+rango INTEGER del origen. Los demas campos monetarios conservan NUMERIC(10,2).
+Un historico INTEGER se preserva como su valor entero con .00; no recuperar
+centavos perdidos sustituyendolo por el precio actual del producto.
+Las precisiones de tipo, nulabilidad y FK implementadas estan en
+[modelo de datos](data-model.md#tipos-restricciones-e-indices). El defecto D03
+sigue presente en Django; su nueva persistencia decimal se probo con PostgreSQL.
 
 `refill_date` es un nombre provisional: no equivale todavia a recepcion.
 `direccionexacta` e `id_municipio` solo existen en el payload del formulario; no

@@ -34,7 +34,10 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 - Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
   JavaScript en `frontend/`. La base FastAPI en `backend/app/` solo tiene salud;
-  los endpoints de negocio y modelos/migraciones nuevos siguen pendientes.
+  los endpoints de negocio siguen pendientes. Hay 17 modelos SQLAlchemy y revision
+  Alembic 0001_compatibility como esquema inicial de compatibilidad, sin historicos
+  trasladados. B01-B14 siguen pendientes; el usuario confirmo conservar ambos
+  campos de existencias y direccion ligada solo a departamento en esta base inicial.
   Docker/Compose y PostgreSQL local estan disponibles; readiness comprueba conexion
   cuando esta configurada. Operacion y secretos: [docs/docker.md](docs/docker.md).
 - Arquitectura: [docs/architecture.md](docs/architecture.md).
@@ -81,6 +84,11 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 - No instalar dependencias, iniciar servicios ni crear entornos durante una fase
   exclusivamente documental. En fases de entorno o implementacion, ejecutar las
   acciones normales que requiera el alcance autorizado.
+- Alembic gestiona el esquema; usar `uv run --locked python -m alembic ...`.
+  No usar create_all, stamp para simular una migracion ni editar revisiones ya
+  aplicadas. Nuevos modelos deben importarse en infrastructure/database/models.py.
+  Los servicios futuros abren/confirman transacciones; los repositorios no hacen
+  commits propios ni comparten una Session global.
 
 ## Datos y secretos
 
@@ -93,6 +101,11 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 - Compose de desarrollo usa .env.docker ignorado y volumen hdboutique-dev_postgres_data.
   No imprimir config expandida, borrar volumenes ni cambiar claves como sustituto
   de una rotacion. No iniciar migraciones automaticamente al arrancar FastAPI.
+- La integracion PostgreSQL usa exclusivamente `docker compose -p hdboutique-test
+  -f compose.test.yaml ...`, archivo independiente con tmpfs y claves sinteticas.
+  `--run-postgres` requiere HDB_TEST_DATABASE_* y una base vacia terminada en _test;
+  nunca usar las credenciales de desarrollo como fallback. Sin esa opcion se
+  omiten los casos PostgreSQL y no se declara integracion aprobada.
 - No ejecutar migraciones, escrituras, restauraciones o corte contra datos reales
   fuera de su alcance especifico. Mantener respaldos y conciliacion segun la guia.
 - No descartar historicos ni inferir valores faltantes para hacer pasar una prueba.

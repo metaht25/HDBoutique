@@ -211,6 +211,45 @@ la sonda sintetica y esta excluido de Git. No se consulto SQL Server, trasladaro
 historicos ni crearon modelos/migraciones Alembic. Frontend, UI/E2E y concurrencia
 de negocio no se verificaron nuevamente en esta fase.
 
+## Verificacion de fase 5
+
+Ejecucion local del 28 de octubre de 2026 en Cris-develop. El usuario confirmo
+preservar la estructura inicial ambigua; B01-B14 no se dan por resueltas.
+
+| Verificacion | Resultado ejecutado |
+| --- | --- |
+| Modelos y registro | 17 modelos tipados en siete funcionalidades, metadata comun, nombres ingleses y session factory |
+| Primera revision | 0001_compatibility generada contra PostgreSQL temporal vacio y revisada; DDL explicito, 17 PK Identity, 21 FK RESTRICT e indices de referencia |
+| Suite completa Linux/PostgreSQL | 38 aprobadas, 0 omitidas, mediante compose.test.yaml independiente con proyecto hdboutique-test |
+| Alembic real | Upgrade desde base vacia, downgrade a base y nuevo upgrade; check sin diferencias antes/despues en PostgreSQL temporal |
+| Roundtrip | Datos sinteticos en las 17 tablas; Decimal, centavos, fechas, nulos y existencias 12/3 independientes preservados |
+| Rango de precio legacy | sale_items.unit_price preserva ambos extremos INTEGER firmado como Decimal con escala 2 |
+| Integridad referencial | FK rechaza direccion huérfana y borrado de departamento referenciado; savepoints permiten seguir validando |
+| Sesiones/transacciones | Commit visible desde otra conexion; excepcion despues de flush revierte toda la unidad; registro de prueba retirado |
+| Identidades | PK explicita preservada y nueva identidad generada; no equivale a haber ensayado el realineado ETL de secuencias |
+| Suite sin PostgreSQL | 31 aprobadas y 7 omitidas intencionalmente sin --run-postgres; el SQL offline si se ejecuta |
+| Django | Ejecutor aislado integrado aprobado; D03 legacy conserva expectedFailure, no se corrige Django por crear la columna decimal nueva |
+| Cobertura app | 100% de 236 sentencias y 10 ramas; incluye declaraciones ORM, no mide todos los DDL ni reglas pendientes |
+| Calidad | Ruff, formato, mypy estricto sobre 27 archivos app y uv lock --check aprobados; no se agregaron dependencias ni cambio uv.lock |
+| Authoring Alembic | Plantilla y hooks Ruff verificados generando una revision en directorio temporal; no se agrego ese ensayo al historial |
+| Imagen runtime | Construida; SQL offline de 17 tablas mas alembic_version funciona con filesystem de solo lectura; sigue sin uv/Django/pruebas/Ruff |
+| Base de desarrollo | hdboutique de fase 4 verificada vacia, respaldada y migrada explicitamente; 17 tablas de negocio vacias y current --check-heads en 0001_compatibility |
+
+El respaldo previo local backups/phase-five-before-schema.dump esta excluido de
+Git. El proyecto de pruebas usa tmpfs, sin volumen persistente ni puertos; sus
+contenedores/red se retiraron al finalizar. El proyecto de desarrollo conserva
+su volumen y servicios saludables. No se borraron datos o volumenes de desarrollo.
+
+Pytest nativo Windows no se reintento por el bloqueo de DLL SQLAlchemy ya observado
+en fase 4; no se alteraron politicas del sistema. Las suites completas se ejecutaron
+en Linux. Las comprobaciones de host usaron Ruff, formato, mypy y uv lock.
+
+No se consulto ni migro SQL Server. No se probaron nuevamente frontend/UI/E2E,
+concurrencia comercial, sesiones de usuario ni casos de uso atomicos de compras,
+ventas o cobros: aun no estan implementados. No convertir este resultado de
+persistencia estructural en aprobacion de B01-B14 ni de historicos existentes.
+Comandos y limites en [migraciones](migration.md).
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

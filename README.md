@@ -13,8 +13,8 @@ refactorizacion conserva los datos y el comportamiento valido del sistema.
 | Area | Implementacion existente | Objetivo de la refactorizacion |
 | --- | --- | --- |
 | Backend | Django/DRF y base FastAPI con salud | Migracion funcional a FastAPI, Pydantic y Python tipado |
-| Persistencia | Django ORM activo; conexion SQLAlchemy para salud PostgreSQL | Modelo PostgreSQL y migraciones versionadas |
-| Base de datos | SQL Server legacy y PostgreSQL local sin tablas de negocio | PostgreSQL con esquema versionado y datos conciliados |
+| Persistencia | Django ORM activo; 17 modelos SQLAlchemy y Alembic inicial | Ampliar reglas y restricciones por funcionalidad |
+| Base de datos | SQL Server legacy y PostgreSQL local con esquema inicial vacio | PostgreSQL con datos conciliados y reglas confirmadas |
 | Dependencias Python | uv, pyproject.toml y uv.lock; exportacion requirements.txt legacy | Retirar el grupo legacy al completar la sustitucion |
 | Frontend | React 19.2.5, Vite 8.0.10 y JavaScript/JSX | Conservar React/Vite; incorporar TypeScript y organizacion por funcionalidades |
 | Entorno | Docker/Compose para FastAPI y PostgreSQL; legacy conserva SQL Server | Completar integracion funcional progresiva |
@@ -49,10 +49,14 @@ Para trabajar sin instalar Python/PostgreSQL en el equipo, desde la raiz:
 ```powershell
 ./infra/scripts/Initialize-LocalEnvironment.ps1
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d --wait --wait-timeout 180
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic upgrade head
 ```
 
 Requiere Docker en modo Linux. Ver [Docker](docs/docker.md) para claves locales,
 puertos, persistencia, pruebas y respaldos; [desarrollo](docs/development.md) para uv.
+Alembic crea/actualiza explicitamente el esquema PostgreSQL local; no migra SQL
+Server ni se ejecuta automaticamente al arrancar. La suite PostgreSQL completa
+usa compose.test.yaml segun [migraciones](docs/migration.md).
 
 ## Documentacion
 
@@ -64,7 +68,7 @@ puertos, persistencia, pruebas y respaldos; [desarrollo](docs/development.md) pa
 | [Arquitectura](docs/architecture.md) | Organizacion existente y monolito modular objetivo |
 | [Convenciones](docs/conventions.md) | Nombres, tipado, contratos y separacion de responsabilidades |
 | [Datos](docs/data-model.md) | Relaciones comprobadas y limites del modelo |
-| [Migracion](docs/migration.md) | Conservacion, ensayo, conciliacion y corte futuro |
+| [Migracion](docs/migration.md) | Alembic local, pruebas aisladas y estrategia de datos historicos |
 | [Calidad](docs/quality.md) | Pruebas, verificaciones y definicion de tarea terminada |
 | [Git y colaboracion](docs/collaboration.md) | Trabajo individual, revision y commits locales |
 | [Contratos actuales](docs/legacy-api-contracts.md) | Recursos, campos y ejemplos de la API Django |
@@ -74,6 +78,7 @@ puertos, persistencia, pruebas y respaldos; [desarrollo](docs/development.md) pa
 | [ADR 0001](docs/decisions/0001-phase-one-characterization.md) | Decision de caracterizar antes de sustituir |
 | [ADR 0002](docs/decisions/0002-backend-foundation.md) | Base uv/FastAPI y convivencia temporal con Django |
 | [ADR 0003](docs/decisions/0003-local-containers.md) | Contenedores locales y conectividad PostgreSQL |
+| [ADR 0004](docs/decisions/0004-compatible-schema-foundation.md) | Esquema inicial de compatibilidad y Alembic |
 
 Las guias de backend y frontend se encuentran en
 [backend/README.md](backend/README.md) y [frontend/README.md](frontend/README.md).

@@ -11,6 +11,7 @@ Ejecutar desde la raiz del repositorio:
 ./infra/scripts/Initialize-LocalEnvironment.ps1
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml config --quiet
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d --wait --wait-timeout 180
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic upgrade head
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml ps
 Invoke-RestMethod http://127.0.0.1:8001/health/ready
 ```
@@ -65,14 +66,17 @@ tablas ni version de esquema. El engine es perezoso y se libera al cerrar la API
 
 PostgreSQL 17.10-bookworm esta fijado por digest. La inicializacion del volumen
 crea `hdboutique_app` sin privilegios de superusuario, creacion de bases o roles.
-Tiene acceso al esquema public para las futuras migraciones de fase 5. La cuenta
+Tiene acceso al esquema public para aplicar migraciones versionadas. La cuenta
 administrativa separada `hdboutique_owner` solo se usa para operacion local.
-No se crean tablas de negocio, modelos ni revisiones Alembic.
+El init solo crea roles: desde fase 5 las 17 tablas del esquema inicial se crean
+con el comando Alembic explicito, nunca por el arranque. Ver
+[modelo](data-model.md) y [migraciones](migration.md).
 
 ## Desarrollo y calidad dentro de Linux
 
-El codigo app/ se monta en solo lectura y Uvicorn lo recarga. Los tests y las
-fuentes Django se copian al construir: reconstruir backend cuando cambien, igual
+El codigo app/ y alembic.ini se montan en solo lectura; Uvicorn recarga app/.
+migrations/ se monta en escritura para generar revisiones en el repositorio.
+Los tests y las fuentes Django se copian al construir: reconstruir backend cuando cambien, igual
 que cuando cambien pyproject.toml o uv.lock. No montar todo backend/ sobre /opt/venv.
 
 ```powershell
@@ -85,6 +89,17 @@ docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -
 Las pruebas unitarias eliminan variables HDB_ heredadas y usan engines simulados.
 La caracterizacion Django usa motor dummy: no conecta a SQL Server ni a PostgreSQL.
 Que ready responda 200 no sustituye las pruebas de persistencia/negocio futuras.
+
+Sin --run-postgres se omiten siete casos de integracion. La suite completa usa
+el archivo independiente compose.test.yaml, sin credenciales/volumen de desarrollo:
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from backend
+docker compose -p hdboutique-test -f compose.test.yaml down
+```
+
+Los requisitos y guardas de esa base desechable estan en
+[migracion](migration.md#pruebas-aisladas-de-esquema-y-persistencia).
 
 Para comprobar la imagen runtime sin cambiar la configuracion de desarrollo:
 
@@ -159,9 +174,8 @@ Referencias: [uv en Docker](https://docs.astral.sh/uv/guides/integration/docker/
 
 ## Estado de la entrega
 
-Fase 4 verificada en Docker Desktop con motor Linux amd64. Ambos servicios quedan
-activos y saludables; el volumen conserva la base nueva sin tablas de negocio.
-Se construyeron los dos objetivos, ejecutaron pruebas/calidad y ensayaron
-persistencia y restauracion sintetica. Los resultados y limites concretos se
-registran en [caracterizacion, fase 4](characterization.md#verificacion-de-fase-4).
-No se ha migrado SQL Server ni implementado el esquema Alembic de fase 5.
+Docker Desktop con motor Linux amd64. Ambos servicios de desarrollo quedan
+activos y saludables. Fase 4 verifico imagenes, persistencia y restauracion
+sintetica; fase 5 incorpora las 17 tablas vacias del esquema inicial y Alembic.
+Los resultados concretos viven en [caracterizacion](characterization.md).
+No se ha migrado SQL Server ni habilitado escritura de negocio en FastAPI.

@@ -1,8 +1,115 @@
-# Estrategia de migracion de datos
+# Migraciones de esquema y estrategia de datos
 
-Estado: plan para fases posteriores. No hay scripts de transferencia ni migraciones
-Alembic implementados. Esta documentacion no autoriza acceso o cambios en una base
-real y no afirma haber validado sus datos.
+Estado desde fase 5: Alembic implementado para el esquema PostgreSQL inicial de
+compatibilidad, revision `0001_compatibility`. Aplicada explicitamente en la base
+local vacia hdboutique de fase 4, con respaldo previo. No hay herramientas de
+transferencia ni datos SQL Server inspeccionados o migrados. La parte de datos
+de este documento sigue siendo un plan de fases 6/15, sin autorizar sus destinos.
+
+## Operar el esquema con Alembic
+
+Fuentes: backend/alembic.ini, backend/migrations/ y el registro de modelos
+backend/app/infrastructure/database/models.py. Las revisiones contienen DDL
+explicito independiente de los modelos vivos. Alembic es la autoridad de esquema;
+no usar create_all ni stamp para presentar una base como migrada.
+
+Desde backend/, con uv y el destino PostgreSQL autorizado configurado mediante
+HDB_DATABASE_* del proceso:
+
+```powershell
+uv run --locked python -m alembic heads
+uv run --locked python -m alembic history
+uv run --locked python -m alembic upgrade head --sql
+uv run --locked python -m alembic upgrade head
+uv run --locked python -m alembic current --check-heads
+uv run --locked python -m alembic check
+```
+
+heads/history y la generacion --sql no necesitan conexion ni credenciales. Online
+usa la misma configuracion tipada que FastAPI, sin URL en alembic.ini ni lectura
+automatica de .env. check compara el destino con metadata, pero no sustituye la
+revision de DDL, los datos o las pruebas de reglas y restricciones.
+
+En este Windows usar el contenedor Linux por el bloqueo nativo de SQLAlchemy.
+Desde la raiz, despues del arranque indicado en [Docker](docker.md):
+
+```powershell
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic upgrade head
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic current --check-heads
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic check
+```
+
+Estos comandos son pasos explicitos del operador; ni Uvicorn, ni health checks,
+ni entrypoint de PostgreSQL aplican revisiones. La imagen runtime incluye el DDL
+y puede ejecutar `python -m alembic ...`; uv se utiliza durante su construccion,
+no esta instalado en esa imagen final.
+
+## Evolucionar el esquema
+
+1. Resolver la regla B pertinente y revisar compatibilidad/datos antes del cambio.
+2. Cambiar modelos tipados y registrar nuevos modelos en database/models.py.
+3. Generar una revision **nueva** sobre una copia local autorizada en la revision
+   anterior; nunca autogenerar tomando SQL Server como destino ni sobre datos operativos.
+4. Revisar upgrade/downgrade, conversiones, nulos, defaults, FK e indices. Ruff
+   ordena imports y formatea mediante post_write_hooks; no decide reglas ni datos.
+5. Probar desde base vacia, upgrade y drift; probar reversion solo en un destino
+   descartable. Si una reversion pierde datos, documentar el procedimiento adecuado.
+6. Versionar modelos y revision, sin modificar una revision ya aplicada/compartida.
+
+Generacion desde backend/ o con el mismo prefijo Docker:
+
+```powershell
+uv run --locked python -m alembic revision --autogenerate -m "add approved schema change"
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+```
+
+En desarrollo Compose monta migrations/ en escritura para guardar revisiones en el
+repositorio y alembic.ini en solo lectura. Los hooks de authoring requieren Ruff
+del grupo dev. El runtime permite aplicar revisiones existentes, no es el entorno
+para generarlas. No crear revisiones de relleno cuando check no detecte cambios.
+
+El downgrade inicial elimina las 17 tablas; no es un rollback de datos ni debe
+ejecutarse contra la base de desarrollo con informacion a conservar. La prueba
+de fase 5 lo ejecuta exclusivamente en el PostgreSQL temporal de pruebas.
+Antes de cambiar una base con datos, respaldar y validar recuperacion, revisar
+el alcance y disponer de un plan de retorno. Nunca borrar un volumen para
+resolver un error de revision o autenticacion.
+
+## Pruebas aisladas de esquema y persistencia
+
+Desde la raiz, sin .env.docker ni instalar dependencias en el host:
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from backend
+docker compose -p hdboutique-test -f compose.test.yaml down
+```
+
+compose.test.yaml es **independiente**, no una superposicion de desarrollo. -p fija
+el proyecto aislado incluso si hay COMPOSE_PROJECT_NAME en el entorno. PostgreSQL
+no publica puertos, usa tmpfs sin volumen persistente y solo datos/claves sinteticos.
+El proceso termina con el codigo de Pytest y detiene sus servicios; down retira
+solo los contenedores/red de ese proyecto. No usar ese archivo contra volumenes
+de desarrollo ni combinarlo con compose.yaml/compose.dev.yaml.
+
+La suite --run-postgres exige todos los valores HDB_TEST_DATABASE_* por separado,
+base con nombre terminado en _test y esquema vacio; falla antes de migrar si
+encuentra tablas. No hereda HDB_DATABASE_* como alternativa. Las pruebas de
+persistencia usan transacciones/savepoints y datos sinteticos; el caso de commit
+comprueba visibilidad desde otra conexion. Las pruebas Django siguen con dummy.
+
+Sin --run-postgres, Pytest ejecuta las pruebas sin base y **omite** siete casos
+de integracion. No presentar esas omisiones como integracion aprobada. La prueba
+de SQL offline si se ejecuta sin PostgreSQL. Resultados reales en
+[caracterizacion](characterization.md#verificacion-de-fase-5).
+
+## Limite entre esquema y datos historicos
+
+Las FK del destino no prueban que el origen no tenga huerfanos. Las identidades
+BY DEFAULT permiten IDs explicitos pero su secuencia debe realinearse tras cargar
+datos. offering_id no confirma la PK fisica de Ofrece. No completar costes de
+compra ausentes con precios actuales ni inventar municipios o valores de stock.
+Las restricciones comerciales futuras requieren perfilado y decision pertinente.
 
 ## Dependencias
 
