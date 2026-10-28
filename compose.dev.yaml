@@ -1,0 +1,15 @@
+name: hdboutique-dev
+
+services:
+  backend:
+    image: hdboutique-backend:development
+    build:
+      target: development
+    environment:
+      HDB_ENVIRONMENT: development
+    read_only: false
+    volumes:
+      - ./backend/app:/workspace/backend/app:ro
+  db:
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"

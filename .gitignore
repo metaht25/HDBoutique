@@ -8,6 +8,8 @@ ENV/
 .env
 .env.*
 !.env.example
+!.env.docker.example
+backups/
 
 # Python
 __pycache__/
@@ -30,8 +32,9 @@ db.sqlite3-journal
 media/
 staticfiles/
 
-# SQL Server / respaldos locales
+# Archivos de base / respaldos locales
 *.bak
+*.dump
 *.mdf
 *.ldf
 
