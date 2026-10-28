@@ -17,7 +17,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 6 | Herramientas y ensayos de migracion SQL Server | Completada para el alcance disponible: el proyecto no dispone de instancia/copia SQL Server ni historicos. Herramientas preparadas y 60 pruebas aprobadas contra PostgreSQL aislado `db:5432/hdboutique_test`; ver [traslado](data-transfer.md) |
 | 7 | Modulos fundamentales FastAPI | Incrementos solicitados completados: ubicaciones/catalogo y clientes/proveedores implementados y probados bajo compatibilidad confirmada. Fase parcial: empleados pendiente y fuera del incremento solicitado; ver [API fundamental](foundation-api.md) |
 | 8 | Autenticacion y autorizacion | Completada: B09 confirmado, cuentas/empleado, sesiones revocables, CSRF, Argon2id y permisos de los tres roles; 114 pruebas aprobadas, incluidas 54 PostgreSQL; ver [autenticacion](authentication.md) |
-| 9 | Compras e inventario | Pendiente |
+| 9 | Compras e inventario | Completada: reglas confirmadas, registro atomico/idempotente, costes historicos, recepcion completa unica y movimientos; 152 pruebas aprobadas, incluidas 85 PostgreSQL; ver [compras e inventario](purchases-inventory.md) |
 | 10 | Ventas transaccionales | Pendiente |
 | 11 | Base frontend con TypeScript, Router y HTTP compartido | Pendiente |
 | 12 | Migracion funcional de pantallas | Pendiente |

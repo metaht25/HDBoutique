@@ -4,6 +4,10 @@ Estado: nombres y estrategia, implementados parcialmente en fase 7 para
 ubicaciones/catalogo y clientes/proveedores; ver [contrato vigente](foundation-api.md).
 Las demas rutas siguen propuestas. Origen: [contratos actuales](legacy-api-contracts.md).
 
+Fase 9 implementa [compras e inventario](purchases-inventory.md): cabecera/lineas
+atomicas, costes historicos, recepcion unica y stocks de solo lectura en CRUD.
+El frontend aun conserva los contratos Django.
+
 Actualizacion de fase 5: las tablas/modelos nuevos ya usan estos nombres en
 persistencia, con las precisiones siguientes. Las rutas HTTP y los contratos
 JSON nuevos se concretan por incremento; Django conserva todos sus contratos.
@@ -21,12 +25,13 @@ JSON nuevos se concretan por incremento; Django conserva todos sus contratos.
 | `/api/personas/deudas-clientes/` | `/api/v1/customer-payments` | Nombre provisional: son abonos; confirmar reglas |
 | `/api/productos/categorias/` | `/api/v1/categories` | Mantener catalogo |
 | `/api/productos/tallas/` | `/api/v1/sizes` | Mantener tallas actuales |
-| `/api/productos/productos/` | `/api/v1/products` | Resolver stock y estado antes de cambiar escrituras |
+| `/api/productos/productos/` | `/api/v1/products` | Fase 9: stock disponible inicial cero, ambos stocks solo lectura; estado B07 pendiente |
 | `/api/proveedores/proveedores/` | `/api/v1/suppliers` | Mantener contactos y direccion |
 | `/api/proveedores/productos-proveedores/` | `/api/v1/supplier-products` | Conservar correspondencia historica |
 | `/api/proveedores/ofrece/` | `/api/v1/supplier-offerings` | Verificar PK fisica; no fusionar automaticamente |
-| `/api/compras/compras/` | `/api/v1/purchases` | Propuesta: cabecera y lineas atomicas |
-| `/api/compras/detalles-compras/` | `/api/v1/purchases/{purchase_id}/items` | Lectura anidada propuesta; no mantener escritura independiente insegura |
+| `/api/compras/compras/` | `/api/v1/purchases` | Implementado fase 9: registro atomico e idempotente de cabecera y lineas |
+| `/api/compras/detalles-compras/` | `/api/v1/purchases/{purchase_id}` | Lineas anidadas en items de la compra; sin escritura independiente |
+| Sin endpoint legacy | `/api/v1/inventory/movements` | Historial de entradas de recepcion, solo lectura |
 | `/api/ventas/ventas/` | `/api/v1/sales` | Propuesta: cabecera, lineas y stock atomicos |
 | `/api/ventas/detalles-ventas/` | `/api/v1/sales/{sale_id}/items` | Lectura anidada propuesta; escritura bajo caso de uso |
 

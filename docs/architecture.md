@@ -128,7 +128,10 @@ compose.test.yaml verifica esquema/persistencia en PostgreSQL desechable. Fase 7
 agrega routers, schemas explicitos, servicios transaccionales y repositorios
 concretos en locations, catalog, customers y suppliers. Las rutas requieren
 habilitacion expresa en desarrollo/pruebas; ver [contrato](foundation-api.md).
-Staff, los flujos transaccionales y la reorganizacion frontend siguen pendientes.
+Fase 9 implementa compras y recepcion transaccional, con snapshots de costes/
+producto, workflow separado y movimientos. PurchaseService coordina repositorios
+de compras e inventario con una sola sesion; bloquea productos en orden estable.
+Staff, ventas y la reorganizacion frontend siguen pendientes.
 
 ## Fronteras y compatibilidad
 

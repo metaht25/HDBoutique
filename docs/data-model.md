@@ -7,6 +7,14 @@ que se haya inspeccionado o trasladado la base SQL Server.
 
 ## Fuente de verdad disponible
 
+Actualizacion de fase 9: 23 modelos/tablas, head 0003_purchase_receipts. Se agregan
+purchase_workflows, purchase_item_costs e inventory_movements sin alterar las
+tablas legacy ni reconstruir costes/movimientos. B01 define stock disponible,
+cantidadstock legado; B02/B05 y costes de compra B03 confirmados. Reglas y
+tipos nuevos en [compras e inventario](purchases-inventory.md). Los datos
+anteriores conservan nulos y valores originales; stock cero es solo para altas
+de productos de la nueva API, no un default/mapeo retroactivo de base.
+
 Actualizacion de fase 8: el registro ORM contiene ahora 20 modelos/tablas,
 17 comerciales y 3 propios de identidad. La nueva revision 0002_identity agrega
 user_accounts (employee_id opcional y unico), web_sessions y login_throttles.

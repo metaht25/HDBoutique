@@ -54,11 +54,11 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 
 | ID | Decision | Evidencia y riesgo | Propuesta para evaluar | Momento limite |
 | --- | --- | --- | --- | --- |
-| B01 | Que significan `stock` y `cantidadstock` | Productos prioriza el segundo y Ventas el primero | Una existencia disponible autorizada; conservar otro dato solo si tiene funcion distinta | Antes del esquema definitivo de inventario y fases 9/10 |
-| B02 | Cuando una compra entra al inventario | Fechas compra/revision/relleno sin servicio de recepcion | Distinguir registro y recepcion; no sumar stock dos veces | Antes de compras e inventario |
-| B03 | Politica de precios, descuentos y redondeo | Precio producto decimal; detalle venta entero; total del cliente | Servidor calcula con Decimal; definir quien puede cambiar precio y cuando redondear | Antes de contratos de compra/venta definitivos |
+| B01 | Existencia disponible y campo legacy | Confirmado fase 9: stock disponible; cantidadstock legacy, sin actualizar | Productos nuevos con stock cero; ambos campos de solo lectura en CRUD; nulos existentes requieren conteo, no se convierten en cero | Implementado para compras/inventario; ventas lo aplicara en fase 10 |
+| B02 | Entrada de compra al inventario | Confirmado fase 9: solo al recibir completamente | registered -> received, una sola vez, sin recepciones parciales | Implementado con movimientos, rollback e idempotencia |
+| B03 | Precios, descuentos y redondeo | Compras confirmado fase 9: coste vigente del proveedor copiado por linea, NIO/Decimal/dos decimales; envio separado y sin descuentos | Sin prorrateo ni redondeo implicito; politica de venta y cambios de precio/descuentos de venta siguen pendientes | Compras implementado; resolver lo restante antes de fase 10 |
 | B04 | Correccion de ventas confirmadas | CRUD permite modificar/borrar cabecera y lineas por separado | Correcciones trazables y atomicas; decidir anulacion y efectos en stock/abonos | Antes de ventas |
-| B05 | Significado de fechas de revision/relleno | Solo DateField sin reglas temporales | Mantener valores y significado original; no renombrar relleno a recepcion sin confirmar | Antes de migracion de datos y compras |
+| B05 | Fechas legacy y recepcion | Confirmado fase 9: revision/relleno se conservan sin efecto en inventario | received_at nuevo e independiente, sin inferir recepcion desde fechas antiguas | Implementado sin reconstruir historicos |
 | B06 | Deuda, abono y saldo | Modelo guarda abonos, no principal ni estado | Confirmar origen de deuda, pagos parciales, sobrepagos y relacion cliente/venta | Antes de implementar cobros |
 | B07 | Efecto y persistencia de desactivacion | Clientes/Productos solo cambian estado local | Persistir estado conservando historia; decidir bloqueo de nuevas operaciones | Antes de completar activacion en API/frontend |
 | B08 | Direccion y municipio | Formulario solicita un campo que el modelo no tiene | Acordar FK municipio y consistencia con departamento; no inferir historicos | Antes del esquema de ubicaciones y alta de clientes |
@@ -69,8 +69,9 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 | B13 | Telefono y datos obligatorios | Formulario y modelo tienen reglas distintas | Confirmar regla nicaraguense y tratamiento de historicos de otra longitud | Antes de endurecer validaciones |
 | B14 | Definicion de bajo stock | Cero incluido en unas pantallas y excluido en otras | Separar agotado y bajo stock, con umbral acordado | Antes de dashboard/reportes definitivos |
 
-Salvo B09, las reglas definitivas B01-B14 permanecen pendientes, con los acuerdos
-de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
+B01/B02/B05/B09 estan confirmados para sus alcances; B03 tiene politica de compras
+confirmada y venta pendiente. Las demas decisiones definitivas siguen pendientes,
+con los acuerdos de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
 fase no aprueba por si sola sus alternativas. Las fases documentales y la preparacion del
 entorno pueden continuar; el trabajo dependiente debe respetar estos limites.
 
@@ -83,6 +84,16 @@ se describe en [data-model.md](data-model.md) y evolucionara por Alembic cuando
 se acuerde cada regla pertinente.
 
 ## Ejemplos sinteticos y preguntas de aceptacion
+
+Acuerdo de fase 9, confirmado expresamente por el usuario: stock es disponible y
+cantidadstock se conserva como legado sin actualizar; productos nuevos con stock
+cero y nulos existentes sin conversion implicita. Registrar compra no aumenta
+existencias; recepcion completa registered -> received una sola vez, sin parciales.
+Coste vigente del proveedor copiado por linea, NIO/dos decimales/sin descuentos y
+envio separado sin prorratear. Fechas de revision/relleno preservadas, recepcion en
+campo nuevo. Administrator y Manager gestionan compras/recepciones; Cashier no
+accede. Se usa empleado de la cuenta o se exige uno existente si no hay vinculo,
+registrando ademas la cuenta autenticada. Ver [contrato](purchases-inventory.md).
 
 Acuerdo B09 de fase 8 (28 de octubre de 2026), confirmado expresamente por el usuario:
 Administrator administra cuentas y tiene acceso completo; Manager consulta, crea

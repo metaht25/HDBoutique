@@ -17,8 +17,11 @@ confirmo para las altas y ediciones de este incremento la compatibilidad B08/B13
 direccion solo con departamento y telefono textual de hasta 10 caracteres,
 ademas de ambas existencias independientes. Las pruebas habilitan las rutas
 solo con datos sinteticos; la configuracion local existente no se modifico.
-B01/B03/B07 siguen pendientes: no se definen disponible/reservado, movimientos,
-descuentos, redondeo, desactivaciones ni calculos de deuda.
+Fase 9 define B01 y costes de compra B03: legacy_stock es disponible y
+legacy_stock_quantity queda legado. Ambos campos de stock son de solo lectura
+en el CRUD y el producto nuevo comienza con disponible cero. Recepciones y
+movimientos en [compras e inventario](purchases-inventory.md).
+B07 y las reglas de ventas/deuda pendientes conservan sus limites.
 
 ## Recursos
 
@@ -33,7 +36,7 @@ PostgreSQL. Las relaciones son IDs planos.
 | addresses | address_id | department_id, address_line |
 | categories | category_id | name |
 | sizes | size_id | name |
-| products | product_id | category_id, size_id, name, legacy_stock_quantity, legacy_stock, unit_price |
+| products | product_id | category_id, size_id, name, unit_price; existencias solo lectura desde fase 9 |
 | customer-types | customer_type_id | name |
 | customers | customer_id | address_id, customer_type_id, first_names, last_names, phone_number |
 | suppliers | supplier_id | address_id, company_name, contact_first_names, contact_last_names, phone_number, work_email |
@@ -59,8 +62,10 @@ unicidades de pares. Fase 8 agrega identidad mediante una revision separada.
   exteriores eliminados en entrada. Telefonos siguen como texto, sin imponer
   ocho digitos ni convertirlos a numero. work_email conserva CharField legacy.
 - IDs de relacion enteros positivos y existentes. Enteros de stock estrictos de
-  32 bits; ambos campos independientes y anulables, sin restricciones comerciales
-  inventadas. Dinero Decimal/NUMERIC(10,2), sin redondear exceso de decimales;
+  32 bits en salida. Desde fase 9 el CRUD rechaza ambos campos de existencias en
+  entrada y conserva sus valores al editar metadatos. Los historicos nulos se
+  preservan; la recepcion requiere stock disponible valido.
+  Dinero Decimal/NUMERIC(10,2), sin redondear exceso de decimales;
   la salida serializa dinero como texto con los centavos guardados.
 - Desde fase 8, 401 sin sesion y 403 sin permiso, origen o CSRF.
 - 404 para ausencia, 422 para validacion/referencia inexistente, 409 para conflicto

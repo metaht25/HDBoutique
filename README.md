@@ -13,7 +13,7 @@ refactorizacion conserva los datos y el comportamiento valido del sistema.
 | Area | Implementacion existente | Objetivo de la refactorizacion |
 | --- | --- | --- |
 | Backend | Django/DRF y base FastAPI con salud | Migracion funcional a FastAPI, Pydantic y Python tipado |
-| Persistencia | Django ORM activo; 20 modelos SQLAlchemy y Alembic hasta 0002_identity | Ampliar reglas y restricciones por funcionalidad |
+| Persistencia | Django ORM activo; 23 modelos SQLAlchemy y Alembic hasta 0003_purchase_receipts | Ampliar reglas y restricciones por funcionalidad |
 | Base de datos | SQL Server legacy y PostgreSQL local con esquema inicial vacio | PostgreSQL con datos conciliados y reglas confirmadas |
 | Dependencias Python | uv, pyproject.toml y uv.lock; exportacion requirements.txt legacy | Retirar el grupo legacy al completar la sustitucion |
 | Frontend | React 19.2.5, Vite 8.0.10 y JavaScript/JSX | Conservar React/Vite; incorporar TypeScript y organizacion por funcionalidades |
@@ -25,6 +25,8 @@ estan preparados; los [modulos fundamentales FastAPI](docs/foundation-api.md)
 estan implementados para desarrollo/pruebas, deshabilitados por defecto.
 La [fase 8](docs/authentication.md) agrega sesiones, CSRF y permisos de los tres
 roles aprobados. Migracion y primer administrador se preparan explicitamente.
+La [fase 9](docs/purchases-inventory.md) implementa compras atomicas, costes
+historicos y recepcion unica de inventario con las reglas confirmadas.
 Django sigue atendiendo los contratos
 actuales y el frontend conserva su integracion con ese backend.
 

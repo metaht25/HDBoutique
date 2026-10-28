@@ -43,6 +43,10 @@ Desde fase 8 head es 0002_identity, con tres modelos/tablas nuevos de identidad
 (20 en total). Se verifico exclusivamente en PostgreSQL aislado; no se aplico
 sobre desarrollo. Sesiones, roles, CSRF y bootstrap del primer administrador en
 [autenticacion](../docs/authentication.md).
+Fase 9 agrega head 0003_purchase_receipts: 23 modelos/tablas en total, compras
+atomicas, costes historicos y recepcion unica de inventario. Los stocks del CRUD
+de productos son de solo lectura; producto nuevo inicia disponible en cero.
+Contrato, limites y operacion en [compras e inventario](../docs/purchases-inventory.md).
 Comandos, guardas y pruebas PostgreSQL desechables en
 [migraciones](../docs/migration.md). Pytest sin --run-postgres omite la integracion;
 usar compose.test.yaml para ejecutarla. En este Windows usar Docker por el bloqueo

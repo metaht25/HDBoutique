@@ -359,6 +359,52 @@ crearon cuentas operativas, se cambiaron secretos ni se habilitaron rutas en los
 .env/Compose existentes. React permanece con Django; empleados sigue pendiente
 de su incremento de fase 7. [Contrato y operacion](authentication.md).
 
+## Verificacion de fase 9: compras e inventario
+
+28 de octubre de 2026, reglas B01/B02/B05 y alcance de compras B03 confirmados
+expresamente por el usuario. Contrato en [compras e inventario](purchases-inventory.md).
+
+| Comprobacion | Resultado real |
+| --- | --- |
+| Suite completa en imagen development final | 152 aprobadas, 92 subtests aprobados, 0 omitidas; incluye 85 PostgreSQL |
+| Registro | Cabecera, lineas, coste/producto historicos y autoria atomicos; no suma existencias |
+| Recepcion | Completa registered -> received, movimientos antes/despues y aumento disponible; cantidadstock legado se conserva |
+| Reintentos | Registro por cuenta/clave con mismo cuerpo devuelve misma compra; otro cuerpo 409; recepcion repetida no duplica |
+| Concurrencia real | Dos registros con una clave crean una compra; cuerpo distinto produce un conflicto; segunda recepcion espera el bloqueo y no suma otra vez |
+| Productos compartidos | Dos recepciones de compras distintas con orden inverso de lineas conservan todas las unidades y sus movimientos |
+| Rollback | Fallos despues de flush de costes/movimientos revierten toda la unidad; stock nulo, negativo o desbordado en una linea revierte tambien las anteriores |
+| Fidelidad D10 en FastAPI | Cambiar precio y product_id del producto del proveedor no cambia los snapshots ni el producto que recibe stock |
+| Dinero | Decimal/NIO/dos decimales, envio separado sin prorrateo; rechaza float y redondeo implicito; entero y texto decimal tienen representacion e idempotencia estables |
+| Proteccion | Administrator/Manager permitidos; Cashier/anonimo denegados; CSRF y empleado requerido/vinculado verificados; stocks no editables en CRUD |
+| DDL y conservacion | Vacio/downgrade/upgrade/check sin drift; upgrade desde 0002 con las 17 tablas sinteticas conserva stock 12/3 y null; no fabrica costes, estados o movimientos |
+| Integridad | Una entrada por linea, delta de stock, cantidades, costes y referencias protegidos; compra incompleta no se recibe |
+| Legacy/ETL | Lectura de historicos sin snapshots con costes/estado desconocidos; recepcion bloqueada; matriz de 17 tablas conservada y destino head de 23 tablas vacias |
+| Calidad Windows | Ruff/formato: 106 archivos aprobados; mypy estricto: 74 archivos app/data_migration; uv lock --check aprobado, sin dependencias nuevas |
+| Cobertura app | 98.21%, 2074 sentencias y 278 ramas; no certifica frontend ni reglas de venta pendientes |
+
+Se verifico la imagen reconstruida sin montajes que sustituyan sus fuentes. Se uso
+solo compose.test.yaml, proyecto hdboutique-test, PostgreSQL tmpfs db:5432/
+hdboutique_test y claves sinteticas, sin puerto publicado. Los casos concurrentes
+emplean conexiones independientes con datos sinteticos confirmados y limpieza
+limitada a sus IDs. No se usaron SQLite ni mocks para simular los bloqueos.
+La caracterizacion Django integrada conserva D03 como fallo esperado.
+
+Comandos desde raiz, con el entorno de pruebas vacio:
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml build backend
+docker compose -p hdboutique-test -f compose.test.yaml up -d --wait db
+docker compose -p hdboutique-test -f compose.test.yaml run --rm backend uv run --locked python -m pytest --run-postgres --cov=app --cov-report=term-missing -q
+docker compose -p hdboutique-test -f compose.test.yaml down
+```
+
+La revision 0003_purchase_receipts no se aplico a desarrollo ni datos reales.
+No se crearon compras operativas, se consulto SQL Server, cambiaron secretos ni
+habilitaron rutas en la configuracion local. Las regresiones D01/D10 y compras
+de D11 corresponden al nuevo flujo FastAPI: Django y el frontend permanecen
+pendientes de sustitucion y no se declaran corregidos. Ventas/ultima unidad,
+ajustes, anulaciones y UI siguen fuera de esta fase.
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

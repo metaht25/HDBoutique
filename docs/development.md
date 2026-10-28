@@ -63,6 +63,10 @@ Rutas y limites de habilitacion en [API fundamental](foundation-api.md).
 HDB_BUSINESS_API_ENABLED es false por defecto. Fase 8 incorpora cuentas, sesiones,
 CSRF y permisos; production exige origen HTTPS y cookies Secure.
 Bootstrap y contrato en [autenticacion](authentication.md).
+Fase 9 agrega compras y recepcion de inventario para Administrator/Manager,
+head 0003_purchase_receipts y stock de solo lectura en CRUD. El producto nuevo
+inicia en cero; los nulos historicos no se convierten. Ver
+[compras e inventario](purchases-inventory.md).
 
 Todos los comandos de esta seccion parten de backend/:
 

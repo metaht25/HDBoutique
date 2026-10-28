@@ -18,7 +18,9 @@ No se importan contraseñas ni se crean cuentas automaticamente.
 | Eliminar registros de los recursos de fase 7 | Si, sujeto a FK RESTRICT | No | No |
 | Consultar/crear/editar cuentas | Si | No | No |
 
-No se conceden permisos para compras, ventas, caja o reportes aun no implementados.
+Fase 9 extiende permisos: Administrator y Manager registran/reciben compras y
+consultan inventario; Cashier no tiene acceso. Ver [contrato](purchases-inventory.md).
+No se conceden permisos para ventas, caja o reportes aun no implementados.
 Cashier no consulta costes de compra. Para crear clientes usa address_id existente:
 no se amplio su permiso a ubicaciones. Las cuentas se deshabilitan, no se borran.
 Una cuenta puede vincularse a un empleado existente; el vinculo es opcional,

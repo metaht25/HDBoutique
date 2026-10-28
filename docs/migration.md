@@ -11,6 +11,12 @@ tratarse como un nuevo ensayo autorizado. El corte operativo corresponde a fase 
 
 ## Operar el esquema con Alembic
 
+Fase 9 lleva head a 0003_purchase_receipts: tres tablas nuevas de workflow, coste
+historico y movimientos. No cambia el contenido de las tablas legacy, no asigna
+estados/precios a compras previas ni convierte stock null en cero. Upgrade desde
+0002 con datos sinteticos preserva existencias 12/3 y nulos; las nuevas tablas
+permanecen vacias. Detalles en [compras e inventario](purchases-inventory.md).
+
 Fase 8 agrega head 0002_identity: tres tablas de cuentas, sesiones y limites de
 login, sin editar 0001_compatibility. La nueva revision se verifico en PostgreSQL
 aislado, desde vacio y desde 0001 con datos sinteticos conservados. No se aplico
