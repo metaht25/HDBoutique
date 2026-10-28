@@ -318,6 +318,47 @@ Limites, habilitacion y campos en [API fundamental](foundation-api.md). No se
 habilitaron rutas en la configuracion existente ni se implementaron permisos de
 fase 8, activacion, movimientos, saldos o pantallas nuevas.
 
+## Verificacion de fase 8: identidad y permisos
+
+28 de octubre de 2026. B09 confirmado expresamente por el usuario: tres roles,
+permisos de gestion y vinculo cuenta/empleado opcional y exclusivo.
+
+| Comprobacion | Resultado real |
+| --- | --- |
+| Suite Linux completa | 114 aprobadas, 92 subtests aprobados, 0 omitidas; 54 PostgreSQL |
+| Autenticacion | Login real con Argon2id, errores genericos, hash renovado al cambiar parametros, logout y rechazo de tokens revocados/falsificados |
+| CSRF | Proteccion en login y escrituras, origen exacto, rechazo cross-site, token ligado a sesion y rotacion tras login |
+| Permisos | Matriz de los 3 roles por cada uno de los 11 recursos y operaciones; gestion de cuentas exclusiva de Administrator; solicitudes anonimas rechazadas |
+| Persistencia/seguridad | Solo digests de tokens; contraseñas saladas; espacios conservados en altas y cambios de contraseña; cookies HttpOnly/Secure/SameSite; no-store |
+| Ciclo de vida | Expiracion absoluta e inactividad en servidor; revocacion al cambiar rol, contraseña, vinculo o estado; limpieza explicita de vencidas |
+| Intentos de login | Limite persistente en PostgreSQL para usuario e IP; rechazo 429 y restablecimiento de ventana sin sleeps |
+| Cuentas | Bootstrap explicito verificado, sin administrador por defecto, usuario/empleado unicos, FK y ultimo administrador protegido; dos degradaciones concurrentes dejan un activo |
+| Migraciones | Alembic vacio -> head, downgrade/upgrade y check sin drift; 0001 con datos -> 0002 conserva datos comerciales; identidad inicial vacia |
+| ETL | Mantiene 17 tablas mapeadas; head actual exige 20 tablas vacias; rechaza destino con cuentas sin insertar negocio |
+| Produccion | Rutas protegidas con HTTPS/Secure configurados, docs ocultas, configuraciones inseguras rechazadas |
+| Calidad Windows | Ruff check/formato aprobados (90 archivos), mypy estricto aprobado (63 archivos), uv lock --check aprobado |
+| Cobertura app | 98.16%, 1725 sentencias y 230 ramas; no mide frontend ni aprueba reglas comerciales pendientes |
+
+Se uso exclusivamente compose.test.yaml, proyecto hdboutique-test, con base tmpfs
+vacia hdboutique_test, claves sinteticas y sin puertos. Fuentes finales app/,
+tests/, migrations/ y data_migration/ montadas de solo lectura para comprobar el
+cambio local exacto. Imagen development reconstruida con el bloqueo actualizado.
+La suite Django integrada conserva D03 como fallo esperado.
+
+Reproduccion desde raiz sobre el entorno de pruebas vacio:
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml build backend
+docker compose -p hdboutique-test -f compose.test.yaml up -d --wait db
+docker compose -p hdboutique-test -f compose.test.yaml run --rm backend uv run --locked python -m pytest --run-postgres --cov=app --cov-report=term-missing -q
+docker compose -p hdboutique-test -f compose.test.yaml down
+```
+
+La revision 0002_identity no se aplico en desarrollo ni en bases reales. No se
+crearon cuentas operativas, se cambiaron secretos ni se habilitaron rutas en los
+.env/Compose existentes. React permanece con Django; empleados sigue pendiente
+de su incremento de fase 7. [Contrato y operacion](authentication.md).
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

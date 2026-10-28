@@ -55,7 +55,8 @@ Se comprueban upgrade/downgrade/upgrade, metadata sin drift, las 17 tablas con
 datos sinteticos, Decimal, nulabilidad/fechas, identidades, rechazo de huerfanos
 y borrado referenciado, commit visible desde otra conexion y rollback.
 El SQL offline se prueba sin conexion. La suite habitual sin la opcion omite
-once casos PostgreSQL desde fase 6; no equivale a ejecutar esas verificaciones.
+54 casos PostgreSQL desde fase 8 (11 originales de fase 6); no equivale a ejecutar
+esas verificaciones.
 
 La fuente de comandos de esquema e integracion es [migration.md](migration.md).
 Fase 6 agrega pruebas ETL con datos sinteticos, rechazos, conciliacion por campo,

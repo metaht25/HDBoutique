@@ -7,6 +7,13 @@ que se haya inspeccionado o trasladado la base SQL Server.
 
 ## Fuente de verdad disponible
 
+Actualizacion de fase 8: el registro ORM contiene ahora 20 modelos/tablas,
+17 comerciales y 3 propios de identidad. La nueva revision 0002_identity agrega
+user_accounts (employee_id opcional y unico), web_sessions y login_throttles.
+B09 y los roles estan aprobados; [autenticacion](authentication.md) describe
+campos, permisos y limites. No son tablas del origen legacy ni forman parte de
+la matriz ETL. La revision nueva se aplico solo en pruebas aisladas.
+
 El codigo declara 17 modelos de negocio en los seis archivos models.py activos.
 Todos usan managed=False; por tanto, sus migraciones no administran las tablas.
 Los nombres, campos, tipos declarados y ejemplos se encuentran en
@@ -161,11 +168,12 @@ sus reglas y no se presentaran como tablas existentes del origen.
 
 Los importes nuevos usan NUMERIC y Decimal. Restricciones de cantidades,
 unicidad, indices y borrado se revisaran contra reglas aprobadas y datos reales.
-Los documentos B01-B14 siguen pendientes: una propuesta arquitectonica no aprueba
+Salvo B09 confirmado en fase 8, las reglas definitivas B01-B14 siguen pendientes:
+una propuesta arquitectonica no aprueba
 su politica comercial. Para conservacion y conciliacion, ver
 [migration.md](migration.md).
 
-No se agregaron saldo/principal, estados, usuarios/roles, movimientos, colores,
+En fase 5 no se agregaron saldo/principal, estados, usuarios/roles, movimientos, colores,
 SKU, costes historicos inferidos ni nuevas funciones de caja. D10 sigue pendiente:
 supplier_products.purchase_price no sustituye un coste historico de compra.
 Los nuevos casos de uso y sus restricciones ampliaran este esquema por Alembic,

@@ -59,7 +59,8 @@ extraccion y acordar un mapeo de identidad trazable; nunca numerar filas al azar
 ni fusionar ofertas. Columnas faltantes, extras, PK distintas o tipos incompatibles
 bloquean extraccion; el inventario permite revisar esas diferencias.
 
-B01-B14 siguen pendientes. En particular, revisar B05 antes de mover fechas
+B09 se confirmo en fase 8; las demas reglas definitivas siguen pendientes.
+En particular, revisar B05 antes de mover fechas
 reales. No interpretar refill_date como recepcion; conservar DATE y nulos.
 Conservar ambos stocks, direcciones solo a departamento, precios historicos de
 venta y abonos. No recuperar costes de compra desde precios actuales, reconstruir
@@ -127,14 +128,22 @@ uv run --locked python -m data_migration load --database rehearsal_test --input 
 uv run --locked python -m data_migration reconcile --database rehearsal_test --input migration-artifacts/target.json --output migration-artifacts/reconciliation.json
 ```
 
-`load` verifica revision 0001_compatibility, metadata sin drift, ausencia de triggers
-personalizados y tablas vacias; bloquea las 17 tablas, inserta por dependencias,
+`load` verifica head 0002_identity desde fase 8, metadata sin drift, ausencia de triggers
+personalizados y las 20 tablas vacias, incluidas identidad/sesiones; bloquea las
+20 tablas e inserta solo las 17 tablas de negocio por dependencias,
 concilia y reinicia identidades a max(ID)+1 (minimo 1). Usa una sola transaccion;
 un fallo revierte filas y RESTART. No usa setval, truncate, delete ni upsert.
 No ejecutar junto con escrituras de aplicacion. Un ID INTEGER agotado bloquea la
 carga y requiere nueva revision aprobada. El comando reconcile usa una transaccion
 de lectura REPEATABLE READ. Si falla escribir evidencia despues de un commit,
 volver a conciliar; no reintentar la carga sobre tablas ocupadas.
+
+La matriz sigue teniendo 17 tablas legacy: no se exportan/importan cuentas,
+contraseñas, sesiones ni limites de login. Un destino con identidad creada se
+rechaza antes de cargar cualquier fila. Los manifiestos para revision 0001
+requieren un nuevo ensayo con el destino actual y evidencia regenerada; no editar
+respaldos ni manifiestos antiguos para eludir la validacion. B09 ya esta confirmado;
+las reglas comerciales restantes mantienen sus limites.
 
 La conciliacion compara IDs y cada campo, conteos, faltantes, extras, diferencias,
 hashes deterministas y perfiles agregados (dinero, cantidades, nulos y negativos).

@@ -39,11 +39,14 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 - Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
   JavaScript en `frontend/`. FastAPI en `backend/app/` ofrece salud.
   Los modulos de fase 7 locations/catalog/customers/suppliers estan implementados,
-  deshabilitados por defecto y bloqueados en produccion hasta fase 8. Contratos y
+  deshabilitados por defecto; fase 8 incorpora autenticacion y permisos obligatorios.
+  Production exige origen HTTPS y cookies Secure. Contratos y
   compatibilidad confirmada: docs/foundation-api.md. Empleados sigue pendiente.
-  Hay 17 modelos SQLAlchemy y revision
-  Alembic 0001_compatibility como esquema inicial de compatibilidad, sin historicos
-  trasladados. B01-B14 siguen pendientes; el usuario confirmo conservar ambos
+  Hay 20 modelos SQLAlchemy: 17 de negocio y 3 de identidad; head 0002_identity.
+  La revision inicial 0001_compatibility se conserva, sin historicos
+  trasladados. B09 confirmado y fase 8 verificada en PostgreSQL aislado;
+  contratos/operacion en docs/authentication.md. Las demas reglas definitivas
+  siguen pendientes; el usuario confirmo conservar ambos
   campos de existencias y direccion ligada solo a departamento en esta base inicial.
   Docker/Compose y PostgreSQL local estan disponibles; readiness comprueba conexion
   cuando esta configurada. Operacion y secretos: [docs/docker.md](docs/docker.md).

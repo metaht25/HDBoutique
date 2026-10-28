@@ -11,6 +11,11 @@ tratarse como un nuevo ensayo autorizado. El corte operativo corresponde a fase 
 
 ## Operar el esquema con Alembic
 
+Fase 8 agrega head 0002_identity: tres tablas de cuentas, sesiones y limites de
+login, sin editar 0001_compatibility. La nueva revision se verifico en PostgreSQL
+aislado, desde vacio y desde 0001 con datos sinteticos conservados. No se aplico
+contra desarrollo ni datos operativos. Ver [autenticacion](authentication.md).
+
 Fuentes: backend/alembic.ini, backend/migrations/ y el registro de modelos
 backend/app/infrastructure/database/models.py. Las revisiones contienen DDL
 explicito independiente de los modelos vivos. Alembic es la autoridad de esquema;

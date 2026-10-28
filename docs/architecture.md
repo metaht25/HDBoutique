@@ -147,9 +147,11 @@ monolito, sin introducir un framework interno de abstracciones genericas.
 
 ## Seguridad y operacion previstas
 
-Autenticacion y permisos en la API; hashing mantenido y vinculo usuario/empleado
-definido. El mecanismo concreto de sesion se elegira en fase 8. No asumir que el
-texto de administrador actual representa una sesion real.
+Fase 8 implementa identidad propia, Argon2id, sesiones opacas revocables en
+PostgreSQL, cookie protegida y CSRF, con permisos Administrator/Manager/Cashier.
+La cuenta admite empleado opcional y exclusivo; B09 esta confirmado. Detalles en
+[autenticacion](authentication.md) y [ADR 0005](decisions/0005-cookie-session-identity.md).
+El texto fijo del frontend legacy continua sin representar esa sesion.
 
 Docker utiliza uv durante la construccion, usuario sin privilegios y claves
 locales externas a la imagen. Compose desarrollo publica puertos solo en loopback.

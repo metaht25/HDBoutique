@@ -60,7 +60,9 @@ siguen pendientes. Ver [modelo](data-model.md), [migraciones](migration.md) y
 
 Los incrementos de fase 7 incorporan ubicaciones, catalogo, clientes y proveedores.
 Rutas y limites de habilitacion en [API fundamental](foundation-api.md).
-HDB_BUSINESS_API_ENABLED es false por defecto; production rechaza true hasta fase 8.
+HDB_BUSINESS_API_ENABLED es false por defecto. Fase 8 incorpora cuentas, sesiones,
+CSRF y permisos; production exige origen HTTPS y cookies Secure.
+Bootstrap y contrato en [autenticacion](authentication.md).
 
 Todos los comandos de esta seccion parten de backend/:
 
@@ -123,6 +125,9 @@ automaticamente el .env legacy ni necesita credenciales de base para arrancar.
 | HDB_APP_NAME | HDBoutique API | Texto no vacio |
 | HDB_ENVIRONMENT | development | development, test o production |
 | HDB_DEBUG | False | Booleano; True se rechaza en production |
+| HDB_BUSINESS_API_ENABLED | False | Habilita identidad y negocio autenticado |
+| HDB_AUTH_ORIGIN | http://localhost:8001 | Origen exacto sin path; HTTPS en production con negocio habilitado |
+| HDB_SESSION_COOKIE_SECURE | True | No se permite False con negocio habilitado en production |
 | HDB_DATABASE_HOST, HDB_DATABASE_NAME, HDB_DATABASE_USER, HDB_DATABASE_PASSWORD | Sin configurar | Se requieren juntos; contraseña oculta en representacion/errores |
 | HDB_DATABASE_PORT | 5432 | Entero entre 1 y 65535 |
 

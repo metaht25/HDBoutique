@@ -39,6 +39,10 @@ Las reglas ambiguas se conservan pendientes, con ambas existencias y direccion
 ligada solo a departamento.
 
 Alembic se ejecuta explicitamente con `uv run --locked python -m alembic ...`.
+Desde fase 8 head es 0002_identity, con tres modelos/tablas nuevos de identidad
+(20 en total). Se verifico exclusivamente en PostgreSQL aislado; no se aplico
+sobre desarrollo. Sesiones, roles, CSRF y bootstrap del primer administrador en
+[autenticacion](../docs/authentication.md).
 Comandos, guardas y pruebas PostgreSQL desechables en
 [migraciones](../docs/migration.md). Pytest sin --run-postgres omite la integracion;
 usar compose.test.yaml para ejecutarla. En este Windows usar Docker por el bloqueo

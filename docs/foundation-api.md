@@ -6,10 +6,10 @@ incremento solicitado. Django y sus consumidores conservan sus rutas.
 
 ## Habilitacion y limites
 
-Las rutas estan deshabilitadas por defecto. HDB_BUSINESS_API_ENABLED=true las
-registra exclusivamente con HDB_ENVIRONMENT=development o test. La configuracion
-rechaza habilitarlas en production hasta implementar permisos de fase 8. Este
-interruptor no es autenticacion: limitar el acceso al entorno local de desarrollo.
+Las rutas estan deshabilitadas por defecto. Desde fase 8,
+HDB_BUSINESS_API_ENABLED=true registra identidad y negocio con autenticacion
+y permisos obligatorios. Production exige origen HTTPS y cookies Secure.
+La [autenticacion](authentication.md) define roles, CSRF y preparacion operativa.
 No se cambio Compose ni la configuracion privada para habilitarlas.
 
 La implementacion preserva el esquema inicial acordado en fase 5. El usuario
@@ -43,7 +43,8 @@ PostgreSQL. Las relaciones son IDs planos.
 La nulabilidad y longitudes siguen el [modelo inicial](data-model.md).
 Los schemas Create, Patch y Read de cada modulo son la fuente ejecutable del
 contrato; OpenAPI describe campos, limites, metodos y errores cuando se habilita.
-No hay nuevas tablas, migraciones, dependencias, estados ni unicidades de pares.
+El incremento de fase 7 no agrego tablas, migraciones, dependencias, estados ni
+unicidades de pares. Fase 8 agrega identidad mediante una revision separada.
 
 ## Validacion y respuestas
 
@@ -61,6 +62,7 @@ No hay nuevas tablas, migraciones, dependencias, estados ni unicidades de pares.
   32 bits; ambos campos independientes y anulables, sin restricciones comerciales
   inventadas. Dinero Decimal/NUMERIC(10,2), sin redondear exceso de decimales;
   la salida serializa dinero como texto con los centavos guardados.
+- Desde fase 8, 401 sin sesion y 403 sin permiso, origen o CSRF.
 - 404 para ausencia, 422 para validacion/referencia inexistente, 409 para conflicto
   referencial y 503 para base no configurada/no disponible. Las escrituras fallidas
   revierten su transaccion; las FK RESTRICT protegen relaciones historicas.

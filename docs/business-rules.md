@@ -62,15 +62,16 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 | B06 | Deuda, abono y saldo | Modelo guarda abonos, no principal ni estado | Confirmar origen de deuda, pagos parciales, sobrepagos y relacion cliente/venta | Antes de implementar cobros |
 | B07 | Efecto y persistencia de desactivacion | Clientes/Productos solo cambian estado local | Persistir estado conservando historia; decidir bloqueo de nuevas operaciones | Antes de completar activacion en API/frontend |
 | B08 | Direccion y municipio | Formulario solicita un campo que el modelo no tiene | Acordar FK municipio y consistencia con departamento; no inferir historicos | Antes del esquema de ubicaciones y alta de clientes |
-| B09 | Usuarios, empleados y permisos | Auth Django instalada; UI muestra administrador fijo | Definir vinculo cuenta/empleado y permisos por operacion; roles aun no aprobados | Antes de autenticacion |
+| B09 | Usuarios, empleados y permisos | Confirmado en fase 8: Administrator, Manager y Cashier; cuenta/empleado opcional y exclusivo | Matriz aprobada y contrato en [autenticacion](authentication.md) | Implementado y verificado en fase 8; frontend pendiente en sus fases |
 | B10 | Alcance real de caja | Apertura/cierre no persisten y ventas son manuales | Acordar turno, entradas/salidas, medios de pago y conciliacion antes de completar | Antes de backend de caja |
 | B11 | Funciones utilizadas desde admin Django | Los 17 modelos estan registrados en admin | Enumerar tareas operativas que necesiten reemplazo antes de retirar Django | Antes de retirada del backend anterior |
 | B12 | Conservacion y corte de historicos | No se inspecciono la base real | Preservar IDs, fechas, abonos y operaciones; acordar ventana y rollback | Antes de migracion operativa |
 | B13 | Telefono y datos obligatorios | Formulario y modelo tienen reglas distintas | Confirmar regla nicaraguense y tratamiento de historicos de otra longitud | Antes de endurecer validaciones |
 | B14 | Definicion de bajo stock | Cero incluido en unas pantallas y excluido en otras | Separar agotado y bajo stock, con umbral acordado | Antes de dashboard/reportes definitivos |
 
-Todas B01-B14 permanecen pendientes. La autorizacion para ejecutar esta fase no
-aprueba ninguna de sus alternativas. Las fases documentales y la preparacion del
+Salvo B09, las reglas definitivas B01-B14 permanecen pendientes, con los acuerdos
+de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
+fase no aprueba por si sola sus alternativas. Las fases documentales y la preparacion del
 entorno pueden continuar; el trabajo dependiente debe respetar estos limites.
 
 Acuerdo de fase 5: el usuario eligio conservar la estructura actual como esquema
@@ -82,6 +83,14 @@ se describe en [data-model.md](data-model.md) y evolucionara por Alembic cuando
 se acuerde cada regla pertinente.
 
 ## Ejemplos sinteticos y preguntas de aceptacion
+
+Acuerdo B09 de fase 8 (28 de octubre de 2026), confirmado expresamente por el usuario:
+Administrator administra cuentas y tiene acceso completo; Manager consulta, crea
+y edita ubicaciones, catalogo, clientes y proveedores, sin administrar cuentas ni
+eliminar; Cashier consulta catalogo/clientes y crea/edita clientes, sin proveedores
+ni costes de compra. Cuenta con empleado opcional y exclusivo. Se adoptan sesiones
+web mediante cookies protegidas y CSRF. La [matriz detallada](authentication.md)
+limita estos permisos a recursos implementados, sin aprobar reglas de fases futuras.
 
 Acuerdo de fase 7 (28 de octubre de 2026): el usuario confirmo conservar la
 compatibilidad en las altas y ediciones de ubicaciones, catalogo, clientes y
