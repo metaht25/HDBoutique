@@ -13,15 +13,15 @@ refactorizacion conserva los datos y el comportamiento valido del sistema.
 | Area | Implementacion existente | Objetivo de la refactorizacion |
 | --- | --- | --- |
 | Backend | Django/DRF y base FastAPI con salud | Migracion funcional a FastAPI, Pydantic y Python tipado |
-| Persistencia | Django ORM activo; SQLAlchemy y Alembic instalados | Modelo PostgreSQL y migraciones versionadas |
-| Base de datos | SQL Server; esquema externo a las migraciones del repositorio | PostgreSQL con esquema versionado |
+| Persistencia | Django ORM activo; conexion SQLAlchemy para salud PostgreSQL | Modelo PostgreSQL y migraciones versionadas |
+| Base de datos | SQL Server legacy y PostgreSQL local sin tablas de negocio | PostgreSQL con esquema versionado y datos conciliados |
 | Dependencias Python | uv, pyproject.toml y uv.lock; exportacion requirements.txt legacy | Retirar el grupo legacy al completar la sustitucion |
 | Frontend | React 19.2.5, Vite 8.0.10 y JavaScript/JSX | Conservar React/Vite; incorporar TypeScript y organizacion por funcionalidades |
-| Entorno | Configuracion local dependiente de SQL Server | Docker y Docker Compose reproducibles |
+| Entorno | Docker/Compose para FastAPI y PostgreSQL; legacy conserva SQL Server | Completar integracion funcional progresiva |
 
 Python 3.13.15 y uv 0.12.10 estan fijados para el backend. Las versiones resueltas
-estan en uv.lock; las de frontend, en package-lock.json. Todavia no hay PostgreSQL,
-Docker ni endpoints de negocio FastAPI. Django sigue atendiendo los contratos
+estan en uv.lock; las de frontend, en package-lock.json. Docker/PostgreSQL local
+estan preparados; no hay endpoints de negocio FastAPI. Django sigue atendiendo los contratos
 actuales y el frontend conserva su integracion con ese backend.
 
 ## Empezar
@@ -41,9 +41,18 @@ uv run --locked python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 
 
 El ultimo comando inicia FastAPI en el puerto 8001; Django conserva el 8000.
 La nueva API publica `/health/live`, `/health/ready` y documentacion `/docs` en
-desarrollo. Ambos health checks solo comprueban el proceso; no validan una base.
-Las pruebas no consultan SQL Server. Para instalacion de Python con uv, calidad,
-variables de entorno y Docker futuro, ver [desarrollo](docs/development.md).
+desarrollo. Readiness comprueba PostgreSQL si esta configurado; sin base mantiene
+scope=process. Las pruebas aisladas no consultan SQL Server.
+
+Para trabajar sin instalar Python/PostgreSQL en el equipo, desde la raiz:
+
+```powershell
+./infra/scripts/Initialize-LocalEnvironment.ps1
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d --wait --wait-timeout 180
+```
+
+Requiere Docker en modo Linux. Ver [Docker](docs/docker.md) para claves locales,
+puertos, persistencia, pruebas y respaldos; [desarrollo](docs/development.md) para uv.
 
 ## Documentacion
 
@@ -51,6 +60,7 @@ variables de entorno y Docker futuro, ver [desarrollo](docs/development.md).
 | --- | --- |
 | [Plan por fases](docs/roadmap.md) | Estado, entregables y criterios para avanzar |
 | [Desarrollo](docs/development.md) | Requisitos, comandos y preparacion del entorno |
+| [Docker](docs/docker.md) | FastAPI/PostgreSQL local, persistencia y recuperacion |
 | [Arquitectura](docs/architecture.md) | Organizacion existente y monolito modular objetivo |
 | [Convenciones](docs/conventions.md) | Nombres, tipado, contratos y separacion de responsabilidades |
 | [Datos](docs/data-model.md) | Relaciones comprobadas y limites del modelo |
@@ -63,6 +73,7 @@ variables de entorno y Docker futuro, ver [desarrollo](docs/development.md).
 | [Caracterizacion](docs/characterization.md) | Ejecucion, resultados registrados y defectos D01-D12 |
 | [ADR 0001](docs/decisions/0001-phase-one-characterization.md) | Decision de caracterizar antes de sustituir |
 | [ADR 0002](docs/decisions/0002-backend-foundation.md) | Base uv/FastAPI y convivencia temporal con Django |
+| [ADR 0003](docs/decisions/0003-local-containers.md) | Contenedores locales y conectividad PostgreSQL |
 
 Las guias de backend y frontend se encuentran en
 [backend/README.md](backend/README.md) y [frontend/README.md](frontend/README.md).
@@ -70,7 +81,7 @@ Las guias de backend y frontend se encuentran en
 ## Datos y configuracion
 
 `.env.example` documenta la configuracion legacy y contiene valores de ejemplo.
-El archivo `.env`, los respaldos y los datos personales no se versionan. La guia
+Los archivos `.env`, `.env.docker`, los respaldos y los datos personales no se versionan. La guia
 de desarrollo explica cuando configurar una copia autorizada de SQL Server.
 
 Las decisiones pendientes del negocio no se consideran aprobadas por iniciar una

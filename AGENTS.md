@@ -34,7 +34,9 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 - Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
   JavaScript en `frontend/`. La base FastAPI en `backend/app/` solo tiene salud;
-  los endpoints de negocio y la persistencia nueva siguen pendientes.
+  los endpoints de negocio y modelos/migraciones nuevos siguen pendientes.
+  Docker/Compose y PostgreSQL local estan disponibles; readiness comprueba conexion
+  cuando esta configurada. Operacion y secretos: [docs/docker.md](docs/docker.md).
 - Arquitectura: [docs/architecture.md](docs/architecture.md).
 - Convenciones: [docs/conventions.md](docs/conventions.md).
 - API existente: [docs/legacy-api-contracts.md](docs/legacy-api-contracts.md).
@@ -88,6 +90,9 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   aislado con motor dummy; no sustituirlo por settings productivos.
 - No consultar ni modificar una base real por el mero hecho de encontrar una
   configuracion local. Para la fase de datos, confirmar origen/destino autorizados.
+- Compose de desarrollo usa .env.docker ignorado y volumen hdboutique-dev_postgres_data.
+  No imprimir config expandida, borrar volumenes ni cambiar claves como sustituto
+  de una rotacion. No iniciar migraciones automaticamente al arrancar FastAPI.
 - No ejecutar migraciones, escrituras, restauraciones o corte contra datos reales
   fuera de su alcance especifico. Mantener respaldos y conciliacion segun la guia.
 - No descartar historicos ni inferir valores faltantes para hacer pasar una prueba.

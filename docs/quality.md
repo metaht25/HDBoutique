@@ -39,6 +39,12 @@ Las pruebas de persistencia/concurrencia se ejecutaran con PostgreSQL aislado,
 sin sustituir sus bloqueos por SQLite. No importar configuracion productiva para
 obtener una conexion de prueba.
 
+Desde fase 4 hay un PostgreSQL local nuevo y una imagen development con los mismos
+comandos uv. Se verificaron conectividad, permisos globales de la cuenta,
+persistencia del volumen y restauracion de una sonda sintetica. Los escenarios
+de negocio, sus restricciones y concurrencia siguen pendientes de sus fases.
+Ver [Docker](docker.md) y los resultados de [caracterizacion](characterization.md).
+
 El frontend incorporara pruebas de componentes y recorridos E2E en su fase.
 Las herramientas se eligen por su funcion; no se agregan dependencias de testing
 a la aplicacion final de produccion.

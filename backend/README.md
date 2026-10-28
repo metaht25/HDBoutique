@@ -2,7 +2,7 @@
 
 El backend contiene dos aplicaciones durante la transicion:
 
-- `app/`: base FastAPI con configuracion tipada y salud del proceso.
+- `app/`: base FastAPI con configuracion tipada, salud y conectividad PostgreSQL.
 - `hdboutique/`: Django/DRF con los contratos existentes y SQL Server.
 
 Python 3.13.15 y uv 0.12.10 estan fijados. pyproject.toml define las dependencias;
@@ -27,9 +27,11 @@ lista para editar manualmente. Regenerarlo con:
 uv export --locked --only-group legacy --no-hashes --no-emit-project --output-file requirements.txt
 ```
 
-SQLAlchemy, Alembic y Psycopg estan instalados; no hay conexion PostgreSQL,
-modelos nuevos ni migraciones ejecutadas. Los 17 modelos Django son unmanaged.
-La preparacion de Docker/PostgreSQL y del esquema corresponde a fases 4/5.
+SQLAlchemy y Psycopg comprueban conectividad PostgreSQL en readiness cuando hay
+configuracion de base. Dockerfile ofrece objetivos development/runtime usando uv;
+Compose y sus comandos estan en la [guia Docker](../docs/docker.md).
+No hay modelos nuevos ni migraciones ejecutadas. Los 17 modelos Django son
+unmanaged; el esquema SQLAlchemy/Alembic corresponde a fase 5.
 
 - [Guia de desarrollo y uv](../docs/development.md).
 - [Contratos actuales](../docs/legacy-api-contracts.md).

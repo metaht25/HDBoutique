@@ -50,8 +50,9 @@ fuente actual; cualquier actualizacion requiere cambio intencionado y pruebas.
 | Django / DRF / mssql-django | 6.0.4 / 3.17.1 / 1.7.1 |
 | pyodbc / python-decouple | 5.3.0 / 3.8 |
 
-SQLAlchemy, Alembic y Psycopg estan disponibles, pero todavia no hay engine,
-esquema ni conexion PostgreSQL. Esas partes corresponden a fases 4/5.
+SQLAlchemy y Psycopg disponen desde fase 4 de un engine perezoso para comprobar
+la conexion a PostgreSQL. Alembic esta instalado; esquema y migraciones siguen
+pendientes de fase 5. Ver [Docker](docker.md) para el entorno local completo.
 
 ## Comandos backend
 
@@ -90,7 +91,7 @@ uv run --locked python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 
 | Ruta | Comportamiento |
 | --- | --- |
 | GET /health/live | 200 con status=ok y scope=process |
-| GET /health/ready | Misma comprobacion de proceso; aun no comprueba una base |
+| GET /health/ready | Sin base: 200/process. Con base: SELECT 1, 200/database o 503/unavailable |
 | /docs, /redoc, /openapi.json | Documentacion en desarrollo/test; deshabilitada en modo production |
 
 El puerto 8001 evita sustituir Django en 8000, al que sigue apuntando el proxy
@@ -107,6 +108,8 @@ automaticamente el .env legacy ni necesita credenciales de base para arrancar.
 | HDB_APP_NAME | HDBoutique API | Texto no vacio |
 | HDB_ENVIRONMENT | development | development, test o production |
 | HDB_DEBUG | False | Booleano; True se rechaza en production |
+| HDB_DATABASE_HOST, HDB_DATABASE_NAME, HDB_DATABASE_USER, HDB_DATABASE_PASSWORD | Sin configurar | Se requieren juntos; contraseña oculta en representacion/errores |
+| HDB_DATABASE_PORT | 5432 | Entero entre 1 y 65535 |
 
 Ejemplo local PowerShell, antes de iniciar la API:
 
@@ -115,9 +118,10 @@ $env:HDB_ENVIRONMENT = 'development'
 $env:HDB_DEBUG = 'False'
 ```
 
-.env.example contiene estos nombres junto con las variables legacy como referencia;
-no sobrescribir un .env existente. En fase 4 se conectara la configuracion de
-contenedores. No poner secretos en variables publicas del frontend.
+.env.example contiene las variables basicas junto con las legacy como referencia;
+no sobrescribir un .env existente. Los contenedores usan un archivo independiente
+.env.docker generado desde .env.docker.example; ver [Docker](docker.md).
+No poner secretos en variables publicas del frontend.
 
 ## Dependencias con uv
 
@@ -188,13 +192,13 @@ La caracterizacion Node puede ejecutarse desde la raiz sin instalar paquetes:
 node --test --test-reporter=spec frontend/tests/characterization/services.test.js
 ```
 
-## Docker y CI: trabajo posterior
+## Docker disponible y CI posterior
 
-Todavia no hay Dockerfile, Compose ni PostgreSQL local del proyecto. Fase 4 debe
-usar Python/uv fijados, sincronizacion bloqueada, cache de dependencias, usuario
-sin privilegios y secretos externos. La imagen de runtime debe excluir todos los
-grupos predeterminados. Migraciones y backups seran pasos controlados, no efectos
-automaticos del arranque web.
+Desde fase 4, [docker.md](docker.md) documenta construccion, arranque, pruebas,
+persistencia, respaldo y restauracion local. Se usan Python/uv fijados,
+sincronizacion bloqueada, cache y usuario sin privilegios. Runtime excluye dev y
+legacy; development los incluye para pruebas. No se inician migraciones durante
+el arranque y no se conecta SQL Server desde este entorno.
 
 CI utilizara los comandos de calidad de esta guia y el mismo bloqueo. Su
 configuracion y ejecucion remota no se afirman implementadas. Las pruebas de base
@@ -209,6 +213,7 @@ real se agregan con PostgreSQL aislado. Ver [quality.md](quality.md) y
 | Falta Python 3.13.15 | Instalarlo con uv python install 3.13.15 |
 | Falta Django durante pruebas | Ejecutar uv sync --locked; no usar --no-default-groups para la suite completa |
 | pytest.exe bloqueado | Usar uv run --locked python -m pytest |
-| Readiness devuelve ok | Solo comprueba proceso; no prueba conectividad o esquema de base |
+| Readiness devuelve ok | Comprobar scope: process sin base; database comprueba conexion, nunca esquema |
+| SQLAlchemy bloqueado por Control de aplicaciones Windows | Ejecutar API/pruebas dentro del contenedor Linux segun [Docker](docker.md) |
 | SQL Server/ODBC no disponible | La nueva API y las pruebas aisladas siguen siendo independientes |
 | Cambios ajenos o rama distinta | Seguir [collaboration.md](collaboration.md) y preservar el trabajo |

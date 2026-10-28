@@ -13,8 +13,10 @@ validacion y los calculos estan dentro de las paginas. Los contratos, consumidor
 y limitaciones se detallan en [legacy-api-contracts.md](legacy-api-contracts.md).
 
 Desde fase 3 existe ademas `backend/app/`: main.py crea FastAPI, core/config.py
-valida variables HDB_ y api/health.py publica salud con scope=process. No importa
-settings Django ni crea conexiones de base. La nueva aplicacion se ejecuta en
+valida variables HDB_ y api/health.py publica salud. Desde fase 4, infrastructure/
+database/connection.py crea un engine perezoso; readiness consulta PostgreSQL
+si esta configurado y live sigue comprobando solo proceso. No importa settings
+Django. La nueva aplicacion se ejecuta en
 8001 para mantener el frontend y Django en su contrato actual de 8000.
 
 pyproject.toml y uv.lock gestionan ambos backends. Las dependencias legacy quedan
@@ -111,9 +113,10 @@ HDBoutique/
 Dentro de cada modulo, router.py, schemas.py, service.py, models.py y repository.py
 se crean segun necesidad. domain.py se reserva para reglas centrales; no generar
 archivos vacios ni capas de paso. El backend legacy permanece durante la sustitucion.
-La fase 3 solo crea app/main.py, app/core/config.py, app/api/health.py, sus
-paquetes, configuracion uv y pruebas. Infraestructura de base, modulos de negocio,
-migraciones, Docker y la reorganizacion de frontend siguen pendientes.
+La fase 3 creo la base uv/FastAPI y pruebas; fase 4 incorpora conexion tecnica,
+Dockerfile/.dockerignore, compose.yaml, compose.dev.yaml e infra/postgres y
+scripts. Modulos de negocio, migraciones y reorganizacion de frontend siguen
+pendientes. No se generan carpetas vacias para capas futuras.
 
 ## Fronteras y compatibilidad
 
@@ -136,8 +139,9 @@ Autenticacion y permisos en la API; hashing mantenido y vinculo usuario/empleado
 definido. El mecanismo concreto de sesion se elegira en fase 8. No asumir que el
 texto de administrador actual representa una sesion real.
 
-Docker utilizara uv durante la construccion, usuario sin privilegios y secretos
-externos. Desarrollo y CI compartiran bloqueo y comandos. Health checks, backups
-y migraciones controladas se implementan en sus fases. Ver
+Docker utiliza uv durante la construccion, usuario sin privilegios y claves
+locales externas a la imagen. Compose desarrollo publica puertos solo en loopback.
+La [guia Docker](docker.md) cubre salud, persistencia y respaldo local.
+CI y migraciones controladas siguen pendientes. Ver
 [development.md](development.md), [quality.md](quality.md) y
 [migration.md](migration.md).

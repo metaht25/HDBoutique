@@ -168,8 +168,48 @@ resultados corresponden exclusivamente a declaraciones y servicios con mocks.
 
 El ejecutor Django cuenta como una prueba de Pytest; no sumar sus ocho casos como
 si fueran ocho items adicionales de la coleccion. La cobertura de salud/configuracion
-no certifica compras, ventas, concurrencia ni datos. Los endpoints de salud declaran
-scope=process y no abren conexiones de base.
+no certifica compras, ventas, concurrencia ni datos. En fase 3 los endpoints de
+salud declaraban scope=process y no abrian conexiones de base.
+
+## Verificacion de fase 4
+
+Ejecucion local del 28 de octubre de 2026, rama Cris-develop. Docker Desktop
+4.92.0, motor Linux amd64 29.8.0 y Compose 5.5.1. Los comandos reproducibles y
+sus requisitos estan en [docker.md](docker.md).
+
+| Verificacion | Resultado ejecutado |
+| --- | --- |
+| Compose | Base runtime y superposicion development validan; puertos publicados solo en 127.0.0.1 |
+| Construccion | Ambas imagenes construidas con Python 3.13.15, uv 0.12.10 y uv.lock; reconstruccion aprovecha cache |
+| Aislamiento runtime | UID 10001; sin uv, Django, Pytest, Ruff, mypy, tests ni fuentes Django; HTTP funciona con filesystem de solo lectura |
+| API runtime sin base | ready 200/process y /docs 404; contenedor temporal retirado |
+| API/PostgreSQL reales | Ambos servicios saludables; PostgreSQL 17.10; ready 200/database; Swagger 200 en desarrollo y 404 en runtime |
+| Cuenta de aplicacion | Conexion real; rolsuper, rolcreatedb, rolcreaterole y rolreplication falsos |
+| Fallo de autenticacion PostgreSQL | Contenedor temporal con clave sintetica invalida: live 200, ready 503/unavailable; API principal saludable |
+| Persistencia | Marca sintetica conservada al recrear db/backend para pasar de runtime a development con el mismo volumen |
+| Respaldo/restauracion | pg_dump custom, copia binaria al equipo y pg_restore en una base local nueva; marca restaurada e igual al origen sintetico |
+| Limpieza de sondas | Tabla y base de ensayo retiradas; public sin tablas de negocio; volumen de desarrollo conservado |
+| Pytest en Linux | 28 aprobadas en imagen development y en el servicio Compose con configuracion real; fixtures no consultan esa base |
+| Cobertura | 100% de app: 78 sentencias y 10 ramas; no mide Django, frontend, persistencia de negocio ni migracion |
+| Caracterizacion Django | Ejecutor integrado y tambien separado: 8 casos, 7 aprobados y D03 como fallo esperado; motor dummy |
+| Calidad en contenedor | Ruff, formato y mypy estricto aprobados; lock sin cambios |
+| Configuracion local | Generador crea claves sin imprimirlas; segunda ejecucion conserva el archivo; .env.docker y backups ignorados |
+
+La ejecucion nativa Windows de Pytest no pudo completar la coleccion: Control de
+aplicaciones bloqueo una DLL de SQLAlchemy. Lint, formato, mypy y lock se
+verificaron tambien en el host. No se cambio la politica de Windows; las pruebas
+completas y el arranque PostgreSQL se verificaron en Linux mediante Docker.
+
+La revision automatica rechazo la prueba que detenia db con el motivo
+`blocked by policy`, sin mas detalle. No se ejecuto esa detencion; se comprobo
+el fallo real con credenciales sinteticas invalidas en un contenedor aislado.
+No se afirma haber ensayado caida/reconexion del mismo proceso de API.
+
+Los servicios de desarrollo quedaron activos: API 127.0.0.1:8001 y PostgreSQL
+127.0.0.1:5433. El respaldo local backups/phase-four-synthetic.dump solo contiene
+la sonda sintetica y esta excluido de Git. No se consulto SQL Server, trasladaron
+historicos ni crearon modelos/migraciones Alembic. Frontend, UI/E2E y concurrencia
+de negocio no se verificaron nuevamente en esta fase.
 
 ## Criterio de mantenimiento
 

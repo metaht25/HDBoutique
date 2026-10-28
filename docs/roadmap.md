@@ -12,7 +12,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 1 | Contratos, ejemplos y caracterizacion | Preparacion completada: e247dd8 y 4d4443d; suite Django ejecutada en fase 3 |
 | 2 | AGENTS, guias y convenciones | Completada en documentacion: enlaces y diff revisados; B01-B14 siguen pendientes |
 | 3 | uv, FastAPI minimo y calidad | Completada: entorno, calidad, pruebas y arranque verificados; D03 sigue esperado |
-| 4 | Docker, Compose y PostgreSQL local | Pendiente |
+| 4 | Docker, Compose y PostgreSQL local | Completada: 7cb3f92 y 9def699; construccion, conexion, persistencia y restauracion sintetica verificadas; ver [Docker](docker.md) y [resultados](characterization.md#verificacion-de-fase-4) |
 | 5 | Modelos SQLAlchemy y migraciones Alembic | Pendiente |
 | 6 | Herramientas y ensayos de migracion SQL Server | Pendiente; requiere origen autorizado |
 | 7 | Modulos fundamentales FastAPI | Pendiente |
