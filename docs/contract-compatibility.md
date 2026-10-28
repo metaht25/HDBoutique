@@ -1,0 +1,74 @@
+# Matriz de compatibilidad propuesta
+
+Estado: propuesta de nombres y estrategia; no implementa endpoints ni aprueba
+reglas nuevas. Origen: [contratos actuales](legacy-api-contracts.md).
+
+## Rutas
+
+| Recurso actual | Ruta candidata en ingles | Tratamiento |
+| --- | --- | --- |
+| `/api/departamentos/` | `/api/v1/departments` | Mantener IDs y nombres |
+| `/api/municipios/` | `/api/v1/municipalities` | Mantener relacion con departamento |
+| `/api/direcciones/` | `/api/v1/addresses` | Corregir contrato D04; municipio pendiente |
+| `/api/personas/tipos-clientes/` | `/api/v1/customer-types` | Mantener catalogo |
+| `/api/personas/clientes/` | `/api/v1/customers` | Mantener identidad y relaciones; direccion atomica propuesta |
+| `/api/personas/empleados/` | `/api/v1/employees` | Separar empleado de cuenta de acceso |
+| `/api/personas/deudas-clientes/` | `/api/v1/customer-payments` | Nombre provisional: son abonos; confirmar reglas |
+| `/api/productos/categorias/` | `/api/v1/categories` | Mantener catalogo |
+| `/api/productos/tallas/` | `/api/v1/sizes` | Mantener tallas actuales |
+| `/api/productos/productos/` | `/api/v1/products` | Resolver stock y estado antes de cambiar escrituras |
+| `/api/proveedores/proveedores/` | `/api/v1/suppliers` | Mantener contactos y direccion |
+| `/api/proveedores/productos-proveedores/` | `/api/v1/supplier-products` | Conservar correspondencia historica |
+| `/api/proveedores/ofrece/` | `/api/v1/supplier-offerings` | Verificar PK fisica; no fusionar automaticamente |
+| `/api/compras/compras/` | `/api/v1/purchases` | Propuesta: cabecera y lineas atomicas |
+| `/api/compras/detalles-compras/` | `/api/v1/purchases/{purchase_id}/items` | Lectura anidada propuesta; no mantener escritura independiente insegura |
+| `/api/ventas/ventas/` | `/api/v1/sales` | Propuesta: cabecera, lineas y stock atomicos |
+| `/api/ventas/detalles-ventas/` | `/api/v1/sales/{sale_id}/items` | Lectura anidada propuesta; escritura bajo caso de uso |
+
+## Campos
+
+Estos nombres son traducciones propuestas, no un esquema aprobado. Las flechas
+no autorizan conversiones de datos ni descartes de columnas.
+
+| Contexto | Campos actuales -> candidatos |
+| --- | --- |
+| PK de cada recurso | `id_departamento -> department_id`, `id_municipio -> municipality_id`, `id_direccion -> address_id`, `id_tipo_cliente -> customer_type_id`, `id_cliente -> customer_id`, `id_empleado -> employee_id`, `id_deuda -> payment_id`, `id_categoria -> category_id`, `id_talla -> size_id`, `id_producto -> product_id`, `id_proveedor -> supplier_id`, `id_productoproveedor -> supplier_product_id`, `id_compra -> purchase_id`, `id_detallecompra -> purchase_item_id`, `id_venta -> sale_id`, `id_detalleventa -> sale_item_id` |
+| FK | Aplicar los mismos nombres segun entidad referenciada; mantener valores de IDs |
+| Ubicaciones | `departamento -> name`, `municipio -> name`, `direccion -> address_line` |
+| Tipo de cliente | `tipo -> name` |
+| Cliente/empleado | `nombres -> first_names`, `apellidos -> last_names`, `numerotelefono` o `numerotelefonico -> phone_number` |
+| Empleado | `correoprofesional -> work_email`, `cargo -> job_title`, `fechainicio -> start_date`, `fechafin -> end_date` |
+| Abono | `fecha_abono -> payment_date`, `abono -> amount`; `payment_id` sujeto a decision de negocio |
+| Categoria/talla | `categoria -> name`, `talla -> name` |
+| Producto | `nombre -> name`, `preciounitario -> unit_price` |
+| Existencias | `cantidadstock` y `stock`: sin equivalencia semantica aprobada; conservar ambos en el mapeo de migracion hasta decidir |
+| Proveedor | `nombreempresa -> company_name`, `nombrecontacto -> contact_first_names`, `apellidocontacto -> contact_last_names`, `numerotelefono -> phone_number`, `correoprofesional -> work_email` |
+| Producto de proveedor | `preciodecompra -> purchase_price`; conservar relacion con producto |
+| Ofrece | `id -> offering_id` solo si se confirma identidad; alternativa pendiente en inventario fisico |
+| Compra | `fechacompra -> purchase_date`, `fecharevision -> review_date`, `fecharelleno -> refill_date`, `costodeenvio -> shipping_cost` |
+| Detalle de compra | `cantidad -> quantity`; coste historico nuevo requiere decision, no se reconstruye con precio actual |
+| Venta | `fechaventa -> sale_date`, `total -> total` |
+| Detalle de venta | `cantidad -> quantity`, `preciounitario -> unit_price`; corregir incompatibilidad de decimales |
+
+`refill_date` es un nombre provisional: no equivale todavia a recepcion.
+`direccionexacta` e `id_municipio` solo existen en el payload del formulario; no
+son columnas confirmadas de Direccion.
+
+## Cambios que requieren adaptacion coordinada
+
+1. Introducir nombres ingleses con version de API explicita.
+2. Mantener rutas/campos antiguos en un adaptador temporal cuando tengan consumidores.
+3. Mantener salida decimal como texto durante la compatibilidad; nuevos contratos
+   deben fijar precision y redondeo. No convertir dinero a float en el servidor.
+4. Introducir paginacion junto con cambios de pantallas y reportes; no devolver
+   solo una pagina a consumidores que calculan totales globales.
+5. Cambiar venta y compra a solicitudes completas atomicas. Un simple alias de
+   POST cabecera seguido de POST detalles no proporciona atomicidad.
+6. Introducir autenticacion con su flujo frontend antes de exigirla a consumidores.
+7. Documentar el nuevo formato de errores y adaptar el cliente HTTP.
+8. Mantener los adaptadores hasta que no haya consumidores y existan pruebas del
+   recorrido sustituto; retirar su codigo y sus pruebas especificas juntos.
+
+No se promete mantener indefinidamente CRUD destructivo de operaciones financieras,
+acceso anonimo, stock contradictorio o perdida de datos. Sus correcciones deben
+incluir pruebas nuevas y una explicacion de incompatibilidad intencionada.

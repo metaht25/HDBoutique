@@ -184,3 +184,16 @@ Cada colaborador debe:
 9. Levantar el servidor con `python manage.py runserver`.
 
 Nunca deben subir su archivo `.env`.
+
+## Caracterizacion del sistema actual (fase 1)
+
+- [Contratos actuales de API](docs/legacy-api-contracts.md): rutas, campos y ejemplos sinteticos.
+- [Matriz de compatibilidad propuesta](docs/contract-compatibility.md): equivalencias y cambios que necesitan adaptacion.
+- [Diccionario del negocio](docs/business-rules.md): comportamiento observado y decisiones B01-B14 pendientes.
+- [Pruebas de caracterizacion](docs/characterization.md): comandos, cobertura, defectos y limites de verificacion.
+- [ADR 0001](docs/decisions/0001-phase-one-characterization.md): alcance tecnico de esta fase.
+
+Estas pruebas no requieren iniciar servidores ni acceder a una base real. La guia
+de caracterizacion distingue las comprobaciones ejecutadas de la suite Django
+pendiente de dependencias. La configuracion de uv y FastAPI corresponde a fases
+posteriores.

@@ -1,0 +1,141 @@
+{
+  "baseline_commit": "9bc044c",
+  "resources": [
+    {
+      "path": "/api/departamentos/",
+      "model": "ubicaciones.Departamento",
+      "primary_key": "id_departamento",
+      "required_fields": ["departamento"],
+      "nullable_fields": [],
+      "example": {"id_departamento": 101, "departamento": "Departamento de prueba"}
+    },
+    {
+      "path": "/api/municipios/",
+      "model": "ubicaciones.Municipio",
+      "primary_key": "id_municipio",
+      "required_fields": ["id_departamento"],
+      "nullable_fields": ["municipio"],
+      "example": {"id_municipio": 102, "id_departamento": 101, "municipio": "Municipio de prueba"}
+    },
+    {
+      "path": "/api/direcciones/",
+      "model": "ubicaciones.Direccion",
+      "primary_key": "id_direccion",
+      "required_fields": ["id_departamento"],
+      "nullable_fields": ["direccion"],
+      "example": {"id_direccion": 103, "id_departamento": 101, "direccion": "Direccion sintetica"}
+    },
+    {
+      "path": "/api/personas/tipos-clientes/",
+      "model": "personas.TipoCliente",
+      "primary_key": "id_tipo_cliente",
+      "required_fields": [],
+      "nullable_fields": ["tipo"],
+      "example": {"id_tipo_cliente": 104, "tipo": "Frecuente"}
+    },
+    {
+      "path": "/api/personas/clientes/",
+      "model": "personas.Clientes",
+      "primary_key": "id_cliente",
+      "required_fields": ["id_direccion", "id_tipo_cliente", "nombres", "apellidos", "numerotelefono"],
+      "nullable_fields": [],
+      "example": {"id_cliente": 105, "id_direccion": 103, "id_tipo_cliente": 104, "nombres": "Cliente", "apellidos": "Sintetico", "numerotelefono": "00000000"}
+    },
+    {
+      "path": "/api/personas/empleados/",
+      "model": "personas.Empleados",
+      "primary_key": "id_empleado",
+      "required_fields": ["id_direccion", "nombres", "apellidos", "numerotelefonico"],
+      "nullable_fields": ["correoprofesional", "cargo", "fechainicio", "fechafin"],
+      "example": {"id_empleado": 106, "id_direccion": 103, "nombres": "Empleado", "apellidos": "Sintetico", "numerotelefonico": "00000001", "correoprofesional": "staff@example.test", "cargo": "Cajero", "fechainicio": "2026-01-01", "fechafin": null}
+    },
+    {
+      "path": "/api/personas/deudas-clientes/",
+      "model": "personas.DeudaCliente",
+      "primary_key": "id_deuda",
+      "required_fields": ["id_cliente", "id_venta", "fecha_abono", "abono"],
+      "nullable_fields": [],
+      "example": {"id_deuda": 117, "id_cliente": 105, "id_venta": 115, "fecha_abono": "2026-10-20", "abono": "100.50"}
+    },
+    {
+      "path": "/api/productos/categorias/",
+      "model": "productos.Categoria",
+      "primary_key": "id_categoria",
+      "required_fields": [],
+      "nullable_fields": ["categoria"],
+      "example": {"id_categoria": 107, "categoria": "Camisas"}
+    },
+    {
+      "path": "/api/productos/tallas/",
+      "model": "productos.Tallas",
+      "primary_key": "id_talla",
+      "required_fields": ["talla"],
+      "nullable_fields": [],
+      "example": {"id_talla": 108, "talla": "M"}
+    },
+    {
+      "path": "/api/productos/productos/",
+      "model": "productos.Productos",
+      "primary_key": "id_producto",
+      "required_fields": ["id_categoria", "id_talla"],
+      "nullable_fields": ["nombre", "cantidadstock", "stock", "preciounitario"],
+      "example": {"id_producto": 109, "id_categoria": 107, "id_talla": 108, "nombre": "Camisa de prueba", "cantidadstock": 12, "stock": 12, "preciounitario": "200.00"}
+    },
+    {
+      "path": "/api/proveedores/proveedores/",
+      "model": "proveedores.Proveedores",
+      "primary_key": "id_proveedor",
+      "required_fields": ["id_direccion", "nombreempresa", "nombrecontacto", "apellidocontacto", "numerotelefono"],
+      "nullable_fields": ["correoprofesional"],
+      "example": {"id_proveedor": 110, "id_direccion": 103, "nombreempresa": "Proveedor de prueba", "nombrecontacto": "Contacto", "apellidocontacto": "Sintetico", "numerotelefono": "00000002", "correoprofesional": "supplier@example.test"}
+    },
+    {
+      "path": "/api/proveedores/productos-proveedores/",
+      "model": "proveedores.Productoproveedor",
+      "primary_key": "id_productoproveedor",
+      "required_fields": ["id_producto", "preciodecompra"],
+      "nullable_fields": [],
+      "example": {"id_productoproveedor": 111, "id_producto": 109, "preciodecompra": "120.50"}
+    },
+    {
+      "path": "/api/proveedores/ofrece/",
+      "model": "proveedores.Ofrece",
+      "primary_key": "id",
+      "required_fields": ["id_proveedor", "id_productoproveedor"],
+      "nullable_fields": [],
+      "example": {"id": 112, "id_proveedor": 110, "id_productoproveedor": 111}
+    },
+    {
+      "path": "/api/compras/compras/",
+      "model": "compras.Compras",
+      "primary_key": "id_compra",
+      "required_fields": ["id_proveedor", "id_empleado", "fechacompra"],
+      "nullable_fields": ["fecharevision", "costodeenvio", "fecharelleno"],
+      "example": {"id_compra": 113, "id_proveedor": 110, "id_empleado": 106, "fecharevision": null, "fechacompra": "2026-10-19", "costodeenvio": "50.00", "fecharelleno": null}
+    },
+    {
+      "path": "/api/compras/detalles-compras/",
+      "model": "compras.Detallecompra",
+      "primary_key": "id_detallecompra",
+      "required_fields": ["id_productoproveedor", "id_compra", "cantidad"],
+      "nullable_fields": [],
+      "example": {"id_detallecompra": 114, "id_productoproveedor": 111, "id_compra": 113, "cantidad": 12}
+    },
+    {
+      "path": "/api/ventas/ventas/",
+      "model": "ventas.Venta",
+      "primary_key": "id_venta",
+      "required_fields": ["fechaventa", "id_cliente", "id_empleado", "total"],
+      "nullable_fields": [],
+      "example": {"id_venta": 115, "fechaventa": "2026-10-20", "id_cliente": 105, "id_empleado": 106, "total": "400.00"}
+    },
+    {
+      "path": "/api/ventas/detalles-ventas/",
+      "model": "ventas.Detalleventa",
+      "primary_key": "id_detalleventa",
+      "required_fields": ["id_venta", "id_producto", "cantidad", "preciounitario"],
+      "nullable_fields": [],
+      "example": {"id_detalleventa": 116, "id_venta": 115, "id_producto": 109, "cantidad": 2, "preciounitario": 200}
+    }
+  ]
+}
