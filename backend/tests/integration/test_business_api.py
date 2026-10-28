@@ -67,7 +67,10 @@ def business_client(database_connection: Connection) -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def records(business_client: TestClient) -> dict[str, dict]:
+def records(
+    business_client: TestClient,
+    database_connection: Connection,
+) -> dict[str, dict]:
     client = business_client
     result: dict[str, dict] = {}
 
@@ -91,10 +94,21 @@ def records(business_client: TestClient) -> dict[str, dict]:
         category_id=category["category_id"],
         size_id=size["size_id"],
         name="Synthetic product",
-        legacy_stock_quantity=12,
-        legacy_stock=3,
         unit_price="199.50",
     )
+    assert product["legacy_stock"] == 0
+    assert product["legacy_stock_quantity"] is None
+    # Simula un historico ya preservado, no una escritura del CRUD nuevo.
+    database_connection.execute(
+        text(
+            "UPDATE products SET legacy_stock_quantity=12, legacy_stock=3 "
+            "WHERE product_id=:id"
+        ),
+        {"id": product["product_id"]},
+    )
+    result["products"] = client.get(
+        "/api/v1/products/" + str(product["product_id"])
+    ).json()
     customer_type = create("customer-types", name=None)
     create(
         "customers",
@@ -141,6 +155,9 @@ def test_resource_workflow(
     assert client.get(path, params={"offset": 0, "limit": 1}).json() == [original]
     assert client.get(path, params={"offset": 100}).json() == []
     payload = {field: value for field, value in original.items() if field != key}
+    if route == "products":
+        payload.pop("legacy_stock_quantity")
+        payload.pop("legacy_stock")
     assert client.put(detail, json=payload).json() == original
     assert client.patch(detail, json={}).json() == original
     if "name" in payload:
@@ -204,10 +221,11 @@ def test_precision_patch_and_legacy_values(
     assert business_client.patch(path, json={"unit_price": "0.001"}).status_code == 422
     assert business_client.patch(path, json={"legacy_stock": 1.5}).status_code == 422
     response = business_client.patch(path, json={"legacy_stock": None})
-    assert response.status_code == 200
-    assert response.json()["legacy_stock"] is None
-    assert response.json()["legacy_stock_quantity"] == 12
-    assert Decimal(response.json()["unit_price"]) == Decimal("199.50")
+    assert response.status_code == 422
+    preserved = business_client.get(path).json()
+    assert preserved["legacy_stock"] == 3
+    assert preserved["legacy_stock_quantity"] == 12
+    assert Decimal(preserved["unit_price"]) == Decimal("199.50")
     assert (
         business_client.patch(path, json={"unit_price": "100000000.00"}).status_code
         == 422
@@ -269,7 +287,7 @@ def test_http_validation_and_put_reset(
     )
     assert response.status_code == 200
     assert response.json()["unit_price"] is None
-    assert response.json()["legacy_stock"] is None
+    assert response.json()["legacy_stock"] == 3
     assert response.json()["name"] is None
     customer_path = "/api/v1/customers/" + str(records["customers"]["customer_id"])
     assert (

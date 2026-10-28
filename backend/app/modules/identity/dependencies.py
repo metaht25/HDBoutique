@@ -85,3 +85,12 @@ def administrator(principal: CurrentIdentity) -> Principal:
 
 
 AdministratorIdentity = Annotated[Principal, Depends(administrator)]
+
+
+def purchasing_identity(principal: CurrentIdentity) -> Principal:
+    if principal.role not in {"Administrator", "Manager"}:
+        raise ApplicationError(403, "permission_denied", "Permission denied")
+    return principal
+
+
+PurchasingIdentity = Annotated[Principal, Depends(purchasing_identity)]

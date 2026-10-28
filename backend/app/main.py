@@ -13,7 +13,9 @@ from app.infrastructure.database.session import create_session_factory
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
 from app.modules.identity.router import router as identity_router
+from app.modules.inventory.router import router as inventory_router
 from app.modules.locations.router import router as locations_router
+from app.modules.purchases.router import router as purchases_router
 from app.modules.suppliers.router import router as suppliers_router
 
 
@@ -65,6 +67,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             catalog_router,
             customers_router,
             suppliers_router,
+            purchases_router,
+            inventory_router,
         ):
             application.include_router(router)
     return application

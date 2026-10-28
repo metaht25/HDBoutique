@@ -137,7 +137,7 @@ class CatalogService:
             with self.session.begin():
                 values = payload.model_dump(exclude_unset=True)
                 if record_id is None:
-                    record = Product(**values)
+                    record = Product(legacy_stock=0, **values)
                 else:
                     existing = self.repository.get_product(record_id)
                     if existing is None:
