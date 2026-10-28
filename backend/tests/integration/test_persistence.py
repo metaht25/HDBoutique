@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.infrastructure.database import models
 from app.infrastructure.database.session import create_session_factory
+from data_migration.mapping import MAPPINGS
 
 pytestmark = pytest.mark.postgres
 
@@ -170,7 +171,7 @@ def test_all_resources_preserve_money_nulls_dates_and_separate_stock(
         assert payment.payment_date == date(2026, 1, 3)
         assert payment.amount == Decimal("100.50")
         for table in inspect(database_connection).get_table_names():
-            if table != "alembic_version":
+            if table in {mapping.target for mapping in MAPPINGS}:
                 assert (
                     database_connection.scalar(
                         select(1)

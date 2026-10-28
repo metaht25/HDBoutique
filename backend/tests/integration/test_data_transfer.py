@@ -68,3 +68,21 @@ def test_late_identity_failure_rolls_back_whole_load(
         load(database_connection, tables)
     for item in MAPPINGS:
         assert database_connection.execute(select(item.table)).first() is None
+
+
+def test_transfer_rejects_destination_with_identity_data(
+    database_connection: Connection,
+) -> None:
+    database_connection.execute(
+        insert(models.UserAccount).values(
+            username="existing-synthetic",
+            password_hash="synthetic-unused-hash",
+            role="Administrator",
+            is_active=True,
+            employee_id=None,
+        )
+    )
+    tables, _ = transform(synthetic_source())
+    with pytest.raises(MigrationError, match="not empty"):
+        load(database_connection, tables)
+    assert all(not rows for rows in read_target(database_connection).values())

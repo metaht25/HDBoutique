@@ -8,7 +8,7 @@ from app.infrastructure.database import models  # noqa: F401
 from app.infrastructure.database.base import Base
 
 MAPPING_VERSION = "compatibility-1"
-SCHEMA_REVISION = "0001_compatibility"
+SCHEMA_REVISION = "0002_identity"
 
 
 @dataclass(frozen=True)

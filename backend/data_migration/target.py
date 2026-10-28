@@ -59,16 +59,16 @@ def load(connection: Connection, tables: Tables) -> dict[str, object]:
         raise MigrationError("Load requires isolated PostgreSQL _test database")
     if set(inspect(connection).get_table_names()) != {
         "alembic_version",
-        *(m.target for m in MAPPINGS),
+        *Base.metadata.tables,
     }:
-        raise MigrationError("Target must have exactly the compatibility schema")
+        raise MigrationError("Target must have exactly the current Alembic schema")
     if (
         connection.scalar(text("SELECT version_num FROM alembic_version"))
         != SCHEMA_REVISION
     ):
         raise MigrationError("Target Alembic revision differs")
     connection.execute(text("SET LOCAL lock_timeout = '5s'"))
-    names = ", ".join('"' + m.target + '"' for m in MAPPINGS)
+    names = ", ".join('"' + name + '"' for name in sorted(Base.metadata.tables))
     connection.execute(text(f"LOCK TABLE {names} IN ACCESS EXCLUSIVE MODE"))
     if compare_metadata(MigrationContext.configure(connection), Base.metadata):
         raise MigrationError("Target schema drift; review Alembic revisions")
@@ -81,8 +81,8 @@ def load(connection: Connection, tables: Tables) -> dict[str, object]:
     ):
         raise MigrationError("Target has custom triggers requiring review")
     if any(
-        connection.execute(select(m.table).limit(1)).first() is not None
-        for m in MAPPINGS
+        connection.execute(select(table).limit(1)).first() is not None
+        for table in Base.metadata.sorted_tables
     ):
         raise MigrationError("Target is not empty; nothing removed or overwritten")
     for item in MAPPINGS:

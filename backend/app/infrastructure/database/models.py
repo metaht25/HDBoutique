@@ -2,6 +2,7 @@
 
 from app.modules.catalog.models import Category, Product, Size
 from app.modules.customers.models import Customer, CustomerPayment, CustomerType
+from app.modules.identity.models import LoginThrottle, UserAccount, WebSession
 from app.modules.locations.models import Address, Department, Municipality
 from app.modules.purchases.models import Purchase, PurchaseItem
 from app.modules.sales.models import Sale, SaleItem
@@ -26,4 +27,7 @@ __all__ = [
     "Supplier",
     "SupplierOffering",
     "SupplierProduct",
+    "UserAccount",
+    "WebSession",
+    "LoginThrottle",
 ]
