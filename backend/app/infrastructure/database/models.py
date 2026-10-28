@@ -3,8 +3,10 @@
 from app.modules.catalog.models import Category, Product, Size
 from app.modules.customers.models import Customer, CustomerPayment, CustomerType
 from app.modules.identity.models import LoginThrottle, UserAccount, WebSession
+from app.modules.inventory.models import InventoryMovement
 from app.modules.locations.models import Address, Department, Municipality
 from app.modules.purchases.models import Purchase, PurchaseItem
+from app.modules.purchases.workflow_models import PurchaseItemCost, PurchaseWorkflow
 from app.modules.sales.models import Sale, SaleItem
 from app.modules.staff.models import Employee
 from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
@@ -30,4 +32,7 @@ __all__ = [
     "UserAccount",
     "WebSession",
     "LoginThrottle",
+    "PurchaseItemCost",
+    "PurchaseWorkflow",
+    "InventoryMovement",
 ]
