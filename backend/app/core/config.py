@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     app_name: str = Field(default="HDBoutique API", min_length=1)
     environment: Literal["development", "test", "production"] = "development"
     debug: bool = False
+    business_api_enabled: bool = False
     database_host: str | None = Field(default=None, min_length=1)
     database_port: int = Field(default=5432, ge=1, le=65535)
     database_name: str | None = Field(default=None, min_length=1)
@@ -26,6 +27,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_debug(self) -> Self:
+        if self.environment == "production" and self.business_api_enabled:
+            raise ValueError("Business API requires phase 8 permissions in production")
         if self.environment == "production" and self.debug:
             raise ValueError("Debug mode must be disabled in production")
         database_values = (

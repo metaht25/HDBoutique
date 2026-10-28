@@ -7,8 +7,13 @@ from fastapi import FastAPI
 
 from app.api.health import router as health_router
 from app.core.config import Settings
+from app.core.errors import install_error_handlers
 from app.infrastructure.database.connection import build_engine
 from app.infrastructure.database.session import create_session_factory
+from app.modules.catalog.router import router as catalog_router
+from app.modules.customers.router import router as customers_router
+from app.modules.locations.router import router as locations_router
+from app.modules.suppliers.router import router as suppliers_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -38,6 +43,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         create_session_factory(engine) if engine is not None else None
     )
     application.include_router(health_router)
+    install_error_handlers(application)
+    if config.business_api_enabled:
+        for router in (
+            locations_router,
+            catalog_router,
+            customers_router,
+            suppliers_router,
+        ):
+            application.include_router(router)
     return application
 
 

@@ -1,0 +1,144 @@
+"""Development/test catalog routes; production exposure awaits phase 8."""
+
+from typing import Annotated
+
+from fastapi import APIRouter, Query, Response
+
+from app.api.dependencies import DatabaseSession
+from app.api.schemas import ErrorResponse
+from app.modules.catalog.schemas import (
+    CategoryCreate,
+    CategoryPatch,
+    CategoryRead,
+    ProductCreate,
+    ProductPatch,
+    ProductRead,
+    SizeCreate,
+    SizePatch,
+    SizeRead,
+)
+from app.modules.catalog.service import CatalogService
+
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["catalog"],
+    responses={status: {"model": ErrorResponse} for status in (404, 409, 422, 503)},
+)
+
+
+@router.get("/categories", response_model=list[CategoryRead])
+def list_category(
+    session: DatabaseSession,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+) -> object:
+    return CatalogService(session).list_category(offset, limit)
+
+
+@router.get("/categories/{record_id}", response_model=CategoryRead)
+def get_category(record_id: int, session: DatabaseSession) -> object:
+    return CatalogService(session).get_category(record_id)
+
+
+@router.post("/categories", response_model=CategoryRead, status_code=201)
+def create_category(payload: CategoryCreate, session: DatabaseSession) -> object:
+    return CatalogService(session).save_category(payload)
+
+
+@router.put("/categories/{record_id}", response_model=CategoryRead)
+def replace_category(
+    record_id: int, payload: CategoryCreate, session: DatabaseSession
+) -> object:
+    complete = CategoryCreate(**payload.model_dump())
+    return CatalogService(session).save_category(complete, record_id)
+
+
+@router.patch("/categories/{record_id}", response_model=CategoryRead)
+def update_category(
+    record_id: int, payload: CategoryPatch, session: DatabaseSession
+) -> object:
+    return CatalogService(session).save_category(payload, record_id)
+
+
+@router.delete("/categories/{record_id}", status_code=204)
+def delete_category(record_id: int, session: DatabaseSession) -> Response:
+    CatalogService(session).delete_category(record_id)
+    return Response(status_code=204)
+
+
+@router.get("/sizes", response_model=list[SizeRead])
+def list_size(
+    session: DatabaseSession,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+) -> object:
+    return CatalogService(session).list_size(offset, limit)
+
+
+@router.get("/sizes/{record_id}", response_model=SizeRead)
+def get_size(record_id: int, session: DatabaseSession) -> object:
+    return CatalogService(session).get_size(record_id)
+
+
+@router.post("/sizes", response_model=SizeRead, status_code=201)
+def create_size(payload: SizeCreate, session: DatabaseSession) -> object:
+    return CatalogService(session).save_size(payload)
+
+
+@router.put("/sizes/{record_id}", response_model=SizeRead)
+def replace_size(
+    record_id: int, payload: SizeCreate, session: DatabaseSession
+) -> object:
+    complete = SizeCreate(**payload.model_dump())
+    return CatalogService(session).save_size(complete, record_id)
+
+
+@router.patch("/sizes/{record_id}", response_model=SizeRead)
+def update_size(record_id: int, payload: SizePatch, session: DatabaseSession) -> object:
+    return CatalogService(session).save_size(payload, record_id)
+
+
+@router.delete("/sizes/{record_id}", status_code=204)
+def delete_size(record_id: int, session: DatabaseSession) -> Response:
+    CatalogService(session).delete_size(record_id)
+    return Response(status_code=204)
+
+
+@router.get("/products", response_model=list[ProductRead])
+def list_product(
+    session: DatabaseSession,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+) -> object:
+    return CatalogService(session).list_product(offset, limit)
+
+
+@router.get("/products/{record_id}", response_model=ProductRead)
+def get_product(record_id: int, session: DatabaseSession) -> object:
+    return CatalogService(session).get_product(record_id)
+
+
+@router.post("/products", response_model=ProductRead, status_code=201)
+def create_product(payload: ProductCreate, session: DatabaseSession) -> object:
+    return CatalogService(session).save_product(payload)
+
+
+@router.put("/products/{record_id}", response_model=ProductRead)
+def replace_product(
+    record_id: int, payload: ProductCreate, session: DatabaseSession
+) -> object:
+    complete = ProductCreate(**payload.model_dump())
+    return CatalogService(session).save_product(complete, record_id)
+
+
+@router.patch("/products/{record_id}", response_model=ProductRead)
+def update_product(
+    record_id: int, payload: ProductPatch, session: DatabaseSession
+) -> object:
+    return CatalogService(session).save_product(payload, record_id)
+
+
+@router.delete("/products/{record_id}", status_code=204)
+def delete_product(record_id: int, session: DatabaseSession) -> Response:
+    CatalogService(session).delete_product(record_id)
+    return Response(status_code=204)
