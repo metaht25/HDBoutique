@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # H&D Boutique
 
 Sistema web administrativo local para la tienda familiar H&D Boutique.
@@ -148,29 +147,26 @@ El repositorio si debe incluir:
 - codigo fuente del backend
 - documentacion del proyecto
 
-## Comandos para preparar el primer push
+## Flujo local de refactorizacion
 
-Despues de revisar los cambios:
+La refactorizacion se realiza con un solo desarrollador en la rama `Cris-develop`.
+El punto de partida de la fase 0 es el commit `f67910b` (`Precio Unitario`).
 
-```cmd
-git status
-git add .
-git commit -m "Preparar proyecto para trabajo colaborativo"
-git remote add origin URL_DEL_REPOSITORIO_PRIVADO
-git branch -M main
-git push -u origin main
-```
+- Trabajar unicamente en `Cris-develop` y avanzar por fases autorizadas.
+- Revisar el estado Git antes de cada fase y preservar los cambios existentes.
+- Crear commits locales pequenos, centrados en un cambio y con Conventional Commits.
+- Usar mensajes como `docs: resolve readme conflict markers`, `fix: validate sale quantities` o `test: cover stock updates`.
+- Revisar el diff y ejecutar las verificaciones pertinentes antes de cada commit.
+- Agregar al commit solamente los archivos correspondientes a la fase.
+- No acceder al remoto ni ejecutar `push` desde Codex; el propietario realizara el push manualmente.
 
-Si `origin` ya existe, revisar con:
-
-```cmd
-git remote -v
-```
-
-Y cambiarlo si fuera necesario:
+Comprobaciones locales antes de cerrar una fase:
 
 ```cmd
-git remote set-url origin URL_DEL_REPOSITORIO_PRIVADO
+git branch --show-current
+git status --short
+git diff --check
+git diff
 ```
 
 ## Flujo para colaboradores
@@ -188,7 +184,3 @@ Cada colaborador debe:
 9. Levantar el servidor con `python manage.py runserver`.
 
 Nunca deben subir su archivo `.env`.
-=======
-# HDboutique
-Aqui vamos a subir los avances de cada uno, lo bueno de cada es que para evitar dependencias, servidores locales, vamos a crear archivos para que se instalen de inmediato, y cada quien trabaja desde su maquina local
->>>>>>> 35b066f18c8b25d9b11b10b6ae332173005482d2
