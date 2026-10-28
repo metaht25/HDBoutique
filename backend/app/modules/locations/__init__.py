@@ -1,0 +1,1 @@
+"""Departments, municipalities and addresses."""

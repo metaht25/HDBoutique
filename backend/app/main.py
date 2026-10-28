@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from app.api.health import router as health_router
 from app.core.config import Settings
 from app.infrastructure.database.connection import build_engine
+from app.infrastructure.database.session import create_session_factory
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -33,6 +34,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         openapi_url="/openapi.json" if expose_docs else None,
     )
     application.state.database_engine = engine
+    application.state.session_factory = (
+        create_session_factory(engine) if engine is not None else None
+    )
     application.include_router(health_router)
     return application
 
