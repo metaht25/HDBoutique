@@ -83,6 +83,14 @@ se acuerde cada regla pertinente.
 
 ## Ejemplos sinteticos y preguntas de aceptacion
 
+Acuerdo de fase 7 (28 de octubre de 2026): el usuario confirmo conservar la
+compatibilidad en las altas y ediciones de ubicaciones, catalogo, clientes y
+proveedores: direccion ligada solo al departamento, telefono textual de hasta
+10 caracteres y ambos campos de existencias independientes. Este acuerdo habilita
+el contrato inicial de estos incrementos en desarrollo/pruebas; no adopta una
+relacion con municipio, una regla de telefono de ocho digitos, activacion ni
+semantica de inventario. Las reglas definitivas B01/B07/B08/B13 siguen pendientes.
+
 1. **Venta integral sin ambiguedad monetaria:** producto 109, precio 200.00,
    existencias 12/12, dos unidades; total esperado 400.00. Conservar IDs de cliente
    y empleado. El fixture no afirma haber persistido esa venta ni descontado stock.

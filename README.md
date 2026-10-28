@@ -21,7 +21,9 @@ refactorizacion conserva los datos y el comportamiento valido del sistema.
 
 Python 3.13.15 y uv 0.12.10 estan fijados para el backend. Las versiones resueltas
 estan en uv.lock; las de frontend, en package-lock.json. Docker/PostgreSQL local
-estan preparados; no hay endpoints de negocio FastAPI. Django sigue atendiendo los contratos
+estan preparados; los [modulos fundamentales FastAPI](docs/foundation-api.md)
+estan implementados para desarrollo/pruebas, deshabilitados por defecto.
+Django sigue atendiendo los contratos
 actuales y el frontend conserva su integracion con ese backend.
 
 ## Empezar

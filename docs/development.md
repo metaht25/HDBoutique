@@ -58,6 +58,10 @@ siguen pendientes. Ver [modelo](data-model.md), [migraciones](migration.md) y
 
 ## Comandos backend
 
+Los incrementos de fase 7 incorporan ubicaciones, catalogo, clientes y proveedores.
+Rutas y limites de habilitacion en [API fundamental](foundation-api.md).
+HDB_BUSINESS_API_ENABLED es false por defecto; production rechaza true hasta fase 8.
+
 Todos los comandos de esta seccion parten de backend/:
 
 ```powershell

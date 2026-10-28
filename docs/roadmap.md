@@ -15,7 +15,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 4 | Docker, Compose y PostgreSQL local | Completada: 7cb3f92 y 9def699; construccion, conexion, persistencia y restauracion sintetica verificadas; ver [Docker](docker.md) y [resultados](characterization.md#verificacion-de-fase-4) |
 | 5 | Modelos SQLAlchemy y migraciones Alembic | Completada como esquema inicial de compatibilidad acordado: 17 modelos, revision 0001_compatibility y 38 pruebas aprobadas; ver [modelo](data-model.md) y [resultados](characterization.md#verificacion-de-fase-5) |
 | 6 | Herramientas y ensayos de migracion SQL Server | Completada para el alcance disponible: el proyecto no dispone de instancia/copia SQL Server ni historicos. Herramientas preparadas y 60 pruebas aprobadas contra PostgreSQL aislado `db:5432/hdboutique_test`; ver [traslado](data-transfer.md) |
-| 7 | Modulos fundamentales FastAPI | Pendiente |
+| 7 | Modulos fundamentales FastAPI | Incrementos solicitados completados: ubicaciones/catalogo y clientes/proveedores implementados y probados bajo compatibilidad confirmada. Fase parcial: empleados pendiente y fuera del incremento solicitado; ver [API fundamental](foundation-api.md) |
 | 8 | Autenticacion y autorizacion | Pendiente |
 | 9 | Compras e inventario | Pendiente |
 | 10 | Ventas transaccionales | Pendiente |

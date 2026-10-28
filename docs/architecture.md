@@ -124,9 +124,11 @@ La fase 3 creo la base uv/FastAPI y pruebas; fase 4 incorpora conexion tecnica,
 Dockerfile/.dockerignore, compose.yaml, compose.dev.yaml e infra/postgres y
 scripts. Fase 5 agrega Base, registro ORM, session factory, los modelos de catalog,
 locations, customers, staff, suppliers, purchases y sales y migrations/ con Alembic.
-compose.test.yaml verifica esquema/persistencia en PostgreSQL desechable. Routers,
-servicios y repositorios de negocio y reorganizacion frontend siguen pendientes;
-no se generan capas vacias o repositorios genericos para rellenar el arbol.
+compose.test.yaml verifica esquema/persistencia en PostgreSQL desechable. Fase 7
+agrega routers, schemas explicitos, servicios transaccionales y repositorios
+concretos en locations, catalog, customers y suppliers. Las rutas requieren
+habilitacion expresa en desarrollo/pruebas; ver [contrato](foundation-api.md).
+Staff, los flujos transaccionales y la reorganizacion frontend siguen pendientes.
 
 ## Fronteras y compatibilidad
 

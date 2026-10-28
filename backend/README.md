@@ -2,7 +2,8 @@
 
 El backend contiene dos aplicaciones durante la transicion:
 
-- `app/`: base FastAPI con configuracion tipada, salud y conectividad PostgreSQL.
+- `app/`: FastAPI con salud, PostgreSQL y modulos fundamentales de fase 7
+  deshabilitados por defecto; contrato en [API fundamental](../docs/foundation-api.md).
 - `hdboutique/`: Django/DRF con los contratos existentes y SQL Server.
 
 Python 3.13.15 y uv 0.12.10 estan fijados. pyproject.toml define las dependencias;

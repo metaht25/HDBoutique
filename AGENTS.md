@@ -37,8 +37,11 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 ## Estado y documentos de referencia
 
 - Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
-  JavaScript en `frontend/`. La base FastAPI en `backend/app/` solo tiene salud;
-  los endpoints de negocio siguen pendientes. Hay 17 modelos SQLAlchemy y revision
+  JavaScript en `frontend/`. FastAPI en `backend/app/` ofrece salud.
+  Los modulos de fase 7 locations/catalog/customers/suppliers estan implementados,
+  deshabilitados por defecto y bloqueados en produccion hasta fase 8. Contratos y
+  compatibilidad confirmada: docs/foundation-api.md. Empleados sigue pendiente.
+  Hay 17 modelos SQLAlchemy y revision
   Alembic 0001_compatibility como esquema inicial de compatibilidad, sin historicos
   trasladados. B01-B14 siguen pendientes; el usuario confirmo conservar ambos
   campos de existencias y direccion ligada solo a departamento en esta base inicial.

@@ -280,6 +280,44 @@ porque no existe un origen. Esto no certifica una base que aparezca posteriormen
 B01-B14 siguen pendientes; el corte y la retirada de Django permanecen en fase 15.
 No se inicia fase 7.
 
+## Verificacion de fase 7: incrementos solicitados
+
+28 de octubre de 2026, Cris-develop. Ubicaciones/catalogo y clientes/proveedores
+implementados; empleados fuera del incremento solicitado.
+
+| Comprobacion | Resultado real |
+| --- | --- |
+| Suite completa Linux | 86 aprobadas, 92 subtests aprobados, 0 omitidas; incluye 34 PostgreSQL |
+| HTTP/Persistencia | Once recursos: alta, listado estable y limites, detalle, PUT, PATCH, borrado, ausencia, FK invalidas, null y campos desconocidos |
+| Integridad | Borrados referenciados devuelven 409 con rollback; commit de servicio visible desde otra conexion |
+| Contrato | Dinero 199.50 sin float, stock 12/3 independiente, PATCH preserva omitidos, PUT restablece opcionales, direccion incompatible rechazada |
+| Seguridad de exposicion | Opt-in de desarrollo/pruebas, bloqueo de habilitacion production, errores sin SQL ni valores sensibles |
+| Cobertura app | 98.49%, 1305 sentencias y 152 ramas; no certifica reglas comerciales pendientes ni frontend |
+| Calidad Windows | Ruff check aprobado; formato: 67 archivos; mypy estricto: 54 archivos app/data_migration; uv lock --check aprobado |
+| Legacy | Caracterizacion Django integrada aprobada; D03 permanece fallo esperado |
+
+Se uso exclusivamente compose.test.yaml, proyecto hdboutique-test, base tmpfs vacia
+db:5432/hdboutique_test, usuario sintetico hdboutique_app, sin puertos publicados.
+Las fuentes app/ y tests/ actuales se montaron de solo lectura en la imagen
+development para verificar exactamente el cambio local. No se consultaron bases
+de desarrollo ni SQL Server; sin migraciones nuevas o cambios de dependencias.
+La suite creo el esquema con Alembic y tambien verifico ausencia de drift.
+
+Comandos de reproduccion desde la raiz, con el proyecto de pruebas detenido y
+su tmpfs vacio:
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml build backend
+docker compose -p hdboutique-test -f compose.test.yaml up -d --wait db
+docker compose -p hdboutique-test -f compose.test.yaml run --rm backend uv run --locked python -m pytest --run-postgres --cov=app --cov-report=term-missing -q
+docker compose -p hdboutique-test -f compose.test.yaml down
+```
+
+El usuario confirmo el contrato inicial de compatibilidad para estas escrituras.
+Limites, habilitacion y campos en [API fundamental](foundation-api.md). No se
+habilitaron rutas en la configuracion existente ni se implementaron permisos de
+fase 8, activacion, movimientos, saldos o pantallas nuevas.
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

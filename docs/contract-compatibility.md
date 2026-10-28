@@ -1,11 +1,12 @@
 # Matriz de compatibilidad propuesta
 
-Estado: propuesta de nombres y estrategia; no implementa endpoints ni aprueba
-reglas nuevas. Origen: [contratos actuales](legacy-api-contracts.md).
+Estado: nombres y estrategia, implementados parcialmente en fase 7 para
+ubicaciones/catalogo y clientes/proveedores; ver [contrato vigente](foundation-api.md).
+Las demas rutas siguen propuestas. Origen: [contratos actuales](legacy-api-contracts.md).
 
 Actualizacion de fase 5: las tablas/modelos nuevos ya usan estos nombres en
 persistencia, con las precisiones siguientes. Las rutas HTTP y los contratos
-JSON nuevos continúan siendo propuestas; Django conserva todos sus contratos.
+JSON nuevos se concretan por incremento; Django conserva todos sus contratos.
 
 ## Rutas
 
