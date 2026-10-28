@@ -1,199 +1,73 @@
 # H&D Boutique
 
-Sistema web administrativo local para la tienda familiar H&D Boutique.
+Sistema web administrativo para inventarios, compras y ventas de una tienda de
+ropa. Incluye gestion de productos, clientes y proveedores, consultas de reportes
+y un prototipo de caja. Su alcance es la administracion interna de la tienda.
 
-Este proyecto no es una tienda online publica. Su objetivo es administrar inventario, compras, ventas, proveedores, clientes, empleados y otros procesos internos de la tienda.
+## Estado del proyecto
 
-## Tecnologias
+La aplicacion existente utiliza Python con Django/DRF, SQL Server y un frontend
+React/Vite en JavaScript. La refactorizacion se desarrolla por fases para conservar
+los datos y el comportamiento valido del sistema.
 
-- Backend: Python + Django
-- API: Django REST Framework
-- Base de datos: SQL Server existente
-- Driver SQL Server: ODBC Driver 17 for SQL Server
-- Frontend: React pendiente de iniciar
-- Sistema operativo principal: Windows
-- Control de versiones: Git + GitHub privado
+| Area | Implementacion existente | Objetivo de la refactorizacion |
+| --- | --- | --- |
+| Backend | Django 6.0.4 y DRF 3.17.1 | FastAPI, Pydantic y Python tipado |
+| Persistencia | Django ORM, mssql-django y pyodbc | SQLAlchemy 2.x y Alembic |
+| Base de datos | SQL Server; esquema externo a las migraciones del repositorio | PostgreSQL con esquema versionado |
+| Dependencias Python | requirements.txt legacy | uv, pyproject.toml y uv.lock versionado |
+| Frontend | React 19.2.5, Vite 8.0.10 y JavaScript/JSX | Conservar React/Vite; incorporar TypeScript y organizacion por funcionalidades |
+| Entorno | Configuracion local dependiente de SQL Server | Docker y Docker Compose reproducibles |
 
-## Requisitos
+Las versiones de frontend de la tabla proceden de package-lock.json. Las versiones
+exactas del stack nuevo se fijaran y comprobaran durante la preparacion del entorno.
+Todavia no existen FastAPI, configuracion de uv, PostgreSQL ni Docker en el codigo
+del proyecto. Hay pruebas de caracterizacion; sus limites estan documentados.
 
-- Python 3.12 recomendado
-- Git
-- SQL Server instalado localmente
-- Base de datos existente llamada `HDBoutique`
-- ODBC Driver 17 for SQL Server
-- Visual Studio Code opcional
+## Empezar
 
-Cada colaborador puede tener un nombre de servidor SQL Server diferente. Ese dato se configura en el archivo local `.env`, que no se sube a GitHub.
+Trabajar sobre esta copia local del repositorio y revisar primero
+[AGENTS.md](AGENTS.md). Participa un solo desarrollador en `Cris-develop`.
+Codex crea commits locales; el propietario realiza el push manualmente.
 
-## Instalacion en Windows
+Las comprobaciones disponibles sin instalar dependencias de aplicacion son:
 
-Clonar el repositorio privado:
-
-```cmd
-git clone URL_DEL_REPOSITORIO
-cd WebHDBoutique
+```powershell
+python -B -m unittest discover -s backend/tests/characterization -p test_source_contracts.py -v
+node --test --test-reporter=spec frontend/tests/characterization/services.test.js
 ```
 
-Crear el entorno virtual:
+Se ejecutan desde la raiz con Python y Node ya disponibles. No inician servicios
+ni consultan una base de datos. Para requisitos, arranque legacy y comandos futuros
+de uv/Docker, consultar la [guia de desarrollo](docs/development.md).
 
-```cmd
-cd backend
-py -3.12 -m venv venv
-```
+## Documentacion
 
-Activar el entorno virtual:
+| Documento | Contenido |
+| --- | --- |
+| [Plan por fases](docs/roadmap.md) | Estado, entregables y criterios para avanzar |
+| [Desarrollo](docs/development.md) | Requisitos, comandos y preparacion del entorno |
+| [Arquitectura](docs/architecture.md) | Organizacion existente y monolito modular objetivo |
+| [Convenciones](docs/conventions.md) | Nombres, tipado, contratos y separacion de responsabilidades |
+| [Datos](docs/data-model.md) | Relaciones comprobadas y limites del modelo |
+| [Migracion](docs/migration.md) | Conservacion, ensayo, conciliacion y corte futuro |
+| [Calidad](docs/quality.md) | Pruebas, verificaciones y definicion de tarea terminada |
+| [Git y colaboracion](docs/collaboration.md) | Trabajo individual, revision y commits locales |
+| [Contratos actuales](docs/legacy-api-contracts.md) | Recursos, campos y ejemplos de la API Django |
+| [Compatibilidad](docs/contract-compatibility.md) | Traducciones propuestas y cambios coordinados |
+| [Reglas del negocio](docs/business-rules.md) | Comportamiento observado y decisiones B01-B14 pendientes |
+| [Caracterizacion](docs/characterization.md) | Ejecucion, resultados registrados y defectos D01-D12 |
+| [ADR 0001](docs/decisions/0001-phase-one-characterization.md) | Decision de caracterizar antes de sustituir |
 
-```cmd
-venv\Scripts\activate
-```
+Las guias de backend y frontend se encuentran en
+[backend/README.md](backend/README.md) y [frontend/README.md](frontend/README.md).
 
-Instalar dependencias:
+## Datos y configuracion
 
-```cmd
-pip install -r requirements.txt
-```
+`.env.example` documenta la configuracion legacy y contiene valores de ejemplo.
+El archivo `.env`, los respaldos y los datos personales no se versionan. La guia
+de desarrollo explica cuando configurar una copia autorizada de SQL Server.
 
-Crear el archivo `.env` desde la plantilla:
-
-```cmd
-cd ..
-copy .env.example .env
-notepad .env
-```
-
-En `.env`, cada colaborador debe cambiar principalmente `DB_HOST` por el nombre de su propio servidor SQL Server local.
-
-Ejemplos:
-
-```env
-DB_HOST=MI-PC\SQLEXPRESS
-DB_HOST=EQUIPO-COLABORADOR\SQLEXPRESS
-```
-
-Para autenticacion de Windows se mantiene:
-
-```env
-DB_TRUSTED_CONNECTION=yes
-```
-
-## Ejecutar el backend
-
-Los comandos de Django se ejecutan desde:
-
-```cmd
-backend\hdboutique
-```
-
-Entrar a la carpeta:
-
-```cmd
-cd backend\hdboutique
-```
-
-Verificar la configuracion:
-
-```cmd
-python manage.py check
-```
-
-Ejecutar migraciones de Django:
-
-```cmd
-python manage.py migrate
-```
-
-Levantar el servidor local:
-
-```cmd
-python manage.py runserver
-```
-
-Abrir en el navegador:
-
-```text
-http://127.0.0.1:8000/
-```
-
-Admin de Django:
-
-```text
-http://127.0.0.1:8000/admin/
-```
-
-Si no existe un usuario administrador, crearlo con:
-
-```cmd
-python manage.py createsuperuser
-```
-
-## Archivos que no deben subirse a GitHub
-
-No subir archivos locales o sensibles como:
-
-- `backend/venv/`
-- `.env`
-- `__pycache__/`
-- archivos `.pyc`
-- logs
-- bases SQLite locales
-- archivos temporales
-- `node_modules/` cuando exista el frontend
-- configuraciones privadas del editor
-
-El repositorio si debe incluir:
-
-- `.env.example`
-- `backend/requirements.txt`
-- codigo fuente del backend
-- documentacion del proyecto
-
-## Flujo local de refactorizacion
-
-La refactorizacion se realiza con un solo desarrollador en la rama `Cris-develop`.
-El punto de partida de la fase 0 es el commit `f67910b` (`Precio Unitario`).
-
-- Trabajar unicamente en `Cris-develop` y avanzar por fases autorizadas.
-- Revisar el estado Git antes de cada fase y preservar los cambios existentes.
-- Crear commits locales pequenos, centrados en un cambio y con Conventional Commits.
-- Usar mensajes como `docs: resolve readme conflict markers`, `fix: validate sale quantities` o `test: cover stock updates`.
-- Revisar el diff y ejecutar las verificaciones pertinentes antes de cada commit.
-- Agregar al commit solamente los archivos correspondientes a la fase.
-- No acceder al remoto ni ejecutar `push` desde Codex; el propietario realizara el push manualmente.
-
-Comprobaciones locales antes de cerrar una fase:
-
-```cmd
-git branch --show-current
-git status --short
-git diff --check
-git diff
-```
-
-## Flujo para colaboradores
-
-Cada colaborador debe:
-
-1. Clonar el repositorio privado.
-2. Crear su propio entorno virtual en `backend/venv`.
-3. Instalar dependencias con `pip install -r requirements.txt`.
-4. Copiar `.env.example` como `.env`.
-5. Editar `DB_HOST` con el nombre de su SQL Server local.
-6. Confirmar que existe la base de datos `HDBoutique`.
-7. Ejecutar `python manage.py check`.
-8. Ejecutar `python manage.py migrate`.
-9. Levantar el servidor con `python manage.py runserver`.
-
-Nunca deben subir su archivo `.env`.
-
-## Caracterizacion del sistema actual (fase 1)
-
-- [Contratos actuales de API](docs/legacy-api-contracts.md): rutas, campos y ejemplos sinteticos.
-- [Matriz de compatibilidad propuesta](docs/contract-compatibility.md): equivalencias y cambios que necesitan adaptacion.
-- [Diccionario del negocio](docs/business-rules.md): comportamiento observado y decisiones B01-B14 pendientes.
-- [Pruebas de caracterizacion](docs/characterization.md): comandos, cobertura, defectos y limites de verificacion.
-- [ADR 0001](docs/decisions/0001-phase-one-characterization.md): alcance tecnico de esta fase.
-
-Estas pruebas no requieren iniciar servidores ni acceder a una base real. La guia
-de caracterizacion distingue las comprobaciones ejecutadas de la suite Django
-pendiente de dependencias. La configuracion de uv y FastAPI corresponde a fases
-posteriores.
+Las decisiones pendientes del negocio no se consideran aprobadas por iniciar una
+fase documental. Se avanza unicamente en la fase solicitada y se informa su cierre
+con verificaciones, limites y commits locales.

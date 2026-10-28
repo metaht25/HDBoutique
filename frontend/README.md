@@ -1,16 +1,22 @@
-# React + Vite
+# Frontend H&D Boutique
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicacion React/Vite en JavaScript y JSX. Tiene pantallas de Dashboard, Productos,
+Clientes, Proveedores, Compras, Ventas, Reportes y Caja. La navegacion actual usa
+estado local; Caja es un prototipo sin persistencia.
 
-Currently, two official plugins are available:
+Se conserva React/Vite durante la modernizacion. TypeScript, React Router,
+componentes compartidos y pruebas de interfaz corresponden a fases posteriores.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Los scripts existentes son `dev`, `build`, `lint` y `preview`. Las versiones se
+resuelven mediante package-lock.json. Los servicios usan fetch y rutas `/api`;
+Vite tiene proxy al backend local en el puerto 8000.
 
-## React Compiler
+- [Guia de desarrollo](../docs/development.md): requisitos y comandos reales.
+- [Caracterizacion](../docs/characterization.md): pruebas Node sin instalar paquetes.
+- [Contratos actuales](../docs/legacy-api-contracts.md) y
+  [compatibilidad propuesta](../docs/contract-compatibility.md).
+- [Convenciones](../docs/conventions.md) y [calidad](../docs/quality.md).
+- [Plan por fases](../docs/roadmap.md).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Las pruebas de servicios no montan React ni verifican persistencia. npm no tiene
+todavia un script test del proyecto; usar los comandos documentados para Node.
