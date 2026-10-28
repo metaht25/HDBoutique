@@ -1,0 +1,39 @@
+# Entorno aislado y desechable: credenciales sinteticas, sin puertos ni datos reales.
+# Ejecutar con -p hdboutique-test y sin superponer archivos de desarrollo.
+name: hdboutique-test
+
+services:
+  db:
+    image: postgres:17.10-bookworm@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f
+    environment:
+      POSTGRES_DB: hdboutique_test
+      POSTGRES_USER: hdboutique_test_owner
+      POSTGRES_PASSWORD: isolated-test-owner-password
+      HDB_DATABASE_PASSWORD: isolated-test-app-password
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ./infra/postgres/init-app.sh:/docker-entrypoint-initdb.d/10-init-app.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    image: hdboutique-backend:development
+    build:
+      context: ./backend
+      target: development
+    environment:
+      HDB_TEST_DATABASE_HOST: db
+      HDB_TEST_DATABASE_PORT: "5432"
+      HDB_TEST_DATABASE_NAME: hdboutique_test
+      HDB_TEST_DATABASE_USER: hdboutique_app
+      HDB_TEST_DATABASE_PASSWORD: isolated-test-app-password
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    command: ["uv", "run", "--locked", "python", "-m", "pytest", "--run-postgres", "--cov=app", "--cov-report=term-missing"]
