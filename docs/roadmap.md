@@ -14,7 +14,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 3 | uv, FastAPI minimo y calidad | Completada: entorno, calidad, pruebas y arranque verificados; D03 sigue esperado |
 | 4 | Docker, Compose y PostgreSQL local | Completada: 7cb3f92 y 9def699; construccion, conexion, persistencia y restauracion sintetica verificadas; ver [Docker](docker.md) y [resultados](characterization.md#verificacion-de-fase-4) |
 | 5 | Modelos SQLAlchemy y migraciones Alembic | Completada como esquema inicial de compatibilidad acordado: 17 modelos, revision 0001_compatibility y 38 pruebas aprobadas; ver [modelo](data-model.md) y [resultados](characterization.md#verificacion-de-fase-5) |
-| 6 | Herramientas y ensayos de migracion SQL Server | Pendiente; requiere origen autorizado |
+| 6 | Herramientas y ensayos de migracion SQL Server | Herramientas y ensayos sinteticos preparados; 59 pruebas aprobadas. Inventario y ensayo historico pendientes de identificar origen/destino autorizados; ver [traslado](data-transfer.md) |
 | 7 | Modulos fundamentales FastAPI | Pendiente |
 | 8 | Autenticacion y autorizacion | Pendiente |
 | 9 | Compras e inventario | Pendiente |

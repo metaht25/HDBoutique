@@ -250,6 +250,33 @@ ventas o cobros: aun no estan implementados. No convertir este resultado de
 persistencia estructural en aprobacion de B01-B14 ni de historicos existentes.
 Comandos y limites en [migraciones](migration.md).
 
+## Verificacion de fase 6
+
+Ejecucion local del 28 de octubre de 2026 en Cris-develop. Se completaron las
+herramientas y ensayos sinteticos; el inventario y ensayo con historicos siguen
+pendientes de identificar origen/copia y destino autorizados. No se conecto a
+SQL Server ni se usaron credenciales o bases de desarrollo.
+
+| Verificacion | Resultado ejecutado |
+| --- | --- |
+| Suite Linux completa | 59 aprobadas, 0 omitidas; 10 PostgreSQL reales en compose.test.yaml independiente |
+| Traslado sintetico | 17 tablas cargadas y conciliadas por IDs/campos exactos, ambas existencias independientes, Decimal, fechas y nulos |
+| Protecciones | Destino no vacio rechazado sin eliminar registros; conversion monetaria con perdida, PK duplicadas, huerfanos y campos ausentes rechazados |
+| Rollback | Fallo despues de cargar y fallo tardio por identidad agotada revierten todas las filas y reinicios transaccionales; nuevo ensayo funciona |
+| Secuencias | Tras preservar ID 101, PostgreSQL genera 102 |
+| Extraccion | Catalogo/driver simulados verifican consultas SELECT, PK Ofrece explicita, readonly, rollback y cierre; no equivalen a SQL Server real |
+| Respaldo/restauracion | Carga sintetica confirmada en hdboutique_test, pg_dump custom y pg_restore en hdboutique_restore_test; las 17 tablas concilian exactamente tras restauracion |
+| Calidad | Ruff y formato: aprobados, 57 archivos; mypy estricto: 35 archivos app/data_migration aprobados; uv lock --check aprobado sin cambios de dependencias |
+| Cobertura | app 100% de 236 sentencias y 10 ramas; no mide data_migration ni certifica datos historicos |
+| Django | Caracterizacion integrada aprobada; D03 sigue como fallo esperado |
+| Aislamiento | Proyecto hdboutique-test sin puertos ni volumen persistente; contenedores/red de pruebas retirados, desarrollo intacto |
+
+Herramientas, matriz ejecutable, comandos y plan de ensayo/corte/retorno en
+[data-transfer.md](data-transfer.md). No se han probado aun el driver SQL Server,
+su inventario fisico, definiciones de objetos, perfilado real, volumen/rendimiento,
+restauracion SQL Server ni conciliacion de historicos. B01-B14 siguen pendientes;
+el corte y la retirada de Django permanecen en fase 15. No se inicia fase 7.
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

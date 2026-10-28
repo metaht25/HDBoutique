@@ -16,7 +16,7 @@ uv sync --locked
 uv run --locked python -m pytest --cov=app --cov-report=term-missing
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked mypy app
+uv run --locked mypy
 uv run --locked python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
 ```
 
