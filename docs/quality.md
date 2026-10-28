@@ -22,11 +22,19 @@ Los cambios documentales no requieren volver a ejecutar toda la aplicacion.
 
 La fuente de comandos, resultados registrados y limites de fase 1 es
 [characterization.md](characterization.md). Distingue pruebas estaticas,
-servicios con mocks, suite Django pendiente y pruebas de datos/UI aun no realizadas.
+servicios con mocks, suite Django aislada y pruebas de datos/UI aun no realizadas.
 No reinterpretar esos resultados como pruebas HTTP o de persistencia reales.
 
-En fase 3 se configuran Pytest, Ruff, mypy y sus dependencias con uv. Las pruebas
-de caracterizacion utiles se integraran sin instalar dependencias desde tests.
+Pytest, Ruff, mypy y cobertura estan configurados con uv desde fase 3. Pytest
+descubre app/pruebas estaticas y ejecuta la suite Django en un subproceso aislado,
+sin instalar dependencias desde tests. Ruff cubre app y pruebas; excluye el arbol
+Django legacy. mypy estricto cubre app. Las advertencias de Pytest se tratan como
+errores. La cobertura de app tiene umbral 90%; no mide el backend Django ni UI.
+
+Los comandos verificados estan en [development.md](development.md). La suite
+Django conserva un expectedFailure para D03; no implica que el defecto se haya
+corregido ni que todas las operaciones de negocio esten probadas.
+
 Las pruebas de persistencia/concurrencia se ejecutaran con PostgreSQL aislado,
 sin sustituir sus bloqueos por SQLite. No importar configuracion productiva para
 obtener una conexion de prueba.

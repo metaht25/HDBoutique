@@ -44,3 +44,10 @@ B01-B14 en [business-rules.md](../business-rules.md) siguen pendientes. Esta ADR
 no elige semantica de stock, recepcion de compras, descuentos, anulaciones, saldos,
 roles, caja ni nuevas funcionalidades. La matriz de nombres ingleses es propuesta
 de compatibilidad, no una migracion autorizada o ejecutada.
+
+## Seguimiento
+
+En fase 3 se preparo el entorno uv y se ejecuto la suite Django pendiente:
+siete casos aprobados y D03 como fallo esperado, sin base de datos. La decision
+original de aislamiento se conserva. Ver
+[ADR 0002](0002-backend-foundation.md) y [caracterizacion](../characterization.md).

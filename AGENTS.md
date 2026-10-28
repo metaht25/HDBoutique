@@ -32,8 +32,9 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 ## Estado y documentos de referencia
 
-- Aplicacion existente: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
-  JavaScript en `frontend/`. No asumir que el stack objetivo ya esta implementado.
+- Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
+  JavaScript en `frontend/`. La base FastAPI en `backend/app/` solo tiene salud;
+  los endpoints de negocio y la persistencia nueva siguen pendientes.
 - Arquitectura: [docs/architecture.md](docs/architecture.md).
 - Convenciones: [docs/conventions.md](docs/conventions.md).
 - API existente: [docs/legacy-api-contracts.md](docs/legacy-api-contracts.md).
@@ -63,10 +64,16 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 - uv es el gestor oficial del backend. No introducir Poetry, Pipenv ni pip como
   gestores principales; no generar archivos de dependencias redundantes.
-- En fase 3 se preparan pyproject.toml, uv.lock y .python-version. Versionar el
-  bloqueo; excluir .venv y fijar versiones de herramientas cuando se implementen.
-- Una vez preparado el entorno, usar `uv sync --locked` y `uv run --locked ...`
-  para aplicaciones, pruebas y calidad. Cambios de dependencias mediante uv.
+- pyproject.toml, uv.lock y .python-version estan en backend/. Usar Python
+  3.13.15 y uv 0.12.10. Versionar el bloqueo y excluir .venv/caches.
+- Desde backend/, usar `uv sync --locked` y `uv run --locked ...` para aplicaciones,
+  pruebas y calidad. Para Pytest/Uvicorn preferir `python -m pytest` y
+  `python -m uvicorn` dentro de uv, compatibles con los lanzadores de este Windows.
+  Cambios de dependencias mediante uv.
+- Los grupos dev/legacy se instalan por defecto durante la transicion. Para
+  instalacion solo runtime usar `uv sync --locked --no-default-groups`; --no-dev
+  por si solo no excluye Django. requirements.txt es una exportacion de legacy,
+  no se edita manualmente; su comando esta en la guia de desarrollo.
 - Mientras no exista ese entorno, las pruebas sin dependencias pueden ejecutarse
   con Python/Node existentes segun la guia de caracterizacion.
 - No instalar dependencias, iniciar servicios ni crear entornos durante una fase

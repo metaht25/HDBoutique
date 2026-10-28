@@ -9,9 +9,9 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |
 | 0 | Rama y saneamiento de README | Completada: 9bc044c; punto de partida f67910b |
-| 1 | Contratos, ejemplos y caracterizacion | Completada en preparacion: e247dd8 y 4d4443d; ejecucion Django pendiente |
+| 1 | Contratos, ejemplos y caracterizacion | Preparacion completada: e247dd8 y 4d4443d; suite Django ejecutada en fase 3 |
 | 2 | AGENTS, guias y convenciones | Completada en documentacion: enlaces y diff revisados; B01-B14 siguen pendientes |
-| 3 | uv, FastAPI minimo y calidad | Pendiente |
+| 3 | uv, FastAPI minimo y calidad | Completada: entorno, calidad, pruebas y arranque verificados; D03 sigue esperado |
 | 4 | Docker, Compose y PostgreSQL local | Pendiente |
 | 5 | Modelos SQLAlchemy y migraciones Alembic | Pendiente |
 | 6 | Herramientas y ensayos de migracion SQL Server | Pendiente; requiere origen autorizado |

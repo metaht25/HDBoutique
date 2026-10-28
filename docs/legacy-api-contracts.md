@@ -14,10 +14,12 @@ backend Django/DRF existente; no define todavia una API FastAPI.
   [legacy_contracts.json](../backend/tests/characterization/fixtures/legacy_contracts.json).
   Son datos sinteticos, no respuestas capturadas de una base real.
 
-Las rutas y declaraciones se verifican estaticamente. Los formatos y codigos de
-respuesta siguientes son el comportamiento esperado de DRF con esta configuracion.
-Su verificacion en ejecucion queda preparada en las pruebas aisladas de Django.
-No se han confirmado esquema fisico, registros, restricciones SQL ni triggers.
+Las rutas y declaraciones se verifican estaticamente. En fase 3 las pruebas
+aisladas Django tambien verifican lecturas 200, formatos, campos requeridos y
+errores 400 sobre datos sinteticos. Las escrituras satisfactorias, borrados y
+errores de persistencia de las tablas siguientes siguen describiendo comportamiento
+esperado de DRF; no fueron ejecutados contra una base. No se han confirmado esquema
+fisico, registros, restricciones SQL ni triggers.
 
 ## Convenciones compartidas
 

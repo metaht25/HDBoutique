@@ -31,8 +31,9 @@ identificadores espanoles fuera de esa frontera.
 
 ## Python y tipado
 
-- Seguir PEP 8 con longitud de proyecto de 88 caracteres para codigo nuevo; Ruff
-  sera el formateador/linter cuando se configure en fase 3.
+- Seguir PEP 8 con longitud de proyecto de 88 caracteres para codigo nuevo. Ruff
+  esta configurado para app y pruebas; Django legacy queda fuera de su alcance
+  para evitar reformateos masivos. mypy comprueba app en modo estricto.
 - Agregar type hints a funciones nuevas de aplicacion, argumentos, retornos y
   contratos importantes. Preferir tipos concretos y modelos tipados a diccionarios
   ambiguos; no convertir cada prueba en una jerarquia de tipos.

@@ -4,20 +4,21 @@
 
 Preparar una base verificable antes de reemplazar Django o los servicios frontend.
 Se protege el comportamiento valido de los [contratos actuales](legacy-api-contracts.md)
-y se identifican defectos que deben corregirse. No se inicia FastAPI ni se modifica
-codigo de aplicacion en esta fase.
+y se identifican defectos que deben corregirse. La fase 1 no inicio FastAPI ni
+modifico codigo de aplicacion. La fase 3 agrega la base nueva e integra estas
+pruebas con uv/Pytest manteniendo los contratos Django.
 
 Las muestras se encuentran en
 `backend/tests/characterization/fixtures/legacy_contracts.json`: 17 recursos con
 IDs y datos sinteticos relacionados. `baseline_commit` identifica el codigo de
 aplicacion de referencia, no una exportacion de SQL Server.
 
-## Ejecucion desde la raiz del repositorio
+## Ejecucion actual desde backend/
 
 ### Declaraciones backend, sin dependencias externas
 
 ```powershell
-python -B -m unittest discover -s backend/tests/characterization -p test_source_contracts.py -v
+uv run --locked python -m pytest tests/characterization/test_source_contracts.py -v
 ```
 
 Tres pruebas comparan el inventario con las rutas declaradas y los campos de
@@ -32,7 +33,7 @@ como haria Django: sigue pendiente verificar la identidad real en SQL Server.
 ### Servicios frontend, con Node y sin instalar paquetes
 
 ```powershell
-node --test --test-reporter=spec frontend/tests/characterization/services.test.js
+node --test --test-reporter=spec ../frontend/tests/characterization/services.test.js
 ```
 
 Las 41 pruebas ejecutan los siete modulos reales de servicios:
@@ -49,15 +50,16 @@ un servidor y no demuestran que las pantallas recorran todas las paginas.
 La ejecucion verificada utilizo Node 24.22.1; la version oficial se fijara en la
 fase de entorno.
 
-### Adaptadores HTTP y serializers Django, preparados
+### Adaptadores HTTP y serializers Django, ejecutados en fase 3
 
 ```powershell
-python -B backend/tests/characterization/run_django_tests.py
+uv run --locked python tests/characterization/run_django_tests.py
 ```
 
 El ejecutor comprueba primero si Django y DRF ya estan disponibles. Si faltan,
 informa que no se ejecutaron las pruebas y termina con codigo 2; no instala nada,
 no omite silenciosamente toda la suite y no reporta exito.
+Desde fase 3, uv sync --locked incluye legacy por defecto y permite ejecutarla.
 
 Cuando esten disponibles, usa `isolated_settings.py`, independiente de settings
 productivos, `python-decouple`, ODBC y `.env`. Solo configura
@@ -76,7 +78,8 @@ Hay siete pruebas normales (varias con subcasos por recurso):
 7. Precision decimal de producto y rechazo de fecha invalida.
 
 Se prepara ademas una regresion D03 con `expectedFailure`: un detalle de venta
-deberia admitir precio 199.50. Todavia no fue ejecutada. Al corregir D03, se debe
+deberia admitir precio 199.50. En fase 3 se ejecuto como fallo esperado. Al corregir
+D03, se debe
 retirar expectedFailure y actualizar el contrato intencionadamente; un exito
 inesperado fuerza esa revision.
 
@@ -86,19 +89,31 @@ productivo; utilizar su ejecutor aislado.
 
 ### Relacion con uv
 
-En esta fase no se inicializa un proyecto Python ni se instalan dependencias. El
-uso directo de Python ejecuta biblioteca estandar o dependencias ya disponibles;
-no introduce un gestor alternativo a uv. En fase 3, al existir pyproject.toml y
-uv.lock, los mismos comandos Python se ejecutaran mediante `uv run --locked` y
-estas pruebas se integraran con Pytest. No usar pip para preparar esta fase.
+En fase 1 se ejecutaban Python/Node existentes sin instalar dependencias. Desde
+fase 3, pyproject.toml y uv.lock son la fuente del entorno; uv run --locked
+ejecuta las herramientas. El grupo legacy mantiene las versiones Django y el
+grupo dev incluye Pytest. No usar pip para preparar este entorno.
+
+Pytest descubre las tres pruebas estaticas y un caso que ejecuta la suite Django
+en un subproceso independiente. La suite interna usa SimpleTestCase y conserva
+su expectedFailure. No se agrego pytest-django ni se configuro una base de prueba.
+
+Para ejecutar toda la base nueva y la caracterizacion desde backend/:
+
+```powershell
+uv run --locked python -m pytest --cov=app --cov-report=term-missing
+```
+
+Los parametros, requisitos y comandos restantes estan en
+[development.md](development.md).
 
 ## Matriz de caracterizacion
 
 | ID | Comportamiento valido | Proteccion preparada | Limite |
 | --- | --- | --- | --- |
-| C01 | Rutas actuales y 17 recursos | Prueba estatica + resolucion Django | Django pendiente de dependencias |
+| C01 | Rutas actuales y 17 recursos | Prueba estatica + resolucion Django | Sin servidor ni base real |
 | C02 | Nombres, campos y relaciones por ID | Fixture, estatico y serializers | No prueba FK fisica |
-| C03 | Decimal como texto con 2 decimales; fecha ISO | Fixture + serializer Django | Lectura runtime pendiente |
+| C03 | Decimal como texto con 2 decimales; fecha ISO | Fixture + serializer Django | Lectura de objetos sinteticos, sin SQL |
 | C04 | Listas y objetos de detalle | Pruebas Django con objetos sin guardar | No consulta SQL |
 | C05 | Errores de campos requeridos | POST vacio aislado | No prueba errores de FK inexistente |
 | C06 | Peticiones de servicios frontend existentes | 41 pruebas Node | No renderiza paginas |
@@ -111,7 +126,7 @@ estas pruebas se integraran con Pytest. No usar pip para preparar esta fase.
 | --- | --- | --- | --- |
 | D01 | `Productos.jsx:34` frente a `Ventas.jsx:97` | Producto con `cantidadstock=12`, `stock=3`; comparar pantallas. Pendiente de UI | Una semantica coherente aprobada B01 |
 | D02 | `Ventas.jsx:384` y `:396` | Simular exito de cabecera y fallo del segundo detalle; verificar registros parciales. Pendiente de integracion | Transaccion completa y reintento sin duplicado |
-| D03 | `ventas/models.py:22` | Regresion Django preparada: precio 199.50 debe conservar centavos | Precio de linea exacto y total 399.00 para 2 unidades |
+| D03 | `ventas/models.py:22` | Regresion Django ejecutada como fallo esperado: precio 199.50 debe conservar centavos | Precio de linea exacto y total 399.00 para 2 unidades |
 | D04 | `Clientes.jsx:379`, `ubicaciones/models.py:12` | Enviar payload del formulario; comprobar texto/municipio recibido frente a validado. Pendiente de serializer/UI | Ningun dato solicitado se pierde silenciosamente; B08 |
 | D05 | `Productos.jsx:232`, `Clientes.jsx:315` | Desactivar, navegar fuera y volver. Pendiente de UI | Estado persistente y politica B07 |
 | D06 | `Clientes.jsx:375` | Crear direccion y rechazar cliente. Pendiente de integracion | Operacion consistente sin direccion abandonada |
@@ -126,7 +141,7 @@ La ausencia de transacciones e inventario en el codigo no demuestra que no haya
 triggers SQL Server. Verificarlos antes de replicar movimientos o sumar existencias.
 No ejecutar estas reproducciones contra una base operativa.
 
-## Resultados de esta fase
+## Resultados historicos de fase 1
 
 | Verificacion | Resultado registrado |
 | --- | --- |
@@ -137,6 +152,24 @@ No ejecutar estas reproducciones contra una base operativa.
 
 No presentar las 44 pruebas aprobadas como 44 pruebas de endpoints reales. Los
 resultados corresponden exclusivamente a declaraciones y servicios con mocks.
+
+## Verificacion de fase 3
+
+| Verificacion | Resultado |
+| --- | --- |
+| Pytest integrado | 16 pruebas aprobadas: 12 de FastAPI/configuracion, 3 estaticas y 1 ejecutor Django |
+| Suite interna Django, ejecutada tambien por separado | 8 casos: 7 aprobados y D03 como fallo esperado; subcasos sobre los 17 recursos |
+| Base nueva | 100% de cobertura de app (36 sentencias); no mide Django, frontend ni negocio |
+| Ruff y formato | Aprobados para app y pruebas; no se reformateo la aplicacion Django |
+| mypy | app verificada en modo estricto |
+| uv | Sincronizacion bloqueada y lock actualizado verificados; resolucion solo runtime comprobada con dry-run |
+| Arranque HTTP | Uvicorn temporal: live, ready y OpenAPI respondieron 200; proceso detenido |
+| SQL Server/PostgreSQL, UI y E2E | No ejecutados |
+
+El ejecutor Django cuenta como una prueba de Pytest; no sumar sus ocho casos como
+si fueran ocho items adicionales de la coleccion. La cobertura de salud/configuracion
+no certifica compras, ventas, concurrencia ni datos. Los endpoints de salud declaran
+scope=process y no abren conexiones de base.
 
 ## Criterio de mantenimiento
 

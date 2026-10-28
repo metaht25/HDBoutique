@@ -1,154 +1,214 @@
 # Guia de desarrollo
 
-## Estado y ubicaciones
+## Entorno backend disponible desde fase 3
 
-Esta guia distingue los comandos disponibles del entorno objetivo. El orden de
-implementacion se encuentra en [roadmap.md](roadmap.md).
-
-| Ubicacion | Contenido actual |
-| --- | --- |
-| Raiz | Documentacion, configuracion de ejemplo y control de versiones |
-| `backend/requirements.txt` | Dependencias del backend Django legacy |
-| `backend/hdboutique/` | manage.py, proyecto Django y seis aplicaciones de negocio |
-| `backend/tests/characterization/` | Muestras y pruebas independientes de una base real |
-| `frontend/` | Aplicacion React/Vite, package.json y package-lock.json |
-
-No existe todavia un entorno reproducible completo para el backend. No se conoce
-la version de Python originalmente usada por el proyecto: requirements.txt fija
-paquetes, pero no Python ni las herramientas del sistema.
-
-## Requisitos segun tarea
-
-| Tarea | Requisitos |
-| --- | --- |
-| Documentacion y Git | Esta copia local, Git y editor |
-| Caracterizacion estatica | Python existente; biblioteca estandar |
-| Servicios frontend | Node con node:test y fetch; fase 1 comprobada con Node 24.22.1 |
-| Adaptadores Django aislados | Django y DRF ya disponibles; no necesita SQL Server ni pyodbc |
-| Frontend completo | Node/npm compatibles con el lock y dependencias instaladas |
-| Entorno backend objetivo | Python y uv con versiones fijadas en fase 3 |
-| Contenedores y PostgreSQL | Docker Engine/Desktop y Compose v2, preparados en fase 4 |
-| Datos historicos | Copia o acceso de lectura de SQL Server expresamente autorizado |
-
-El lock de frontend requiere para Vite `^20.19.0 || >=22.12.0` y para ESLint
-`^20.19.0 || ^22.13.0 || >=24`. Node 24 satisface ambos; el proyecto todavia no fija
-un parche oficial. Verificar y fijar versiones al implementar el entorno.
-
-## Comprobaciones disponibles
-
-Desde la raiz, sin instalar paquetes ni iniciar servicios:
+Desde la raiz, entrar a backend/. Instalar uv 0.12.10 desde una
+[fuente oficial](https://docs.astral.sh/uv/getting-started/installation/) si aun no
+esta disponible. pyproject.toml exige esa version; no actualizarla silenciosamente.
 
 ```powershell
-git branch --show-current
-git status --short
-python -B -m unittest discover -s backend/tests/characterization -p test_source_contracts.py -v
-node --test --test-reporter=spec frontend/tests/characterization/services.test.js
+cd backend
+uv sync --locked
 ```
 
-El ejecutor opcional de Django es:
+uv crea .venv automaticamente; no hace falta activarla para uv run. Si Python
+3.13.15 ya esta disponible, como en la verificacion de esta fase, se reutiliza el
+interprete local. No instalar otra copia innecesariamente. .python-version fija
+el interprete y requires-python limita el proyecto a la linea 3.13 compatible.
+Si falta ese interprete, instalarlo primero con `uv python install 3.13.15`.
+
+| Archivo/grupo | Responsabilidad |
+| --- | --- |
+| pyproject.toml | Fuente editable de metadatos, dependencias y calidad |
+| uv.lock | Resolucion completa versionada; no editar a mano |
+| .python-version | Python 3.13.15 |
+| tool.uv.required-version | uv 0.12.10 |
+| project.dependencies | FastAPI, Pydantic, configuracion, Uvicorn y herramientas de persistencia |
+| dev | Pytest, cobertura, HTTPX2, Ruff y mypy |
+| legacy | Las nueve versiones congeladas del backend anterior |
+| requirements.txt | Exportacion generada de legacy para compatibilidad |
+| .venv y caches | Archivos locales excluidos de Git |
+
+dev y legacy se instalan por defecto durante la transicion. Django sigue en
+hdboutique/; FastAPI vive en app/. No se crea un segundo proyecto Django ni se
+reemplazan sus endpoints.
+
+## Versiones verificadas
+
+Estas versiones son una fotografia de fase 3. uv.lock y los manifiestos son la
+fuente actual; cualquier actualizacion requiere cambio intencionado y pruebas.
+
+| Herramienta/paquete | Version |
+| --- | --- |
+| Python / uv | 3.13.15 / 0.12.10 |
+| FastAPI / Pydantic / pydantic-settings | 0.162.0 / 2.14.1 / 2.16.1 |
+| Uvicorn | 0.54.0 |
+| SQLAlchemy / Alembic / Psycopg | 2.1.6 / 1.20.1 / 3.3.6 |
+| Pytest / pytest-cov | 9.2.0 / 7.1.0 |
+| Ruff / mypy | 0.17.3 / 2.4.0 |
+| HTTPX2 | 2.16.0 |
+| Django / DRF / mssql-django | 6.0.4 / 3.17.1 / 1.7.1 |
+| pyodbc / python-decouple | 5.3.0 / 3.8 |
+
+SQLAlchemy, Alembic y Psycopg estan disponibles, pero todavia no hay engine,
+esquema ni conexion PostgreSQL. Esas partes corresponden a fases 4/5.
+
+## Comandos backend
+
+Todos los comandos de esta seccion parten de backend/:
 
 ```powershell
-python -B backend/tests/characterization/run_django_tests.py
+uv sync --locked
+uv run --locked python -m pytest
+uv run --locked python -m pytest --cov=app --cov-report=term-missing
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy app
+uv lock --check
 ```
 
-Si faltan dependencias termina con codigo 2 y declara que no se ejecuto la suite.
-Consultar [characterization.md](characterization.md) para cobertura y limites.
+La suite de Django tambien puede ejecutarse de forma independiente:
 
-## Uso del backend legacy
+```powershell
+uv run --locked python tests/characterization/run_django_tests.py
+```
 
-Solo si ya existe un entorno con las dependencias de requirements.txt y una copia
-SQL Server autorizada, preparar la configuracion local a partir de `.env.example`.
-Conservar un `.env` existente: no sobrescribirlo automaticamente.
+Pytest incluye esa suite mediante un subproceso con settings dummy. No usa SQL
+Server, no crea una base y no ejecuta migraciones. Ver
+[characterization.md](characterization.md) para limites y el fallo esperado D03.
 
-| Variable | Funcion legacy |
+En este Windows el lanzador pytest.exe fue bloqueado por Control de aplicaciones.
+El comando python -m pytest dentro de uv fue verificado; no requiere cambiar la
+politica de Windows. Se utiliza el mismo patron para Uvicorn.
+
+## Iniciar FastAPI
+
+```powershell
+uv run --locked python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
+```
+
+| Ruta | Comportamiento |
 | --- | --- |
-| `SECRET_KEY` | Clave privada de Django; el ejemplo no es una clave de despliegue |
-| `DEBUG` | Depuracion local; no usar el valor de ejemplo para produccion |
-| `ALLOWED_HOSTS` | Nombres permitidos por Django |
-| `DB_NAME`, `DB_HOST`, `DB_PORT` | Base y servidor autorizados |
-| `DB_DRIVER` | Nombre del driver ODBC instalado; ejemplo Driver 17 |
-| `DB_TRUSTED_CONNECTION` | Autenticacion integrada de Windows configurada actualmente |
+| GET /health/live | 200 con status=ok y scope=process |
+| GET /health/ready | Misma comprobacion de proceso; aun no comprueba una base |
+| /docs, /redoc, /openapi.json | Documentacion en desarrollo/test; deshabilitada en modo production |
 
-Los comandos de Django se ejecutan desde `backend/hdboutique/`.
-`python manage.py runserver` carga esa configuracion y puede conectar a SQL Server al atender
-peticiones; no forma parte de las verificaciones documentales. No ejecutar
-`manage.py migrate` como paso automatico: los 17 modelos de negocio son unmanaged
-y ese comando no reconstruye su esquema externo.
+El puerto 8001 evita sustituir Django en 8000, al que sigue apuntando el proxy
+frontend. No se migraron endpoints de negocio ni se expuso la API fuera de
+127.0.0.1. Detener el servidor con Ctrl+C al terminar la sesion de desarrollo.
 
-La instalacion legacy se consolidara con uv durante la fase 3. Esta guia no
-propone crear otro entorno ni mantener un flujo paralelo de instalacion con pip.
+## Configuracion de FastAPI
+
+La aplicacion solo consulta variables del proceso con prefijo HDB_. No carga
+automaticamente el .env legacy ni necesita credenciales de base para arrancar.
+
+| Variable | Valor por defecto | Validacion |
+| --- | --- | --- |
+| HDB_APP_NAME | HDBoutique API | Texto no vacio |
+| HDB_ENVIRONMENT | development | development, test o production |
+| HDB_DEBUG | False | Booleano; True se rechaza en production |
+
+Ejemplo local PowerShell, antes de iniciar la API:
+
+```powershell
+$env:HDB_ENVIRONMENT = 'development'
+$env:HDB_DEBUG = 'False'
+```
+
+.env.example contiene estos nombres junto con las variables legacy como referencia;
+no sobrescribir un .env existente. En fase 4 se conectara la configuracion de
+contenedores. No poner secretos en variables publicas del frontend.
+
+## Dependencias con uv
+
+Agregar/eliminar paquetes desde backend/, revisar pyproject.toml y uv.lock juntos
+y repetir las pruebas del area afectada:
+
+```powershell
+uv add package_name
+uv add --dev package_name
+uv add --group legacy package_name
+uv remove package_name
+uv sync --locked
+```
+
+Usar uv sync sin --locked solo al resolver cambios deliberados. No mantener otro
+gestor Python o una segunda lista manual. Si cambia legacy, regenerar su exportacion:
+
+```powershell
+uv export --locked --only-group legacy --no-hashes --no-emit-project --output-file requirements.txt
+```
+
+Para instalar solo dependencias principales:
+
+```powershell
+uv sync --locked --no-default-groups
+```
+
+Ese comando retira herramientas de desarrollo y Django del entorno seleccionado;
+volver con uv sync --locked para desarrollar. --no-dev por si solo deja legacy
+activo. Docker/CI deben respetar esa diferencia. La resolucion sin grupos se
+comprobo con --dry-run sin alterar el entorno de desarrollo.
+
+## Usar Django temporalmente
+
+El grupo legacy conserva todas las versiones de requirements.txt anterior.
+Para ejecutar el backend real hace falta ODBC Driver 17 y una copia SQL Server
+autorizada; instalar pyodbc no instala ese driver del sistema.
+
+| Variable legacy | Funcion |
+| --- | --- |
+| SECRET_KEY, DEBUG, ALLOWED_HOSTS | Configuracion Django; valores de ejemplo solo para desarrollo |
+| DB_NAME, DB_HOST, DB_PORT | Base y servidor autorizados |
+| DB_DRIVER | Nombre del driver ODBC instalado |
+| DB_TRUSTED_CONNECTION | Autenticacion integrada de Windows actual |
+
+Desde backend/, solo con esa copia/configuracion y dentro del alcance autorizado:
+
+```powershell
+uv run --locked python hdboutique/manage.py runserver 127.0.0.1:8000
+```
+
+Ese comando puede acceder a SQL Server al atender peticiones y no se uso en las
+pruebas de fase 3. No ejecutar manage.py migrate como paso automatico: los 17
+modelos de negocio unmanaged no se reconstruyen con sus migraciones.
 
 ## Frontend existente
 
-Tras preparar dependencias en la fase autorizada, desde `frontend/`:
+No se cambia su entorno en fase 3. Desde frontend/, cuando esten preparadas sus
+dependencias: npm ci instala package-lock.json; npm run dev inicia Vite,
+npm run lint ejecuta ESLint, npm run build genera dist y npm run preview permite
+vista local de la construccion. Preview no es el servidor de produccion.
 
-| Comando existente | Uso |
-| --- | --- |
-| `npm ci` | Instalar respetando package-lock.json; altera node_modules |
-| `npm run dev` | Iniciar Vite; el proxy `/api` apunta a `http://127.0.0.1:8000` |
-| `npm run lint` | ESLint |
-| `npm run build` | Generar dist; requiere dependencias |
-| `npm run preview` | Vista local de la construccion; no es servidor de produccion |
+Node 24 satisface los rangos del lock de Vite y ESLint; el proyecto aun no fija
+un parche oficial de Node. No hay TypeScript ni script npm test todavia.
+La caracterizacion Node puede ejecutarse desde la raiz sin instalar paquetes:
 
-No hay script `npm test`, comprobacion TypeScript ni runner de componentes todavia.
-Las pruebas Node de fase 1 se ejecutan por separado desde la raiz. No mezclar
-package-lock.json con bloqueos de otros gestores.
+```powershell
+node --test --test-reporter=spec frontend/tests/characterization/services.test.js
+```
 
-## Guia de uv de Astral: flujo previsto para fase 3
+## Docker y CI: trabajo posterior
 
-Estos comandos se documentan para la implementacion futura. No funcionan como
-arranque del proyecto actual mientras falten pyproject.toml y uv.lock.
+Todavia no hay Dockerfile, Compose ni PostgreSQL local del proyecto. Fase 4 debe
+usar Python/uv fijados, sincronizacion bloqueada, cache de dependencias, usuario
+sin privilegios y secretos externos. La imagen de runtime debe excluir todos los
+grupos predeterminados. Migraciones y backups seran pasos controlados, no efectos
+automaticos del arranque web.
 
-Desde `backend/`, fijar Python mediante `uv python install` y `uv python pin` con
-la version acordada. Usar `uv init` solo si se necesita inicializar los metadatos,
-revisando su salida para no reemplazar el codigo Django existente.
-
-| Operacion | Comando previsto |
-| --- | --- |
-| Agregar dependencia principal | `uv add fastapi` |
-| Agregar herramienta de desarrollo | `uv add --dev pytest` |
-| Retirar dependencia | `uv remove package_name` |
-| Resolver/sincronizar cambios deliberados | `uv sync` |
-| Reproducir entorno y comprobar bloqueo | `uv sync --locked` |
-| Iniciar nueva API | `uv run --locked uvicorn app.main:app --reload` |
-| Pruebas | `uv run --locked pytest` |
-| Lint/formato | `uv run --locked ruff check .` y `uv run --locked ruff format --check .` |
-| Tipado | `uv run --locked mypy app` |
-
-pyproject.toml sera la fuente de dependencias directas y configuracion. uv.lock
-se versionara junto con cada cambio de dependencias. .python-version fijara
-Python, y .venv sera generado por uv y excluido de Git. Instalar las herramientas
-de pruebas/calidad en el grupo de desarrollo; dependencias de extraccion SQL
-Server quedaran separadas de la aplicacion final cuando se necesiten.
-
-Mantener requirements.txt solo mientras tenga consumidores legacy; no editar dos
-listas manuales para el mismo entorno. uv sera el mecanismo comun de desarrollo,
-Docker y CI. Fijar tambien la version de uv al preparar esos entornos.
-
-## Guia de Docker: preparacion prevista para fase 4
-
-Todavia no hay Dockerfile ni archivos Compose. La fase 4 debe proporcionar:
-
-- Backend construido con Python y uv fijados, pyproject.toml/uv.lock copiados antes
-  del codigo, cache de dependencias y sincronizacion bloqueada sin desarrollo.
-- Imagen final sin secretos, caches locales, herramientas de pruebas ni privilegios
-  administrativos; arranque sin resolver dependencias de nuevo.
-- PostgreSQL oficial con version fijada, volumen persistente y health check.
-- Configuraciones de desarrollo/produccion, .dockerignore y .env.example revisado.
-- Frontend con Vite en desarrollo y estaticos en produccion cuando corresponda.
-- Migraciones como paso explicito, no una carrera entre todos los procesos web.
-
-Los comandos Compose exactos se agregaran y verificaran con los nombres reales
-de servicios. Documentar respaldo y restauracion junto con ellos; un volumen no
-sustituye un respaldo. No publicar la base por defecto fuera del entorno local.
+CI utilizara los comandos de calidad de esta guia y el mismo bloqueo. Su
+configuracion y ejecucion remota no se afirman implementadas. Las pruebas de base
+real se agregan con PostgreSQL aislado. Ver [quality.md](quality.md) y
+[migration.md](migration.md).
 
 ## Problemas frecuentes
 
 | Situacion | Accion |
 | --- | --- |
-| Django no disponible en caracterizacion | Registrar pendiente; preparar dependencias con uv en fase 3, no cambiar a settings productivos |
-| No existe pyproject.toml | El flujo uv del proyecto aun no esta implementado; usar solo comprobaciones disponibles |
-| SQL Server u ODBC no disponible | Las pruebas estaticas y Node siguen siendo independientes |
-| npm no disponible | Se puede ejecutar la caracterizacion de servicios con Node; el frontend completo requiere preparar npm |
+| uv rechaza su version | Usar 0.12.10 o realizar una actualizacion explicita de herramientas verificada |
+| Falta Python 3.13.15 | Instalarlo con uv python install 3.13.15 |
+| Falta Django durante pruebas | Ejecutar uv sync --locked; no usar --no-default-groups para la suite completa |
+| pytest.exe bloqueado | Usar uv run --locked python -m pytest |
+| Readiness devuelve ok | Solo comprueba proceso; no prueba conectividad o esquema de base |
+| SQL Server/ODBC no disponible | La nueva API y las pruebas aisladas siguen siendo independientes |
 | Cambios ajenos o rama distinta | Seguir [collaboration.md](collaboration.md) y preservar el trabajo |
-| Error de integridad o totales | No reparar datos a ciegas; contrastar reglas, contratos y [migration.md](migration.md) |

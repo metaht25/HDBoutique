@@ -12,12 +12,22 @@ El estado de navegacion y formularios reside en componentes; gran parte de la
 validacion y los calculos estan dentro de las paginas. Los contratos, consumidores
 y limitaciones se detallan en [legacy-api-contracts.md](legacy-api-contracts.md).
 
+Desde fase 3 existe ademas `backend/app/`: main.py crea FastAPI, core/config.py
+valida variables HDB_ y api/health.py publica salud con scope=process. No importa
+settings Django ni crea conexiones de base. La nueva aplicacion se ejecuta en
+8001 para mantener el frontend y Django en su contrato actual de 8000.
+
+pyproject.toml y uv.lock gestionan ambos backends. Las dependencias legacy quedan
+en su grupo temporal y requirements.txt es una exportacion generada. Las decisiones
+tecnicas de esta base estan en [ADR 0002](decisions/0002-backend-foundation.md).
+
 ## Diseno objetivo
 
 Monolito modular por funcionalidades, con arquitectura por capas dentro de cada
 modulo. Se conserva React/Vite y se incorpora TypeScript gradualmente. El backend
 utilizara FastAPI, Pydantic, SQLAlchemy 2.x, Alembic y PostgreSQL, gestionado con uv.
-Las versiones exactas se fijan y verifican en la fase de entorno.
+La base de versiones y los comandos verificados estan en
+[development.md](development.md); el bloqueo contiene la resolucion exacta.
 
 | Capa | Responsabilidad | Limite |
 | --- | --- | --- |
@@ -63,7 +73,7 @@ Caja conserva su pantalla existente. Un modulo backend de caja solo se agrega
 cuando se confirme B10. Colores, SKU o variantes agrupadas no son requisitos nuevos
 implicitos. El inventario funcional esta en los documentos de fase 1.
 
-## Estructura objetivo, no creada todavia
+## Estructura objetivo, implementada parcialmente
 
 ```text
 HDBoutique/
@@ -101,6 +111,9 @@ HDBoutique/
 Dentro de cada modulo, router.py, schemas.py, service.py, models.py y repository.py
 se crean segun necesidad. domain.py se reserva para reglas centrales; no generar
 archivos vacios ni capas de paso. El backend legacy permanece durante la sustitucion.
+La fase 3 solo crea app/main.py, app/core/config.py, app/api/health.py, sus
+paquetes, configuracion uv y pruebas. Infraestructura de base, modulos de negocio,
+migraciones, Docker y la reorganizacion de frontend siguen pendientes.
 
 ## Fronteras y compatibilidad
 
