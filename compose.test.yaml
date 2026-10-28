@@ -31,6 +31,12 @@ services:
       HDB_TEST_DATABASE_NAME: hdboutique_test
       HDB_TEST_DATABASE_USER: hdboutique_app
       HDB_TEST_DATABASE_PASSWORD: isolated-test-app-password
+      # Destino canonico de ensayo para las herramientas de fase 6.
+      HDB_MIGRATION_DATABASE_HOST: db
+      HDB_MIGRATION_DATABASE_PORT: "5432"
+      HDB_MIGRATION_DATABASE_NAME: hdboutique_test
+      HDB_MIGRATION_DATABASE_USER: hdboutique_app
+      HDB_MIGRATION_DATABASE_PASSWORD: isolated-test-app-password
     depends_on:
       db:
         condition: service_healthy

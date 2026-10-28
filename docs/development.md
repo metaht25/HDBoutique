@@ -80,7 +80,7 @@ Pytest incluye esa suite mediante un subproceso con settings dummy. No usa SQL
 Server, no crea una base y no ejecuta migraciones. Ver
 [characterization.md](characterization.md) para limites y el fallo esperado D03.
 
-Los comandos Pytest anteriores, sin --run-postgres, omiten los diez casos de
+Los comandos Pytest anteriores, sin --run-postgres, omiten los once casos de
 integracion PostgreSQL. Para la suite completa usar compose.test.yaml con proyecto
 aislado, configuracion HDB_TEST_DATABASE_* y PostgreSQL temporal, segun
 [migracion](migration.md#pruebas-aisladas-de-esquema-y-persistencia).

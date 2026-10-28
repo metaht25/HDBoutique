@@ -6,13 +6,37 @@ La matriz ejecutable contiene las 17 tablas y todos sus campos declarados;
 `mapping` la exporta con tipos, nulabilidad y revision de destino.
 Es una correspondencia basada en codigo, **no un inventario fisico certificado**.
 
-## Estado y requisitos de datos reales
+## Estado y entorno acordado
 
-La preparacion y los ensayos sinteticos estan disponibles. No se ha conectado a
-SQL Server ni trasladado historicos. Para ejecutar la parte real falta identificar
-instancia/base o copia SQL Server autorizada, host/puerto/base PostgreSQL separada,
-responsables y permisos. Una respuesta afirmativa sin identificar las bases no
-autoriza seleccionar una configuracion encontrada en el equipo.
+La fase 6 queda completada para el alcance disponible. El usuario confirmo que no
+existe una instancia o copia SQL Server ni datos historicos que trasladar. Por eso
+no hay host, instancia, puerto, base, credenciales ni inventario SQL Server
+pendientes en el proyecto actual. Las herramientas se conservan para una fuente
+futura, pero su presencia no afirma que se haya migrado una base inexistente.
+
+El destino canonico de ensayo ya esta definido en `compose.test.yaml`:
+
+| Parametro | Valor |
+| --- | --- |
+| Proyecto Compose | `hdboutique-test` |
+| Host desde el contenedor backend | `db` |
+| Puerto PostgreSQL | `5432` |
+| Base | `hdboutique_test` |
+| Usuario de aplicacion | `hdboutique_app` |
+| Persistencia | `tmpfs`; desechable |
+| Puerto publicado al host | Ninguno |
+
+Las variables `HDB_MIGRATION_DATABASE_*` se declaran explicitamente en el servicio
+backend con esos valores y credenciales sinteticas. No usan `.env.docker`, no
+reutilizan `HDB_DATABASE_*` y no alcanzan la base de desarrollo `hdboutique`, que
+se publica separadamente en `127.0.0.1:5433` cuando esta activa.
+
+No se publica otro puerto porque la herramienta y PostgreSQL se comunican en la
+red interna de Compose. Si un operador necesita acceso manual desde Windows en el
+futuro, debe autorizarse y documentarse una superposicion distinta; no hace falta
+para las pruebas ni para cerrar esta fase.
+
+## Fuente SQL Server futura
 
 El propietario debe proporcionar una copia restaurada estable y una cuenta de
 solo lectura (SELECT y VIEW DEFINITION). El driver pide readonly y el codigo solo
@@ -89,12 +113,14 @@ ni redondean importes. Las observaciones de negocio (negativos, stocks distintos
 totales/cabeceras, cliente del abono) se reportan sin modificar historicos.
 Duplicados textuales NFKC/casefold son una heuristica, no equivalencia de collation.
 
-Crear **manualmente** un PostgreSQL exclusivo de ensayo con nombre terminado en
-`_test` y aplicar Alembic segun [migration.md](migration.md). La CLI no crea bases,
-no aplica DDL Alembic ni vacia tablas. Usar variables de proceso separadas
-`HDB_MIGRATION_DATABASE_HOST`, `PORT`, `NAME`, `USER`, `PASSWORD`, todas requeridas;
-sin fallback a HDB_DATABASE_* ni HDB_TEST_DATABASE_*. La cuenta debe ser propietaria
-de las tablas/identidades para RESTART. Revisar destino y respaldo antes de cargar.
+Para un ensayo futuro fuera de Compose, crear **manualmente** un PostgreSQL
+exclusivo con nombre terminado en `_test` y aplicar Alembic segun
+[migration.md](migration.md). La CLI no crea bases, no aplica DDL Alembic ni vacia
+tablas. Las variables de proceso `HDB_MIGRATION_DATABASE_HOST`, `PORT`, `NAME`,
+`USER`, `PASSWORD` son obligatorias, sin fallback a HDB_DATABASE_* ni
+HDB_TEST_DATABASE_*. La cuenta debe ser propietaria de tablas/identidades para
+RESTART. El ensayo canonico del proyecto no necesita esta configuracion manual:
+Compose ya proporciona `db:5432/hdboutique_test`.
 
 ```powershell
 uv run --locked python -m data_migration load --database rehearsal_test --input migration-artifacts/target.json --output migration-artifacts/load.json
@@ -142,6 +168,8 @@ SQL Server ni recuperacion de datos operativos. Resultados en
 
 ## Plan de ensayo, corte y retorno
 
+Si aparece una instancia o copia SQL Server en el futuro, reabrir este procedimiento:
+
 1. Identificar responsables, bases autorizadas, retencion B12 y reglas B pertinentes.
 2. Verificar respaldo restaurando SQL Server en copia separada; documentar motor,
    version, fecha y consistencia, sin publicar datos ni credenciales.
@@ -160,4 +188,5 @@ base separada autorizada; no vaciar bases automaticamente. Para corte futuro, an
 de aceptar escrituras nuevas el retorno usa el origen conservado. Despues hay que
 conciliar las operaciones nuevas: cambiar una conexion o hacer downgrade Alembic
 no es rollback de datos. La fase 6 no detiene escrituras operativas, cambia la API,
-retira Django ni ejecuta corte.
+retira Django ni ejecuta corte. Con el alcance actual sin SQL Server, estos pasos
+futuros no bloquean el cierre de fase 6.

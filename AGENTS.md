@@ -44,9 +44,11 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   campos de existencias y direccion ligada solo a departamento en esta base inicial.
   Docker/Compose y PostgreSQL local estan disponibles; readiness comprueba conexion
   cuando esta configurada. Operacion y secretos: [docs/docker.md](docs/docker.md).
-- Fase 6: herramientas en backend/data_migration/ y ensayos sinteticos preparados;
-  inventario y ensayo historico pendientes de identificar origen/destino
-  autorizados. Procedimiento y limites: [docs/data-transfer.md](docs/data-transfer.md).
+- Fase 6 completada para el alcance disponible: no existe instancia/copia SQL
+  Server ni historicos a trasladar. Herramientas en backend/data_migration/ y
+  ensayos sinteticos verificados contra `db:5432/hdboutique_test`. Si aparece un
+  origen futuro, debe inventariarse y conciliarse antes de usarlo. Procedimiento y
+  limites: [docs/data-transfer.md](docs/data-transfer.md).
 - Arquitectura: [docs/architecture.md](docs/architecture.md).
 - Convenciones: [docs/conventions.md](docs/conventions.md).
 - API existente: [docs/legacy-api-contracts.md](docs/legacy-api-contracts.md).

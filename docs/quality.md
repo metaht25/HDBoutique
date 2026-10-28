@@ -55,14 +55,16 @@ Se comprueban upgrade/downgrade/upgrade, metadata sin drift, las 17 tablas con
 datos sinteticos, Decimal, nulabilidad/fechas, identidades, rechazo de huerfanos
 y borrado referenciado, commit visible desde otra conexion y rollback.
 El SQL offline se prueba sin conexion. La suite habitual sin la opcion omite
-diez casos PostgreSQL desde fase 6; no equivale a ejecutar esas verificaciones.
+once casos PostgreSQL desde fase 6; no equivale a ejecutar esas verificaciones.
 
 La fuente de comandos de esquema e integracion es [migration.md](migration.md).
 Fase 6 agrega pruebas ETL con datos sinteticos, rechazos, conciliacion por campo,
 rollback de carga y secuencias, mas un ensayo pg_dump/pg_restore reproducible en
 [data-transfer.md](data-transfer.md). mypy estricto cubre app y data_migration.
 La cobertura configurada de app no incluye estas herramientas ni certifica datos
-SQL Server. El inventario de origen y la migracion historica siguen pendientes.
+SQL Server. El usuario confirmo que no existe instancia/copia SQL Server ni datos
+historicos para el cierre actual; si aparece un origen futuro, requerira su propio
+inventario y ensayo.
 La cobertura de app incluye declaraciones ORM: un 100% de esas lineas no demuestra
 por si solo reglas de compra/venta, cobertura de cada DDL o concurrencia. Esos
 casos permanecen en sus fases, con datos aislados y reglas aprobadas.

@@ -1,16 +1,27 @@
 """Load, reconcile, rollback and realign identities on isolated PostgreSQL only."""
 
 import pytest
-from sqlalchemy import Connection, insert, select
+from sqlalchemy import Connection, insert, select, text
 
 from app.infrastructure.database import models
 from data_migration.files import MigrationError
 from data_migration.mapping import MAPPINGS
-from data_migration.target import load, read_target
+from data_migration.target import load, read_target, target_engine
 from data_migration.validation import transform
 from tests.migration_helpers import synthetic_source
 
 pytestmark = pytest.mark.postgres
+
+
+def test_canonical_migration_target_settings_connect() -> None:
+    engine = target_engine("hdboutique_test")
+    try:
+        with engine.connect() as connection:
+            assert connection.scalar(text("SELECT current_database()")) == (
+                "hdboutique_test"
+            )
+    finally:
+        engine.dispose()
 
 
 def test_transfer_all_tables_and_reject_nonempty_target(

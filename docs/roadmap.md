@@ -14,7 +14,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 3 | uv, FastAPI minimo y calidad | Completada: entorno, calidad, pruebas y arranque verificados; D03 sigue esperado |
 | 4 | Docker, Compose y PostgreSQL local | Completada: 7cb3f92 y 9def699; construccion, conexion, persistencia y restauracion sintetica verificadas; ver [Docker](docker.md) y [resultados](characterization.md#verificacion-de-fase-4) |
 | 5 | Modelos SQLAlchemy y migraciones Alembic | Completada como esquema inicial de compatibilidad acordado: 17 modelos, revision 0001_compatibility y 38 pruebas aprobadas; ver [modelo](data-model.md) y [resultados](characterization.md#verificacion-de-fase-5) |
-| 6 | Herramientas y ensayos de migracion SQL Server | Herramientas y ensayos sinteticos preparados; 59 pruebas aprobadas. Inventario y ensayo historico pendientes de identificar origen/destino autorizados; ver [traslado](data-transfer.md) |
+| 6 | Herramientas y ensayos de migracion SQL Server | Completada para el alcance disponible: el proyecto no dispone de instancia/copia SQL Server ni historicos. Herramientas preparadas y 60 pruebas aprobadas contra PostgreSQL aislado `db:5432/hdboutique_test`; ver [traslado](data-transfer.md) |
 | 7 | Modulos fundamentales FastAPI | Pendiente |
 | 8 | Autenticacion y autorizacion | Pendiente |
 | 9 | Compras e inventario | Pendiente |
@@ -59,8 +59,9 @@ No presentar una propuesta documental como una herramienta ya implementada.
   y direccion ligada a departamento, sin fijar semantica de B01/B08. El cierre de
   esa fase verifica estructura y Alembic; las reglas comerciales pendientes se
   incorporaran mediante nuevas revisiones antes de habilitar los casos de uso.
-- Si la fase 6 espera un origen autorizado, pueden prepararse otras piezas
-  independientes cuando el usuario lo solicite; no certificar migracion real.
+- Fase 6 cerro sin traslado historico porque el usuario confirmo que no existe una
+  instancia/copia SQL Server. Si aparece un origen en el futuro, reabrir el ensayo:
+  inventariar, perfilar y conciliar antes de afirmar que esos datos se migraron.
 - Durante fase 7 la nueva API permanece en entorno de desarrollo/pruebas hasta
   completar permisos de fase 8. No publicar endpoints abiertos por respetar orden.
 - Las pruebas y documentacion se mantienen en cada fase; la 14 consolida la

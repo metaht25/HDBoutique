@@ -253,13 +253,14 @@ Comandos y limites en [migraciones](migration.md).
 ## Verificacion de fase 6
 
 Ejecucion local del 28 de octubre de 2026 en Cris-develop. Se completaron las
-herramientas y ensayos sinteticos; el inventario y ensayo con historicos siguen
-pendientes de identificar origen/copia y destino autorizados. No se conecto a
-SQL Server ni se usaron credenciales o bases de desarrollo.
+herramientas y ensayos sinteticos. El usuario confirmo que no existe una instancia
+o copia SQL Server ni historicos a trasladar; por eso el inventario y ensayo real
+no aplican al cierre actual. No se conecto a SQL Server ni se usaron credenciales
+o bases de desarrollo.
 
 | Verificacion | Resultado ejecutado |
 | --- | --- |
-| Suite Linux completa | 59 aprobadas, 0 omitidas; 10 PostgreSQL reales en compose.test.yaml independiente |
+| Suite Linux completa | 60 aprobadas, 0 omitidas; 11 PostgreSQL reales en compose.test.yaml independiente |
 | Traslado sintetico | 17 tablas cargadas y conciliadas por IDs/campos exactos, ambas existencias independientes, Decimal, fechas y nulos |
 | Protecciones | Destino no vacio rechazado sin eliminar registros; conversion monetaria con perdida, PK duplicadas, huerfanos y campos ausentes rechazados |
 | Rollback | Fallo despues de cargar y fallo tardio por identidad agotada revierten todas las filas y reinicios transaccionales; nuevo ensayo funciona |
@@ -269,13 +270,15 @@ SQL Server ni se usaron credenciales o bases de desarrollo.
 | Calidad | Ruff y formato: aprobados, 57 archivos; mypy estricto: 35 archivos app/data_migration aprobados; uv lock --check aprobado sin cambios de dependencias |
 | Cobertura | app 100% de 236 sentencias y 10 ramas; no mide data_migration ni certifica datos historicos |
 | Django | Caracterizacion integrada aprobada; D03 sigue como fallo esperado |
-| Aislamiento | Proyecto hdboutique-test sin puertos ni volumen persistente; contenedores/red de pruebas retirados, desarrollo intacto |
+| Destino canonico | Servicio Compose `db`, puerto interno `5432`, base `hdboutique_test`, usuario sintetico `hdboutique_app`; conexion mediante HDB_MIGRATION_DATABASE_* comprobada |
+| Aislamiento | Proyecto hdboutique-test sin puertos publicados ni volumen persistente; contenedores/red de pruebas retirados, desarrollo intacto |
 
 Herramientas, matriz ejecutable, comandos y plan de ensayo/corte/retorno en
-[data-transfer.md](data-transfer.md). No se han probado aun el driver SQL Server,
-su inventario fisico, definiciones de objetos, perfilado real, volumen/rendimiento,
-restauracion SQL Server ni conciliacion de historicos. B01-B14 siguen pendientes;
-el corte y la retirada de Django permanecen en fase 15. No se inicia fase 7.
+[data-transfer.md](data-transfer.md). El driver SQL Server, inventario fisico,
+perfilado real, restauracion SQL Server y conciliacion historica no se ejecutaron
+porque no existe un origen. Esto no certifica una base que aparezca posteriormente.
+B01-B14 siguen pendientes; el corte y la retirada de Django permanecen en fase 15.
+No se inicia fase 7.
 
 ## Criterio de mantenimiento
 

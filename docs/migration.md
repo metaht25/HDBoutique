@@ -4,9 +4,10 @@ Estado desde fase 5: Alembic implementado para el esquema PostgreSQL inicial de
 compatibilidad, revision `0001_compatibility`. Aplicada explicitamente en la base
 local vacia hdboutique de fase 4, con respaldo previo. Fase 6 incorpora herramientas
 de inventario, extraccion, transformacion, carga y conciliacion; procedimiento en
-[data-transfer.md](data-transfer.md). No se han inspeccionado ni migrado datos
-SQL Server. Los ensayos historicos siguen pendientes de identificar sus bases
-autorizadas; el corte operativo corresponde a fase 15.
+[data-transfer.md](data-transfer.md). El usuario confirmo que no existe instancia
+o copia SQL Server ni datos historicos disponibles, por lo que el inventario y
+traslado real no aplican al cierre de fase 6. Si aparece un origen futuro, debe
+tratarse como un nuevo ensayo autorizado. El corte operativo corresponde a fase 15.
 
 ## Operar el esquema con Alembic
 
@@ -100,7 +101,7 @@ encuentra tablas. No hereda HDB_DATABASE_* como alternativa. Las pruebas de
 persistencia usan transacciones/savepoints y datos sinteticos; el caso de commit
 comprueba visibilidad desde otra conexion. Las pruebas Django siguen con dummy.
 
-Sin --run-postgres, Pytest ejecuta las pruebas sin base y **omite** diez casos
+Sin --run-postgres, Pytest ejecuta las pruebas sin base y **omite** once casos
 de integracion. No presentar esas omisiones como integracion aprobada. La prueba
 de SQL offline si se ejecuta sin PostgreSQL. Resultados reales en
 [caracterizacion](characterization.md#verificacion-de-fase-5).
