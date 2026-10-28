@@ -54,6 +54,7 @@ Thumbs.db
 Desktop.ini
 
 # Archivos temporales
+/README.codex-local.md
 *.tmp
 *.temp
 ~$*

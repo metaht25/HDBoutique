@@ -5,6 +5,10 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 ## Alcance y autonomia
 
+- Al iniciar una sesion, si existe `README.codex-local.md` en la raiz, leerlo
+  antes de planificar o editar. Es la guia local de continuidad por fases para
+  Codex CLI y esta excluida de Git; no forzar su inclusion en commits. Si falta,
+  usar docs/roadmap.md y solicitar al usuario el contexto local solo si hace falta.
 - Trabajar sobre el repositorio local existente; conservar funcionalidades validas
   e historicos. No clonar nuevamente ni acceder al repositorio remoto.
 - Ejecutar solo la fase solicitada en [docs/roadmap.md](docs/roadmap.md).
