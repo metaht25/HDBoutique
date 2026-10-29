@@ -5,6 +5,7 @@ from typing import Any
 from sqlalchemy import Select, case, func, select, true
 from sqlalchemy.orm import Session
 
+from app.modules.cash.models import SaleVoid
 from app.modules.catalog.models import Product
 from app.modules.customers.models import Customer, CustomerType
 from app.modules.purchases.models import Purchase, PurchaseItem
@@ -69,7 +70,11 @@ class ReportingRepository:
     def sales(
         self, period: DateRange, offset: int, limit: int
     ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-        source = case((SaleWorkflow.sale_id.is_(None), "legacy"), else_="confirmed")
+        source = case(
+            (SaleVoid.sale_id.is_not(None), "voided"),
+            (SaleWorkflow.sale_id.is_(None), "legacy"),
+            else_="confirmed",
+        )
         base = (
             select(
                 Sale.sale_id,
@@ -83,12 +88,15 @@ class ReportingRepository:
             )
             .join(Customer, Customer.customer_id == Sale.customer_id)
             .outerjoin(SaleWorkflow, SaleWorkflow.sale_id == Sale.sale_id)
+            .outerjoin(SaleVoid, SaleVoid.sale_id == Sale.sale_id)
             .where(*date_conditions(Sale.sale_date, period))
             .subquery()
         )
         summary = select(
             func.count().label("total_count"),
-            func.coalesce(func.sum(base.c.total), 0).label("total_amount"),
+            func.coalesce(
+                func.sum(case((base.c.source != "voided", base.c.total), else_=0)), 0
+            ).label("total_amount"),
             func.count().filter(base.c.source == "legacy").label("legacy_count"),
         ).select_from(base)
         rows = select(base).order_by(base.c.sale_date.desc(), base.c.sale_id.desc())

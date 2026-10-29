@@ -8,8 +8,8 @@ from app.infrastructure.database.base import Base
 
 def test_complete_registry_has_named_constraints_and_indexed_foreign_keys() -> None:
     configure_mappers()
-    assert len(Base.metadata.tables) == 24
-    assert len(Base.registry.mappers) == 24
+    assert len(Base.metadata.tables) == 30
+    assert len(Base.registry.mappers) == 30
     for table in Base.metadata.sorted_tables:
         assert table.primary_key.name == f"pk_{table.name}"
         for foreign_key in table.foreign_key_constraints:

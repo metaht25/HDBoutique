@@ -13,9 +13,11 @@ class InventoryMovement(Base):
     __table_args__ = (
         CheckConstraint(
             "(movement_type = 'purchase_receipt' AND purchase_item_id IS NOT NULL "
-            "AND sale_item_id IS NULL) OR "
+            "AND sale_item_id IS NULL AND return_item_id IS NULL) OR "
             "(movement_type = 'sale_issue' AND sale_item_id IS NOT NULL "
-            "AND purchase_item_id IS NULL)",
+            "AND purchase_item_id IS NULL AND return_item_id IS NULL) OR "
+            "(movement_type = 'sale_return' AND return_item_id IS NOT NULL "
+            "AND sale_item_id IS NULL AND purchase_item_id IS NULL)",
             name="movement_source",
         ),
         CheckConstraint(
@@ -23,7 +25,7 @@ class InventoryMovement(Base):
             name="valid_quantities",
         ),
         CheckConstraint(
-            "(movement_type = 'purchase_receipt' "
+            "(movement_type IN ('purchase_receipt', 'sale_return') "
             "AND stock_after = stock_before + quantity) OR "
             "(movement_type = 'sale_issue' AND stock_after = stock_before - quantity)",
             name="stock_delta",
@@ -45,6 +47,11 @@ class InventoryMovement(Base):
         index=True,
     )
     movement_type: Mapped[str] = mapped_column(String(24))
+    return_item_id: Mapped[int | None] = mapped_column(
+        ForeignKey("sale_return_items.return_item_id", ondelete="RESTRICT"),
+        unique=True,
+        index=True,
+    )
     quantity: Mapped[int]
     stock_before: Mapped[int]
     stock_after: Mapped[int]

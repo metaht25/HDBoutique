@@ -28,7 +28,7 @@ def snapshot(engine: Engine) -> dict[str, object]:
         if names != expected:
             raise RuntimeError("Rehearsal schema differs from current metadata")
         version = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        if version != "0004_atomic_sales":
+        if version != "0005_cash_checkout":
             raise RuntimeError("Unexpected Alembic head")
         for table in Base.metadata.sorted_tables:
             rows = [
@@ -82,7 +82,7 @@ def main() -> None:
                 "Restored rows, monetary values, history or identities differ"
             )
         print(
-            "Synthetic restore verified: 24 tables, exact field hashes, "
+            "Synthetic restore verified: 30 tables, exact field hashes, "
             "identities and Alembic head; no values printed"
         )
     finally:

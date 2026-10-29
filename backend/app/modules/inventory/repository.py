@@ -1,8 +1,9 @@
 """Inventory persistence; writes share their purchase or sale transaction."""
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.modules.cash.models import SaleReturnItem
 from app.modules.catalog.models import Product
 from app.modules.inventory.models import InventoryMovement
 from app.modules.purchases.models import PurchaseItem
@@ -44,7 +45,16 @@ class InventoryRepository:
                 PurchaseItem.purchase_id == purchase_id
             )
         if sale_id is not None:
-            statement = statement.join(SaleItem).where(SaleItem.sale_id == sale_id)
+            item_ids = select(SaleItem.sale_item_id).where(SaleItem.sale_id == sale_id)
+            return_ids = select(SaleReturnItem.return_item_id).where(
+                SaleReturnItem.sale_item_id.in_(item_ids)
+            )
+            statement = statement.where(
+                or_(
+                    InventoryMovement.sale_item_id.in_(item_ids),
+                    InventoryMovement.return_item_id.in_(return_ids),
+                )
+            )
         return list(
             self.session.scalars(
                 statement.order_by(

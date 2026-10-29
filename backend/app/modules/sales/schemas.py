@@ -7,6 +7,7 @@ from typing import Annotated, Literal, Self
 from pydantic import BaseModel, Field, model_validator
 
 from app.api.schemas import InputModel
+from app.modules.cash.schemas import PaymentCreate, PaymentRead, VoidRead
 
 PositiveId = Annotated[int, Field(gt=0, strict=True)]
 
@@ -21,6 +22,7 @@ class SaleCreate(InputModel):
     employee_id: PositiveId | None = None
     sale_date: date
     items: Annotated[list[SaleLineCreate], Field(min_length=1, max_length=100)]
+    payment: PaymentCreate
 
     @model_validator(mode="after")
     def reject_duplicate_lines(self) -> Self:
@@ -44,7 +46,9 @@ class SaleRead(BaseModel):
     sale_date: date
     total: Decimal
     currency: Literal["NIO"] = "NIO"
-    status: Literal["confirmed"] | None
+    status: Literal["confirmed", "voided"] | None
     created_by_user_id: int | None
     created_at: datetime | None
     items: list[SaleLineRead]
+    payment: PaymentRead | None
+    annulment: VoidRead | None

@@ -5,10 +5,14 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from hashlib import sha256
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApplicationError
+from app.modules.cash.models import SalePayment
+from app.modules.cash.schemas import PaymentRead
+from app.modules.cash.service import CashService
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
@@ -61,13 +65,19 @@ class SaleService:
         if sale is None:
             raise ApplicationError(404, "not_found", "Sale not found")
         workflow = self.repository.workflow(sale_id)
+        annulment = CashService(self.session).void_detail(sale_id)
+        payment = self.session.scalar(
+            select(SalePayment).where(SalePayment.sale_id == sale_id)
+        )
         return SaleRead(
             sale_id=sale.sale_id,
             customer_id=sale.customer_id,
             employee_id=sale.employee_id,
             sale_date=sale.sale_date,
             total=sale.total,
-            status="confirmed" if workflow else None,
+            status="voided" if annulment else "confirmed" if workflow else None,
+            payment=PaymentRead.model_validate(payment) if payment else None,
+            annulment=annulment,
             created_by_user_id=workflow.created_by_user_id if workflow else None,
             created_at=workflow.created_at if workflow else None,
             items=[
@@ -109,6 +119,10 @@ class SaleService:
                         )
                     return self._detail(existing.sale_id)
                 employee_id = self._employee(actor, payload.employee_id)
+                cash = CashService(self.session)
+                cash.lock_shift(
+                    payload.payment.shift_id, actor, employee_id=employee_id
+                )
                 if not self.repository.customer_exists(payload.customer_id):
                     raise ApplicationError(
                         422, "invalid_reference", "Customer not found"
@@ -189,6 +203,7 @@ class SaleService:
                         request_hash=fingerprint,
                     )
                 )
+                cash.collect(sale.sale_id, total, payload.payment, actor)
                 return self._detail(sale.sale_id)
         except IntegrityError as error:
             raise ApplicationError(

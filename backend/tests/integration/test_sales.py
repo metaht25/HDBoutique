@@ -10,7 +10,7 @@ from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import func, insert, select, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import Settings
@@ -228,13 +228,10 @@ def test_roles_and_employee_attribution(sales_context, role) -> None:
             assert register(client, graph, payload=mismatched).status_code == 422
         else:
             assert register(client, graph, payload=payload).status_code == 422
-            payload["employee_id"] = graph["employee2"]
+            payload["employee_id"] = graph["employee1"]
         result = register(client, graph, payload=payload)
         assert result.status_code == 201, result.text
-        assert (
-            result.json()["employee_id"]
-            == graph["employee1" if role == "Manager" else "employee2"]
-        )
+        assert result.json()["employee_id"] == graph["employee1"]
         assert (
             result.json()["created_by_user_id"]
             == graph[
@@ -403,7 +400,10 @@ def test_downgrade_refuses_to_drop_sale_movements(
     assert register(client, graph).status_code == 201
     config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
     config.attributes["connection"] = database_connection
-    with pytest.raises(IntegrityError), database_connection.begin_nested():
+    with (
+        pytest.raises(ProgrammingError, match="Cash history exists"),
+        database_connection.begin_nested(),
+    ):
         command.downgrade(config, "0003_purchase_receipts")
     assert (
         database_connection.scalar(select(func.count()).select_from(InventoryMovement))

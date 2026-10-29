@@ -11,7 +11,8 @@ class MovementRead(OutputModel):
     product_id: int
     purchase_item_id: int | None
     sale_item_id: int | None
-    movement_type: Literal["purchase_receipt", "sale_issue"]
+    return_item_id: int | None
+    movement_type: Literal["purchase_receipt", "sale_issue", "sale_return"]
     quantity: int
     stock_before: int
     stock_after: int

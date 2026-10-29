@@ -10,6 +10,7 @@ from app.core.config import Settings
 from app.core.errors import install_error_handlers
 from app.infrastructure.database.connection import build_engine
 from app.infrastructure.database.session import create_session_factory
+from app.modules.cash.router import router as cash_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
 from app.modules.identity.router import router as identity_router
@@ -71,6 +72,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             suppliers_router,
             purchases_router,
             sales_router,
+            cash_router,
             inventory_router,
             reporting_router,
         ):

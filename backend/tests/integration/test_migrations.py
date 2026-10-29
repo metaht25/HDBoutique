@@ -33,7 +33,7 @@ def test_upgrade_downgrade_upgrade_and_metadata_drift(postgres_engine: Engine) -
         command.upgrade(config, "head")
         command.check(config)
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-            "0004_atomic_sales"
+            "0005_cash_checkout"
         )
 
 
@@ -146,6 +146,7 @@ def test_sales_upgrade_preserves_existing_receipt(
         .one()
     )
     assert after.pop("sale_item_id") is None
+    assert after.pop("return_item_id") is None
     assert after == before
     assert (
         database_connection.scalar(

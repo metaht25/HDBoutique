@@ -6,7 +6,10 @@ from fastapi import APIRouter, Header, Query
 
 from app.api.dependencies import DatabaseSession
 from app.api.schemas import ErrorResponse
-from app.modules.identity.dependencies import SalesIdentity
+from app.modules.cash.router import CommandKey
+from app.modules.cash.schemas import VoidCreate, VoidRead
+from app.modules.cash.service import CashService
+from app.modules.identity.dependencies import PurchasingIdentity, SalesIdentity
 from app.modules.sales.schemas import SaleCreate, SaleRead
 from app.modules.sales.service import SaleService
 
@@ -44,3 +47,14 @@ def register_sale(
     ],
 ) -> SaleRead:
     return SaleService(session).register(payload, actor, idempotency_key)
+
+
+@router.post("/{sale_id}/void", response_model=VoidRead, status_code=201)
+def void_sale(
+    sale_id: int,
+    payload: VoidCreate,
+    session: DatabaseSession,
+    actor: PurchasingIdentity,
+    idempotency_key: CommandKey,
+) -> VoidRead:
+    return CashService(session).void(sale_id, payload, actor, idempotency_key)

@@ -1,5 +1,13 @@
 """Explicit registry loaded by Alembic and persistence tests, without I/O."""
 
+from app.modules.cash.models import (
+    CashMovement,
+    CashRequest,
+    CashShift,
+    SalePayment,
+    SaleReturnItem,
+    SaleVoid,
+)
 from app.modules.catalog.models import Category, Product, Size
 from app.modules.customers.models import Customer, CustomerPayment, CustomerType
 from app.modules.identity.models import LoginThrottle, UserAccount, WebSession
@@ -13,6 +21,12 @@ from app.modules.staff.models import Employee
 from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
 __all__ = [
+    "CashMovement",
+    "CashRequest",
+    "CashShift",
+    "SalePayment",
+    "SaleReturnItem",
+    "SaleVoid",
     "Address",
     "Category",
     "Customer",

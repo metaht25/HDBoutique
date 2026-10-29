@@ -41,7 +41,7 @@ class SaleRow(BaseModel):
     customer_id: int
     customer_name: str
     total: ReportMoney
-    source: Literal["confirmed", "legacy"]
+    source: Literal["confirmed", "legacy", "voided"]
 
 
 class SalesReport(BaseModel):
