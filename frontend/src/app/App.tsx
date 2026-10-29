@@ -5,7 +5,7 @@ import { LoadingState } from '../shared/ui/Feedback'
 import { PageBoundary } from './PageBoundary'
 
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage.jsx'))
-const ProductsPage = lazy(() => import('../features/products/ProductsPage.jsx'))
+const ProductsPage = lazy(() => import('../features/products/ProductsPage'))
 const CustomersPage = lazy(() => import('../features/customers/CustomersPage.jsx'))
 const SalesPage = lazy(() => import('../features/sales/SalesPage.jsx'))
 const PurchasesPage = lazy(() => import('../features/purchases/PurchasesPage.jsx'))

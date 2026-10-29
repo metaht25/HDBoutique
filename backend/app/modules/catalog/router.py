@@ -113,8 +113,9 @@ def list_product(
     session: DatabaseSession,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    q: Annotated[str | None, Query(max_length=100)] = None,
 ) -> object:
-    return CatalogService(session).list_product(offset, limit)
+    return CatalogService(session).list_product(offset, limit, q.strip() if q else None)
 
 
 @router.get("/products/{record_id}", response_model=ProductRead)

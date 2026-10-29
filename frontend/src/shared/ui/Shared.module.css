@@ -12,6 +12,7 @@
 .field { display: grid; gap: 8px; min-width: 0; }
 .field label { font-size: 14px; font-weight: 600; color: #374151; }
 .field input { width: 100%; border: 1px solid #9ca3af; border-radius: 6px; padding: 10px; font: inherit; }
+.field select { width: 100%; border: 1px solid #9ca3af; border-radius: 6px; padding: 10px; font: inherit; }
 .field input[aria-invalid='true'] { border-color: #be123c; }
 .fieldError { color: #9f1239; }
 .pagination { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 16px; }

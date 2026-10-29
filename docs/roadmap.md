@@ -20,7 +20,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 9 | Compras e inventario | Completada: reglas confirmadas, registro atomico/idempotente, costes historicos, recepcion completa unica y movimientos; 152 pruebas aprobadas, incluidas 85 PostgreSQL; ver [compras e inventario](purchases-inventory.md) |
 | 10 | Ventas transaccionales | Completada: B03/B04 y permisos confirmados, venta atomica e idempotente, precio/total de servidor y salidas seguras; 200 pruebas aprobadas, incluidas 119 PostgreSQL; ver [ventas](sales.md) |
 | 11 | Base frontend con TypeScript, Router y HTTP compartido | Completada: base TS estricta, ocho URLs, sesion/HTTP/componentes y CSS aislado; 40 pruebas unitarias/componentes, 41 legacy y 30 E2E; vistas JSX/contratos Django conservados hasta fase 12; ver [base frontend](frontend-foundation.md) |
-| 12 | Migracion funcional de pantallas | Pendiente |
+| 12 | Migracion funcional de pantallas | En curso por incrementos: Productos completado; Clientes autorizado a continuacion; demas modulos pendientes. Ver [contratos](frontend-modules.md) |
 | 13 | Dashboard y reportes; caja segun alcance | Pendiente |
 | 14 | Integracion, seguridad y estabilizacion | Pendiente |
 | 15 | Corte de datos y retirada de Django | Pendiente; requiere instruccion expresa y verificaciones operativas |

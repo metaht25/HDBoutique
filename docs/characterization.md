@@ -503,6 +503,22 @@ No se inicia fase 12 automaticamente ni se publica el frontend.
 
 ## Criterio de mantenimiento
 
+### Fase 12, primer incremento: Productos
+
+28 de octubre de 2026. Productos migrado a TS/FastAPI con consulta, alta y edicion;
+Cashier solo consulta. Precio decimal textual exacto, stocks separados de solo
+lectura, nulos preservados, sin activacion simulada. [Contrato](frontend-modules.md).
+Tipos, ESLint, 52 pruebas Vitest/componentes, 41 legacy, build y 40 E2E Chromium
+escritorio/movil aprobados con npm run verify en Docker. E2E usa API interceptada;
+no certifica persistencia ni autenticacion reales. Build/E2E repetidos desde
+imagen reconstruida sin montajes para revisar el artefacto.
+
+24 pruebas HTTP aprobadas contra PostgreSQL aislado: nuevo filtro q literal,
+insensible a mayusculas, antes de paginar, mas workflows CRUD existentes. Ruff
+y mypy (79 archivos) aprobados. Sin migraciones nuevas, habilitacion operativa
+ni consultas a datos reales. Clientes se aborda solo despues de cerrar Productos;
+resto de fase 12 pendiente.
+
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar
 fixture/documentacion si cambia el contrato y registrar la incompatibilidad
 intencionada. No volver todas las pruebas expectedFailure ni convertir todos los

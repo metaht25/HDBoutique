@@ -119,9 +119,11 @@ class CatalogService:
                 409, "integrity_conflict", "Record is referenced"
             ) from error
 
-    def list_product(self, offset: int, limit: int) -> list[Product]:
+    def list_product(
+        self, offset: int, limit: int, query: str | None = None
+    ) -> list[Product]:
         with self.session.begin():
-            return self.repository.list_product(offset, limit)
+            return self.repository.list_product(offset, limit, query)
 
     def get_product(self, record_id: int) -> Product:
         with self.session.begin():

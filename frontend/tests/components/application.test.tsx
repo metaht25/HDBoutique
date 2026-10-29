@@ -8,14 +8,14 @@ import { apiClient } from '../../src/shared/api/client'
 
 const account = { user_id: 101, username: 'synthetic-cashier', role: 'Cashier', is_active: true, employee_id: 102 }
 
-function mockBackend(options: { authenticated?: boolean; productError?: boolean; suppliers?: number } = {}) {
+function mockBackend(options: { authenticated?: boolean; administrator?: boolean; productError?: boolean; suppliers?: number } = {}) {
   const mock = vi.fn<(input: RequestInfo | URL, options?: RequestInit) => Promise<Response>>(async input => {
-    const path = String(input)
-    if (path === '/api/v1/auth/me') return new Response(JSON.stringify(options.authenticated ? account : {
+    const path = String(input).split('?')[0]
+    if (path === '/api/v1/auth/me') return new Response(JSON.stringify(options.authenticated ? { ...account, role: options.administrator ? 'Administrator' : account.role } : {
       error: { code: 'authentication_required', message: 'Authentication required' },
     }), { status: options.authenticated ? 200 : 401 })
     if (path === '/api/v1/auth/csrf') return new Response(JSON.stringify({ csrf_token: 'synthetic-csrf' }))
-    if (options.productError && path === '/api/productos/productos/') return new Response(JSON.stringify({
+    if (options.productError && path === '/api/v1/products') return new Response(JSON.stringify({
       error: { code: 'database_unavailable', message: 'Servicio de productos no disponible' },
     }), { status: 503 })
     const body = path === '/api/proveedores/proveedores/' ? Array.from({ length: options.suppliers ?? 0 }, (_, i) => ({
@@ -67,7 +67,7 @@ it('shows the account from the authenticated server session instead of a fixed a
 })
 
 it('renders backend errors in the existing product screen', async () => {
-  mockBackend({ productError: true })
+  mockBackend({ productError: true, authenticated: true })
   renderApp('/products')
   await screen.findByText('Servicio de productos no disponible')
   expect(screen.getByRole('alert').textContent).toContain('Servicio de productos no disponible')
@@ -81,14 +81,14 @@ it('gives unknown URLs a recoverable not-found screen', async () => {
 })
 
 it('exposes linked field errors without sending an invalid product', async () => {
-  const fetchMock = mockBackend()
+  const fetchMock = mockBackend({ authenticated: true, administrator: true })
   renderApp('/products')
   const submit = await screen.findByRole('button', { name: 'Guardar producto' })
   await userEvent.setup().click(submit)
-  const field = screen.getByRole('textbox', { name: 'Nombre' })
+  const field = screen.getByRole('combobox', { name: 'Categoría' })
   expect(field.getAttribute('aria-invalid')).toBe('true')
   expect(document.getElementById(field.getAttribute('aria-describedby') ?? '')?.textContent)
-    .toBe('El nombre del producto es obligatorio.')
+    .toBe('Selecciona una categoría.')
   expect(fetchMock.mock.calls.every(([, options]) => options?.method !== 'POST')).toBe(true)
 })
 

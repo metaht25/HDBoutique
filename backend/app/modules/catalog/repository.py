@@ -55,10 +55,15 @@ class CatalogRepository:
     def validate_size_references(self, values: dict[str, object]) -> bool:
         return True
 
-    def list_product(self, offset: int, limit: int) -> list[Product]:
+    def list_product(
+        self, offset: int, limit: int, query: str | None = None
+    ) -> list[Product]:
+        statement = select(Product)
+        if query:
+            statement = statement.where(Product.name.icontains(query, autoescape=True))
         return list(
             self.session.scalars(
-                select(Product).order_by(Product.product_id).offset(offset).limit(limit)
+                statement.order_by(Product.product_id).offset(offset).limit(limit)
             )
         )
 

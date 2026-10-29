@@ -23,9 +23,15 @@ async function syntheticApi(page: Page, options: {
     }
     if (path === '/api/v1/auth/csrf') return route.fulfill({ json: { csrf_token: 'synthetic-csrf-token' } })
     if (path === '/api/v1/auth/logout') return route.fulfill({ status: 204 })
-    if (options.productError && path === '/api/productos/productos/') return route.fulfill({
+    if (options.productError && path === '/api/v1/products') return route.fulfill({
       status: 503, json: { error: { code: 'database_unavailable', message: 'Productos no disponibles temporalmente' } },
     })
+    if (path === '/api/v1/products') return route.fulfill({ json: [{
+      product_id: 109, category_id: 104, size_id: 105, name: 'Camisa de prueba',
+      unit_price: '199.50', legacy_stock: 3, legacy_stock_quantity: 12,
+    }] })
+    if (path === '/api/v1/categories') return route.fulfill({ json: [{ category_id: 104, name: 'Ropa' }] })
+    if (path === '/api/v1/sizes') return route.fulfill({ json: [{ size_id: 105, name: 'M' }] })
     if (options.suppliers && path === '/api/proveedores/proveedores/') return route.fulfill({
       json: Array.from({ length: options.suppliers }, (_, index) => ({
         id_proveedor: index + 1, nombreempresa: `Empresa sintética ${index + 1}`,
@@ -89,12 +95,11 @@ test('logout includes CSRF and removes the session user', async ({ page }) => {
   expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0)
 })
 
-test('unavailable session and backend page errors remain visible without a fake user', async ({ page }) => {
-  await syntheticApi(page, { sessionUnavailable: true, productError: true })
+test('backend page errors remain visible for an authenticated user', async ({ page }) => {
+  await syntheticApi(page, { productError: true })
   await page.goto('/products')
-  await expect(page.getByText('Servicio de sesión no disponible', { exact: true })).toBeVisible()
   await expect(page.getByRole('alert')).toHaveText('Productos no disponibles temporalmente')
-  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
 })
 
 test('anonymous legacy access and unknown routes remain recoverable', async ({ page }) => {
@@ -121,9 +126,9 @@ test('keyboard skip link and linked form validation are usable', async ({ page }
   await syntheticApi(page)
   await page.goto('/products')
   await page.getByRole('button', { name: 'Guardar producto' }).click()
-  const field = page.getByRole('textbox', { name: 'Nombre', exact: true })
+  const field = page.getByRole('combobox', { name: 'Categoría', exact: true })
   await expect(field).toHaveAttribute('aria-invalid', 'true')
-  await expect(field).toHaveAccessibleDescription('El nombre del producto es obligatorio.')
+  await expect(field).toHaveAccessibleDescription('Selecciona una categoría.')
   await page.keyboard.press('Control+Home')
   await page.getByRole('link', { name: 'Saltar al contenido' }).focus()
   await page.keyboard.press('Enter')

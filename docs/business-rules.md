@@ -137,6 +137,14 @@ semantica de inventario. Las reglas definitivas B01/B07/B08/B13 siguen pendiente
 
 ## Fuera del alcance obligatorio
 
+Acuerdo de fase 12 (28 de octubre de 2026), confirmado expresamente:
+Productos y Clientes se completan sin activacion/desactivacion; se retiran los
+botones que simulaban cambios locales. B07 definitivo sigue pendiente. Para
+Clientes se reutiliza una direccion existente: Administrator/Manager seleccionan
+de ubicaciones; Cashier indica su ID sin recibir permiso de consulta de ubicaciones.
+Se conserva telefono textual de hasta 10 caracteres, sin municipio ni deuda.
+Este limite aplica al incremento frontend, sin crear un alta compuesta de direccion.
+
 Colores, SKU, agrupacion de variantes, descuentos nuevos, devoluciones, graficos,
 exportaciones y nuevas capacidades de caja requieren aprobacion independiente.
 No descartar historicos ni completar datos con valores inventados para que una

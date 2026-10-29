@@ -1,5 +1,9 @@
 # Base del frontend: fase 11
 
+Este documento describe la entrega de fase 11. Productos y Clientes se migran
+posteriormente por incrementos: estado actual y contratos en
+[frontend-modules.md](frontend-modules.md).
+
 React/Vite conservados. TypeScript estricto para arranque, rutas, layout, sesion,
 cliente HTTP, componentes compartidos, configuracion y pruebas. allowJs permite
 la transicion: vistas legacy y adaptadores siguen en JSX/JS con checkJs false.
