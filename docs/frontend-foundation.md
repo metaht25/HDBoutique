@@ -4,6 +4,9 @@ Este documento describe la entrega de fase 11. Productos y Clientes se migran
 posteriormente por incrementos: estado actual y contratos en
 [frontend-modules.md](frontend-modules.md).
 Dashboard/Reportes se migran posteriormente en [fase 13](reporting.md).
+Ventas/Compras/Proveedores se integran en [fase 14](stabilization.md), con
+paginacion de servidor y estilos compartidos. Los parrafos siguientes conservan
+la descripcion historica de fase 11; el contrato vigente esta en modulos frontend.
 
 React/Vite conservados. TypeScript estricto para arranque, rutas, layout, sesion,
 cliente HTTP, componentes compartidos, configuracion y pruebas. allowJs permite

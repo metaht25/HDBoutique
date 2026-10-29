@@ -14,6 +14,10 @@ Fase 11 centraliza HTTP/errores y organiza las vistas por funcionalidad, conserv
 los payloads/metodos/rutas Django y los servicios como reexportaciones. La sesion
 consulta /api/v1/auth/* mediante proxy separado; no constituye migracion de los
 formularios a FastAPI. Alcance en [base frontend](frontend-foundation.md).
+Las fases 12/13 y la integracion de fase 14 ya sustituyen las siete pantallas
+operativas por TS/FastAPI. Caja sigue como prototipo; Django/adaptadores conservan
+sus contratos hasta la retirada autorizada en fase 15. Ver [contratos frontend](frontend-modules.md)
+y [estabilizacion](stabilization.md).
 
 Actualizacion de fase 5: las tablas/modelos nuevos ya usan estos nombres en
 persistencia, con las precisiones siguientes. Las rutas HTTP y los contratos

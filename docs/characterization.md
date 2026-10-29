@@ -1,5 +1,21 @@
 # Pruebas de caracterizacion y regresion
 
+## Verificacion de fase 14
+
+El 29 de octubre de 2026 se retomo y cerro la estabilizacion del alcance disponible.
+Informe, comandos y riesgos residuales en [stabilization.md](stabilization.md).
+222 pruebas backend con `--run-postgres`, cobertura app 98.38%; 76 Vitest/componentes,
+41 legacy, 80 E2E con API interceptada y cuatro E2E conectadas aprobadas. Tipos,
+lint, formato, mypy, build y lock verificados. Se repitieron 16 E2E de URL/recarga
+tras ampliar capturas; Ventas/Compras/Proveedores escritorio/movil inspeccionados.
+
+Se verifico restauracion de 24 tablas con operaciones y volumen sinteticos,
+campos/hashes, identidades y head 0004; ensayo ETL separado de 17 tablas tambien
+restaurado/conciliado. Auditorias Python/npm sin vulnerabilidades conocidas,
+Gitleaks redactado sobre historial/cambios preparados, runtime sin Django/dev.
+No se certifican capacidad productiva, datos SQL Server, corte ni funciones
+excluidas. Los resultados por fase que siguen conservan su contexto historico.
+
 ## Proposito y alcance
 
 Preparar una base verificable antes de reemplazar Django o los servicios frontend.

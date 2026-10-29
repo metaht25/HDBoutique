@@ -20,9 +20,9 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 9 | Compras e inventario | Completada: reglas confirmadas, registro atomico/idempotente, costes historicos, recepcion completa unica y movimientos; 152 pruebas aprobadas, incluidas 85 PostgreSQL; ver [compras e inventario](purchases-inventory.md) |
 | 10 | Ventas transaccionales | Completada: B03/B04 y permisos confirmados, venta atomica e idempotente, precio/total de servidor y salidas seguras; 200 pruebas aprobadas, incluidas 119 PostgreSQL; ver [ventas](sales.md) |
 | 11 | Base frontend con TypeScript, Router y HTTP compartido | Completada: base TS estricta, ocho URLs, sesion/HTTP/componentes y CSS aislado; 40 pruebas unitarias/componentes, 41 legacy y 30 E2E; vistas JSX/contratos Django conservados hasta fase 12; ver [base frontend](frontend-foundation.md) |
-| 12 | Migracion funcional de pantallas | Parcial: Productos y Clientes completados en ese orden; consulta/alta/edicion TS/FastAPI y permisos; otros modulos pendientes. Ver [contratos](frontend-modules.md) |
+| 12 | Migracion funcional de pantallas | Productos/Clientes completados en fase 12; Ventas/Compras/Proveedores integrados durante fase 14. Caja sigue excluida, pendiente B10. Ver [contratos](frontend-modules.md) |
 | 13 | Dashboard y reportes; caja segun alcance | Dashboard/reportes completados: agregaciones y filtros de servidor, fecha Managua, B14 y permisos confirmados; caja excluida por el usuario, pendiente B10 con [propuesta](cash-register-proposal.md). Ver [contrato](reporting.md) |
-| 14 | Integracion, seguridad y estabilizacion | Pendiente |
+| 14 | Integracion, seguridad y estabilizacion | Completada para el alcance disponible: 222 pruebas backend/PostgreSQL, 80 E2E simuladas y 4 conectadas, auditorias, volumen y restauracion de 24 tablas. Sin origen SQL Server disponible ni corte operativo. Ver [informe y riesgos](stabilization.md) |
 | 15 | Corte de datos y retirada de Django | Pendiente; requiere instruccion expresa y verificaciones operativas |
 
 Este documento registra el estado, sin sustituir los resultados detallados de

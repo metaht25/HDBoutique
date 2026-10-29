@@ -112,6 +112,11 @@ de ejecucion que siguen pendientes.
 
 ## Automatizacion futura
 
+Fase 14 consolida las verificaciones y agrega Chromium conectado a FastAPI y
+PostgreSQL sinteticos, restauracion de las 24 tablas y una referencia de volumen.
+La verificacion frontend habitual sigue interceptando la API. Resultados reales,
+reproduccion y riesgos residuales en [estabilizacion](stabilization.md).
+
 CI utilizara la misma version fijada de Python/uv y `uv sync --locked`, seguido de
 lint, formato, tipado, pruebas y migraciones de una base de pruebas. Frontend usara
 npm ci, lint, tipos, pruebas y build cuando existan esas herramientas. Construir

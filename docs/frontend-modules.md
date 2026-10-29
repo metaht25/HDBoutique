@@ -2,8 +2,9 @@
 
 Se ejecuta por incrementos: Productos primero y Clientes despues, por solicitud
 expresa. Dashboard/Reportes se migran en [fase 13](reporting.md).
-Ventas/Compras/Proveedores conservan su contrato legacy y quedan pendientes;
-Caja mantiene el prototipo hasta resolver B10.
+Ventas/Compras/Proveedores se integraron durante la [fase 14](stabilization.md);
+Caja mantiene el prototipo hasta resolver B10. Las siete pantallas operativas
+usan FastAPI; los adaptadores y sus pruebas legacy se conservan hasta fase 15.
 
 ## Productos
 
@@ -63,10 +64,58 @@ o telefono, literal e insensible a mayusculas, antes de offset/limit. Se conserv
 pagina/busqueda en URL y los mismos estados, cancelacion de lecturas, errores por
 campo, bloqueo de doble envio y confirmacion de guardado que en Productos.
 
+## Ventas y compras: integracion de fase 14
+
+`/sales` y `/purchases` usan el espacio compartido transactions en TypeScript.
+Consulta de 20 operaciones por pagina con una fila adicional para avanzar, pagina
+en URL y detalle con precios historicos, cantidades y total del servidor. Las
+compras historicas muestran los costes ausentes como desconocidos y no ofrecen
+recepcion inferida. Importes como texto, sin sumar en navegador ni usar Number.
+
+Los tres roles consultan/registran ventas. Solo Administrator/Manager consultan,
+registran y reciben compras. Cashier no monta el modulo de compras ni solicita
+proveedores/costes. Inicio de sesion dentro del modulo y permisos del servidor.
+Las opciones se cargan completas por paginas; la fecha inicial procede de
+context.business_date del dashboard (America/Managua). El empleado vinculado se
+usa automaticamente; si falta, se exige un ID existente validado por servidor.
+No hay CRUD de empleados ni nuevas reglas de autoria.
+
+Una solicitud POST guarda la operacion completa, sin precios/total del cliente.
+Venta: cliente, fecha e items producto/cantidad. Compra: proveedor, fecha, envio
+textual no negativo y productos ofrecidos por ese proveedor con sus cantidades.
+Hasta 100 lineas distintas, enteros positivos. El servidor sigue validando
+precios, referencias, cantidades y disponible. No se editan/borran ventas.
+La recepcion completa usa el endpoint idempotente de la compra registrada;
+no se cambia inventario al registrar ni se permite recepcion parcial.
+
+Antes del POST se conserva payload/Idempotency-Key en sessionStorage por cuenta
+y tipo de operacion. Ante error de red/5xx o cambio de sesion se mantiene y
+bloquea su edicion; el usuario reintenta exactamente la misma solicitud, incluso
+tras recargar. Un rechazo definitivo permite corregir el borrador; solo se retira
+la intencion tras respuesta valida o rechazo definitivo. Si el almacenamiento
+esta bloqueado/corrupto se exige revisar el historial y no se crea otra intencion
+silenciosamente. No hay reintentos automaticos ni tokens en almacenamiento.
+
+## Proveedores: integracion de fase 14
+
+`/suppliers` permite consulta/alta/edicion a Administrator/Manager y deniega a
+Cashier antes de pedir datos. Empresa y nombres del contacto hasta 50 caracteres,
+telefono textual hasta 10, correo opcional hasta 40 y direccion existente.
+No se crean direcciones en este formulario ni se agrega municipio, activacion,
+borrado o administracion de productos/ofertas del proveedor.
+
+Una escritura POST/PATCH guarda los datos, con errores por campo y bloqueo del
+doble envio. GET suppliers admite `q` opcional hasta 100 caracteres: coincidencia
+literal insensible a mayusculas en empresa, nombre completo del contacto o
+telefono, antes de offset/limit. `q`/page se conservan en URL; 20 filas por pagina.
+
 ## Verificacion de los incrementos
 
 Resultados y limites de cada incremento en [characterization.md](characterization.md).
 E2E usa respuestas sinteticas interceptadas; verifica navegador, formulario,
 payload y recarga del estado simulado, no conexion real frontend/PostgreSQL.
 Las pruebas HTTP de backend usan PostgreSQL aislado migrado desde vacio.
-No se consultan ni migran bases reales. Head Alembic permanece en 0004.
+Fase 14 agrega cuatro E2E sin interceptar API, con Chromium/FastAPI/PostgreSQL
+sintetico y persistencia tras recarga. Resultados, comandos y limites en
+[estabilizacion](stabilization.md). No se consultan ni migran bases reales.
+Head Alembic permanece en 0004.

@@ -2,8 +2,8 @@
 
 React/Vite con base TypeScript estricta, React Router y cliente HTTP compartido.
 Las ocho pantallas se organizan en src/features y tienen URL propia. Productos,
-Clientes, Dashboard y Reportes usan TS/FastAPI con acceso autenticado e inicio de
-sesion dentro del modulo; Ventas/Compras/Proveedores conservan JSX/contratos Django.
+Clientes, Dashboard, Reportes, Ventas, Compras y Proveedores usan TS/FastAPI con
+acceso autenticado e inicio de sesion dentro del modulo.
 Caja sigue siendo un prototipo sin persistencia. Ver [base frontend](../docs/frontend-foundation.md) y
 [modulos migrados](../docs/frontend-modules.md).
 Dashboard/reportes y sus reglas: [fase 13](../docs/reporting.md). Caja pendiente:
@@ -41,6 +41,11 @@ Vite enruta /api/v1 a FastAPI en 8001 y el resto de /api a Django en 8000.
 HDB_FASTAPI_TARGET/HDB_LEGACY_API_TARGET ajustan los destinos de desarrollo.
 No usar variables VITE_* para secretos. La sesion real requiere preparacion
 operativa previa: esta fase no crea cuentas, migra bases ni habilita rutas.
+
+La [fase 14](../docs/stabilization.md) agrega `npm run test:integration` contra
+FastAPI/PostgreSQL sinteticos mediante el perfil integration de compose.test.yaml.
+Ejecutarlo con el procedimiento documentado; no apuntar estas pruebas a datos
+reales. `npm run verify` conserva sus E2E interceptadas sin red/backend.
 
 - [Base frontend](../docs/frontend-foundation.md): rutas, arquitectura, HTTP y sesion.
 - [Desarrollo](../docs/development.md) y [calidad](../docs/quality.md).

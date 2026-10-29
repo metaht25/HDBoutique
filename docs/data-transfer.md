@@ -180,6 +180,11 @@ SQL Server ni recuperacion de datos operativos. Resultados en
 
 ## Plan de ensayo, corte y retorno
 
+La [fase 14](stabilization.md) repite el ensayo ETL anterior contra head 0004 y
+agrega otro respaldo/restauracion de operaciones nuevas, sesiones y auditoria:
+24 tablas comparadas por campos/hashes e identidades. Ambos usan bases tmpfs
+sinteticas distintas en tiempo; no certifican un origen SQL Server ni datos reales.
+
 Si aparece una instancia o copia SQL Server en el futuro, reabrir este procedimiento:
 
 1. Identificar responsables, bases autorizadas, retencion B12 y reglas B pertinentes.

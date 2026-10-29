@@ -6,17 +6,18 @@ y un prototipo de caja. Su alcance es la administracion interna de la tienda.
 
 ## Estado del proyecto
 
-La aplicacion existente utiliza Django/DRF, SQL Server y React/Vite en JavaScript.
-Ya existe una base FastAPI independiente con endpoints de salud y pruebas. La
-refactorizacion conserva los datos y el comportamiento valido del sistema.
+El candidato modernizado utiliza FastAPI, PostgreSQL y React/Vite con TypeScript.
+Django/DRF y sus contratos SQL Server se conservan hasta un corte expresamente
+autorizado. La refactorizacion conserva datos y comportamiento valido; no existe
+una instancia/copia SQL Server ni historicos disponibles para trasladar.
 
 | Area | Implementacion existente | Objetivo de la refactorizacion |
 | --- | --- | --- |
-| Backend | Django/DRF y base FastAPI con salud | Migracion funcional a FastAPI, Pydantic y Python tipado |
+| Backend | FastAPI autenticado con catalogo/clientes/proveedores, compras, ventas y reportes; Django conservado | Completar funciones pendientes y retirada autorizada |
 | Persistencia | Django ORM activo; 24 modelos SQLAlchemy y Alembic hasta 0004_atomic_sales | Ampliar reglas y restricciones por funcionalidad |
 | Base de datos | SQL Server legacy y PostgreSQL local con esquema inicial vacio | PostgreSQL con datos conciliados y reglas confirmadas |
 | Dependencias Python | uv, pyproject.toml y uv.lock; exportacion requirements.txt legacy | Retirar el grupo legacy al completar la sustitucion |
-| Frontend | React/Vite, base TypeScript estricta, Router y vistas legacy JSX por funcionalidad | Migrar pantallas a FastAPI por incrementos en fase 12 |
+| Frontend | Siete pantallas operativas TS/FastAPI; Caja JSX como prototipo | Caja solo tras aprobar B10; adaptadores legacy hasta fase 15 |
 | Entorno | Docker/Compose para FastAPI y PostgreSQL; legacy conserva SQL Server | Completar integracion funcional progresiva |
 
 Python 3.13.15 y uv 0.12.10 estan fijados para el backend. Las versiones resueltas
@@ -31,8 +32,11 @@ La [fase 10](docs/sales.md) implementa ventas atomicas e idempotentes, precios
 historicos y salidas de inventario seguras ante concurrencia.
 La [fase 11](docs/frontend-foundation.md) agrega URLs, cliente HTTP, contexto de
 sesion, CSS aislado, componentes compartidos y pruebas frontend.
-Django sigue atendiendo los contratos
-actuales y el frontend conserva su integracion con ese backend.
+Las fases 12/13 y la [fase 14](docs/stabilization.md) integran las siete pantallas
+operativas con FastAPI y verifican concurrencia, E2E conectadas, seguridad,
+volumen sintetico y restauracion. Caja, empleados y otras reglas pendientes
+conservan sus limites; el negocio sigue deshabilitado por defecto. Django y
+adaptadores se conservan, sin iniciar automaticamente fase 15.
 
 ## Empezar
 
@@ -85,6 +89,7 @@ usa compose.test.yaml segun [migraciones](docs/migration.md).
 | [Compatibilidad](docs/contract-compatibility.md) | Traducciones propuestas y cambios coordinados |
 | [Reglas del negocio](docs/business-rules.md) | Comportamiento observado y decisiones B01-B14 pendientes |
 | [Caracterizacion](docs/characterization.md) | Ejecucion, resultados registrados y defectos D01-D12 |
+| [Estabilizacion](docs/stabilization.md) | Fase 14: pruebas conectadas, restauracion, volumen y riesgos residuales |
 | [ADR 0001](docs/decisions/0001-phase-one-characterization.md) | Decision de caracterizar antes de sustituir |
 | [ADR 0002](docs/decisions/0002-backend-foundation.md) | Base uv/FastAPI y convivencia temporal con Django |
 | [ADR 0003](docs/decisions/0003-local-containers.md) | Contenedores locales y conectividad PostgreSQL |

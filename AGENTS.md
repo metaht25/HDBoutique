@@ -43,8 +43,15 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   Productos: stocks de solo lectura, dinero textual; Cashier solo consulta.
   Clientes: direccion existente, Cashier indica ID sin consultar ubicaciones;
   telefono textual hasta 10 caracteres. Sin activacion (B07), municipio ni deuda.
-  Resto de pantallas/adaptadores JSX/JS y contratos Django conservados;
-  reexportaciones en services mientras tengan consumidores. Sesion sin usuario fijo.
+  Fase 14 integra tambien Ventas/Compras/Proveedores TS/FastAPI: venta completa
+  atomica, compra/recepcion separadas, consulta y alta/edicion de proveedores,
+  intenciones monetarias persistidas por pestana/cuenta y sesion entre pestanas.
+  Siete pantallas operativas migradas; Caja sigue JSX/prototipo pendiente B10.
+  Adaptadores JS, contratos Django y reexportaciones conservados hasta fase 15.
+  Sesion sin usuario fijo. Informe/limites: docs/stabilization.md. Fase 14 cerrada
+  para el alcance disponible: 222 pruebas backend/PostgreSQL, 80 E2E simuladas,
+  cuatro conectadas, auditorias y restauracion de 24 tablas aprobadas. Sin datos
+  reales ni corte; no iniciar fase 15 sin instruccion expresa.
   Fase 13: dashboard/reportes TS/FastAPI de solo lectura, sumas globales SQL y
   paginas de detalle, costes historicos/faltantes explicitos, fecha America/Managua.
   B14 confirmado: agotado 0, bajo stock 1–10, suficiente >10; null/negativo aparte.

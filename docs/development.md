@@ -183,7 +183,8 @@ comprobo con --dry-run sin alterar el entorno de desarrollo.
 
 ## Usar Django temporalmente
 
-El grupo legacy conserva todas las versiones de requirements.txt anterior.
+El grupo legacy conserva Django durante la transicion; fase 14 actualiza parches
+de seguridad manteniendo uv.lock y la exportacion requirements.txt coherentes.
 Para ejecutar el backend real hace falta ODBC Driver 17 y una copia SQL Server
 autorizada; instalar pyodbc no instala ese driver del sistema.
 
@@ -206,8 +207,9 @@ modelos de negocio unmanaged no se reconstruyen con sus migraciones.
 
 ## Frontend desde fase 11
 
-Base TypeScript estricta, Router, sesion y HTTP compartidos; pantallas legacy JSX
-por funcionalidad, sin cambiar sus contratos hasta fase 12. Node >=24 <25,
+Base TypeScript estricta, Router, sesion y HTTP compartidos; siete pantallas
+operativas TS/FastAPI y Caja JSX como prototipo. Adaptadores legacy conservados
+hasta fase 15. Contratos en [modulos frontend](frontend-modules.md). Node >=24 <25,
 verificado con 24.22.2, npm y lock. Desde frontend/: npm ci, npm run dev,
 npm run typecheck, npm run lint, npm test y npm run build. Build ejecuta tsc/Vite;
 npm run preview verifica dist, no sirve produccion. Para E2E: instalar Chromium

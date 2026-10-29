@@ -23,6 +23,11 @@ en el CRUD y el producto nuevo comienza con disponible cero. Recepciones y
 movimientos en [compras e inventario](purchases-inventory.md).
 B07 y deuda siguen pendientes. Ventas se define en fase 10 en [sales.md](sales.md).
 
+Fase 14 agrega `q` opcional a GET suppliers: hasta 100 caracteres, espacios
+externos retirados, coincidencia literal insensible a mayusculas en empresa,
+nombre completo del contacto o telefono antes de offset/limit. Sin q conserva
+la consulta anterior. Contrato de la pantalla en [modulos frontend](frontend-modules.md).
+
 ## Recursos
 
 Prefijo /api/v1, sin barra final. Cada recurso ofrece GET/POST de coleccion y
