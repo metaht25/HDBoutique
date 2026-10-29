@@ -79,6 +79,22 @@ services:
     tmpfs: [/tmp]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
+    networks:
+      default:
+        aliases: [backend]
+
+  web:
+    profiles: [integration]
+    image: hdboutique-frontend:runtime
+    build:
+      context: ./frontend
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
 
   browser:
     profiles: [integration]
@@ -88,6 +104,6 @@ services:
     environment:
       HDB_FASTAPI_TARGET: http://api:8000
     depends_on:
-      api:
+      web:
         condition: service_healthy
-    command: ["sh", "-c", "npm run build && npm run test:integration"]
+    command: ["npm", "run", "test:integration"]

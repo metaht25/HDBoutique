@@ -128,3 +128,28 @@ test('changing identity in another tab clears the old role and protected data', 
   await expect(page.getByText('purchasing-cashier · Caja')).toBeVisible()
   await other.close()
 })
+
+test('deployed SPA reloads through Nginx and retired endpoints never return HTML', async ({ page, playwright }) => {
+  const paths: string[] = []
+  page.on('request', request => { const path = new URL(request.url()).pathname; if (path.startsWith('/api/')) paths.push(path) })
+  await signIn(page, 'Administrator')
+  expect(await page.evaluate(() => window.isSecureContext)).toBe(true)
+  for (const path of ['/dashboard', '/products', '/customers', '/sales', '/purchases', '/suppliers', '/reports']) {
+    await page.goto(path)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.locator('main table').first()).toBeVisible()
+    await page.reload()
+    await expect(page.locator('main table').first()).toBeVisible()
+  }
+  expect(paths.every(path => path.startsWith('/api/v1/'))).toBe(true)
+  for (const path of ['/api/productos/productos/', '/admin/', '/assets/missing.js']) {
+    const response = await page.request.get(path)
+    expect(response.status()).toBe(404)
+    expect(await response.text()).not.toContain('<div id="root">')
+  }
+  const anonymous = await playwright.request.newContext()
+  const protectedResponse = await anonymous.get(`${origin}/api/v1/products`)
+  expect(protectedResponse.status()).toBe(401)
+  expect(protectedResponse.headers()['cache-control']).toBe('no-store')
+  await anonymous.dispose()
+})

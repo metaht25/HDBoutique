@@ -9,6 +9,9 @@ services:
     environment:
       HDB_ENVIRONMENT: production
       HDB_DEBUG: "false"
+      HDB_BUSINESS_API_ENABLED: ${HDB_BUSINESS_API_ENABLED:-false}
+      HDB_AUTH_ORIGIN: ${HDB_AUTH_ORIGIN:-https://localhost}
+      HDB_SESSION_COOKIE_SECURE: ${HDB_SESSION_COOKIE_SECURE:-true}
       HDB_DATABASE_HOST: db
       HDB_DATABASE_PORT: "5432"
       HDB_DATABASE_NAME: ${POSTGRES_DB:-hdboutique}
