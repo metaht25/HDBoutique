@@ -8,4 +8,5 @@ export const navigation = [
   { path: '/suppliers', label: 'Proveedores' },
   { path: '/cash-register', label: 'Caja' },
   { path: '/reports', label: 'Reportes' },
+  { path: '/settings', label: 'Configuración' },
 ] as const
