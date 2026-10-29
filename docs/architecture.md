@@ -131,7 +131,10 @@ habilitacion expresa en desarrollo/pruebas; ver [contrato](foundation-api.md).
 Fase 9 implementa compras y recepcion transaccional, con snapshots de costes/
 producto, workflow separado y movimientos. PurchaseService coordina repositorios
 de compras e inventario con una sola sesion; bloquea productos en orden estable.
-Staff, ventas y la reorganizacion frontend siguen pendientes.
+Fase 10 agrega SaleService: precio/total de servidor, cabecera/lineas, salidas e
+idempotencia en una transaccion. SaleWorkflow conserva autoria y claves sin
+reconstruir historicos. Ventas y recepciones comparten el bloqueo ordenado de
+productos. Contrato en [ventas](sales.md). Staff y frontend siguen pendientes.
 
 ## Fronteras y compatibilidad
 

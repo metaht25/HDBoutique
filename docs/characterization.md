@@ -405,6 +405,56 @@ de D11 corresponden al nuevo flujo FastAPI: Django y el frontend permanecen
 pendientes de sustitucion y no se declaran corregidos. Ventas/ultima unidad,
 ajustes, anulaciones y UI siguen fuera de esta fase.
 
+## Verificacion de fase 10: ventas atomicas
+
+28 de octubre de 2026, B03 de ventas, B04 y extension B09 confirmados expresamente
+por el usuario. Contrato y limites en [ventas](sales.md).
+
+| Comprobacion | Resultado real |
+| --- | --- |
+| Suite completa en imagen development final | 200 aprobadas y 92 subtests aprobados, 0 omitidas; incluye 119 PostgreSQL |
+| Venta integral D02 | Cabecera, lineas, precio historico, total, salida y auditoria se confirman en una transaccion |
+| Dinero exacto D03 | 199.50 por dos unidades produce 399.00; precio/total de servidor y salida decimal textual; probado 0.01 y limite 99999999.99 |
+| Rechazos | Cantidades no enteras/no positivas/fuera de rango, productos repetidos, precio/total/descuento impuesto, referencias invalidas, precio null/no positivo y total desbordado no dejan filas ni efectos |
+| Existencias | Stock null/negativo exige conteo; insuficiente devuelve 409; cantidadstock permanece inmutable |
+| Idempotencia | Misma cuenta/clave/cuerpo devuelve la misma venta incluso con precio de catalogo cambiado; cuerpo u orden distinto 409; otra cuenta o compra tiene alcance separado |
+| Rollback | Fallo tras el segundo movimiento o tras workflow revierte cabecera, lineas, stock, movimientos y clave; IntegrityError se traduce a 409; reintento posterior funciona |
+| Concurrencia D11 | Dos ventas de ultima unidad producen un exito y un 409, stock final cero y una salida; misma clave no duplica, distinta carga entra en conflicto |
+| Bloqueos compartidos | Ventas con productos compartidos y orden inverso no pierden actualizaciones; una venta espera la recepcion y conserva sus entradas/salidas |
+| Precio concurrente | La venta espera un cambio de precio bloqueado y copia el precio confirmado, sin usar el consultado antes |
+| Permisos/autoria | Los tres roles registran/consultan; empleado vinculado o explicito existente; cuenta auditada. Anonimo/CSRF/origen invalido denegados; inventario general sigue denegado a Cashier |
+| Inmutabilidad B04 | Sin PUT/PATCH/DELETE ni escrituras de lineas separadas; no se implementan anulaciones, devoluciones o cobros |
+| Historicos | Lectura conserva precio y total guardados; sin autoria/estado/instante inferidos ni movimientos de apertura |
+| Migraciones/integridad | 0004_atomic_sales, 24 tablas: vacio/downgrade/upgrade/check sin drift; entradas de 0003 conservadas; downgrade con salidas rechazado, duplicados/deltas/origen invalidos rechazados |
+| ETL | Matriz de 17 tablas conservada y destino head con 24 tablas vacias; suite de traslado sintetico aprobada |
+| Calidad en imagen final | Ruff aprobado; formato 117 archivos; mypy estricto 79 archivos app/data_migration; uv lock --check aprobado, sin dependencias nuevas |
+| Cobertura app | 98.30%, 2280 sentencias y 312 ramas; no certifica frontend, datos reales ni reglas pendientes |
+
+La imagen development se reconstruyo y la suite final se ejecuto sin montajes
+que sustituyan sus fuentes. Entorno exclusivo compose.test.yaml, proyecto
+hdboutique-test, PostgreSQL tmpfs db:5432/hdboutique_test, credenciales sinteticas,
+sin puertos ni acceso a datos de desarrollo. Las carreras usan sesiones/conexiones
+independientes y datos sinteticos confirmados, con limpieza limitada a sus IDs.
+La caracterizacion Django integrada mantiene D03 como fallo esperado: las
+correcciones D02/D03/D11 son del flujo FastAPI, no del backend/frontend legacy.
+
+Comandos finales desde raiz, partiendo del entorno de pruebas vacio:
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml build backend
+docker compose -p hdboutique-test -f compose.test.yaml run --rm backend uv run --locked python -m pytest --run-postgres --cov=app --cov-report=term-missing -q
+docker compose -p hdboutique-test -f compose.test.yaml run --rm --no-deps backend uv run --locked ruff check .
+docker compose -p hdboutique-test -f compose.test.yaml run --rm --no-deps backend uv run --locked ruff format --check .
+docker compose -p hdboutique-test -f compose.test.yaml run --rm --no-deps backend uv run --locked mypy
+docker compose -p hdboutique-test -f compose.test.yaml run --rm --no-deps backend uv lock --check
+docker compose -p hdboutique-test -f compose.test.yaml down
+```
+
+No se aplico 0004_atomic_sales a desarrollo ni se registraron ventas operativas.
+No se consulto SQL Server, cambiaron secretos, habilitaron rutas locales ni
+migraron pantallas. Correcciones, devoluciones, cobros/deuda/caja y frontend
+quedan fuera del alcance confirmado. No se inicia fase 11.
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

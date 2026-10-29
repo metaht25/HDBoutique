@@ -7,6 +7,13 @@ que se haya inspeccionado o trasladado la base SQL Server.
 
 ## Fuente de verdad disponible
 
+Actualizacion de fase 10: 24 modelos/tablas, head 0004_atomic_sales. SaleWorkflow
+agrega auditoria e idempotencia sin poblar historicos; inventory_movements admite
+una linea de compra o de venta con delta correspondiente. B03 de ventas y B04
+confirmados: precio de producto copiado por linea, total de servidor y ventas
+inmutables. Se preservan las tablas legacy y los movimientos de compras existentes.
+Tipos, reglas y limites en [ventas](sales.md). Verificado solo en pruebas aisladas.
+
 Actualizacion de fase 9: 23 modelos/tablas, head 0003_purchase_receipts. Se agregan
 purchase_workflows, purchase_item_costs e inventory_movements sin alterar las
 tablas legacy ni reconstruir costes/movimientos. B01 define stock disponible,

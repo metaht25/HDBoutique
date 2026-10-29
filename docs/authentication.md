@@ -20,7 +20,10 @@ No se importan contraseñas ni se crean cuentas automaticamente.
 
 Fase 9 extiende permisos: Administrator y Manager registran/reciben compras y
 consultan inventario; Cashier no tiene acceso. Ver [contrato](purchases-inventory.md).
-No se conceden permisos para ventas, caja o reportes aun no implementados.
+Fase 10 extiende B09 expresamente: los tres roles registran y consultan ventas,
+con empleado vinculado o existente explicito y cuenta auditada. Las ventas son
+inmutables para todos; [contrato](sales.md). El historial general de inventario
+conserva permisos de compras. Caja y reportes siguen en fases posteriores.
 Cashier no consulta costes de compra. Para crear clientes usa address_id existente:
 no se amplio su permiso a ubicaciones. Las cuentas se deshabilitan, no se borran.
 Una cuenta puede vincularse a un empleado existente; el vinculo es opcional,

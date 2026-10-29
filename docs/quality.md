@@ -55,7 +55,7 @@ Se comprueban upgrade/downgrade/upgrade, metadata sin drift, las 17 tablas con
 datos sinteticos, Decimal, nulabilidad/fechas, identidades, rechazo de huerfanos
 y borrado referenciado, commit visible desde otra conexion y rollback.
 El SQL offline se prueba sin conexion. La suite habitual sin la opcion omite
-85 casos PostgreSQL desde fase 9 (11 originales de fase 6); no equivale a ejecutar
+119 casos PostgreSQL desde fase 10 (11 originales de fase 6); no equivale a ejecutar
 esas verificaciones.
 
 La fuente de comandos de esquema e integracion es [migration.md](migration.md).
@@ -69,6 +69,13 @@ inventario y ensayo.
 La cobertura de app incluye declaraciones ORM: un 100% de esas lineas no demuestra
 por si solo reglas de compra/venta, cobertura de cada DDL o concurrencia. Esos
 casos permanecen en sus fases, con datos aislados y reglas aprobadas.
+
+Fase 10 incorpora regresiones de ventas completas, dinero exacto, idempotencia,
+rollback tras escrituras, precios historicos, permisos y concurrencia de ultima
+unidad. Verifica tambien ventas/recepciones y cambios de precio bajo los mismos
+bloqueos de producto, conservacion de entradas al migrar y rechazo de downgrade
+que eliminaria salidas. Contrato en [ventas](sales.md); resultados reales en
+[caracterizacion](characterization.md).
 
 ## Seguridad e integridad
 

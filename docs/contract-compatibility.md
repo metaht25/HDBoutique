@@ -7,6 +7,9 @@ Las demas rutas siguen propuestas. Origen: [contratos actuales](legacy-api-contr
 Fase 9 implementa [compras e inventario](purchases-inventory.md): cabecera/lineas
 atomicas, costes historicos, recepcion unica y stocks de solo lectura en CRUD.
 El frontend aun conserva los contratos Django.
+Fase 10 implementa [ventas](sales.md): una solicitud atomica e idempotente,
+precio/total de servidor, salidas y ventas inmutables. No se publican escrituras
+de cabecera/lineas separadas ni ediciones/borrados financieros.
 
 Actualizacion de fase 5: las tablas/modelos nuevos ya usan estos nombres en
 persistencia, con las precisiones siguientes. Las rutas HTTP y los contratos
@@ -31,9 +34,9 @@ JSON nuevos se concretan por incremento; Django conserva todos sus contratos.
 | `/api/proveedores/ofrece/` | `/api/v1/supplier-offerings` | Verificar PK fisica; no fusionar automaticamente |
 | `/api/compras/compras/` | `/api/v1/purchases` | Implementado fase 9: registro atomico e idempotente de cabecera y lineas |
 | `/api/compras/detalles-compras/` | `/api/v1/purchases/{purchase_id}` | Lineas anidadas en items de la compra; sin escritura independiente |
-| Sin endpoint legacy | `/api/v1/inventory/movements` | Historial de entradas de recepcion, solo lectura |
-| `/api/ventas/ventas/` | `/api/v1/sales` | Propuesta: cabecera, lineas y stock atomicos |
-| `/api/ventas/detalles-ventas/` | `/api/v1/sales/{sale_id}/items` | Lectura anidada propuesta; escritura bajo caso de uso |
+| Sin endpoint legacy | `/api/v1/inventory/movements` | Entradas/salidas, solo lectura; filtros product_id, purchase_id y sale_id |
+| `/api/ventas/ventas/` | `/api/v1/sales` | Implementado fase 10: cabecera, lineas y stock atomicos e idempotentes |
+| `/api/ventas/detalles-ventas/` | `/api/v1/sales/{sale_id}` | Lineas en items de la venta; sin escritura independiente |
 
 ## Campos
 

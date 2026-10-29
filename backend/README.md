@@ -47,6 +47,9 @@ Fase 9 agrega head 0003_purchase_receipts: 23 modelos/tablas en total, compras
 atomicas, costes historicos y recepcion unica de inventario. Los stocks del CRUD
 de productos son de solo lectura; producto nuevo inicia disponible en cero.
 Contrato, limites y operacion en [compras e inventario](../docs/purchases-inventory.md).
+Fase 10 agrega head 0004_atomic_sales: 24 modelos/tablas, ventas atomicas con
+precio/total de servidor, idempotencia y salidas de inventario. Los tres roles
+registran y consultan ventas inmutables. Ver [ventas](../docs/sales.md).
 Comandos, guardas y pruebas PostgreSQL desechables en
 [migraciones](../docs/migration.md). Pytest sin --run-postgres omite la integracion;
 usar compose.test.yaml para ejecutarla. En este Windows usar Docker por el bloqueo

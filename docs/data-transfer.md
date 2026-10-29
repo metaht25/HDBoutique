@@ -128,9 +128,9 @@ uv run --locked python -m data_migration load --database rehearsal_test --input 
 uv run --locked python -m data_migration reconcile --database rehearsal_test --input migration-artifacts/target.json --output migration-artifacts/reconciliation.json
 ```
 
-`load` verifica head 0003_purchase_receipts desde fase 9, metadata sin drift,
-ausencia de triggers y las 23 tablas vacias, incluidas identidad y las nuevas
-tablas de recepcion/costes; bloquea las 23 tablas e inserta solo las 17 tablas
+`load` verifica head 0004_atomic_sales desde fase 10, metadata sin drift,
+ausencia de triggers y las 24 tablas vacias, incluidas identidad y las nuevas
+tablas de recepcion/costes/ventas; bloquea las 24 tablas e inserta solo las 17 tablas
 legacy por dependencias,
 concilia y reinicia identidades a max(ID)+1 (minimo 1). Usa una sola transaccion;
 un fallo revierte filas y RESTART. No usa setval, truncate, delete ni upsert.
@@ -142,7 +142,7 @@ volver a conciliar; no reintentar la carga sobre tablas ocupadas.
 La matriz sigue teniendo 17 tablas legacy: no se exportan/importan cuentas,
 contraseñas, sesiones ni limites de login. Un destino con identidad creada se
 rechaza antes de cargar cualquier fila. No se reconstruyen snapshots de coste,
-workflows ni movimientos durante ETL. Los manifiestos para revisiones 0001/0002
+workflows ni movimientos durante ETL. Los manifiestos para revisiones 0001/0002/0003
 requieren un nuevo ensayo con el destino actual y evidencia regenerada; no editar
 respaldos ni manifiestos antiguos para eludir la validacion. Acuerdos de
 B01/B02/B05/B09 y alcance de B03 no certifican datos reales ni permiten inventar

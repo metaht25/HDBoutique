@@ -67,6 +67,9 @@ Fase 9 agrega compras y recepcion de inventario para Administrator/Manager,
 head 0003_purchase_receipts y stock de solo lectura en CRUD. El producto nuevo
 inicia en cero; los nulos historicos no se convierten. Ver
 [compras e inventario](purchases-inventory.md).
+Fase 10 agrega ventas para los tres roles, head 0004_atomic_sales, precio de
+servidor, idempotencia y salidas atomicas; [contrato](sales.md). Las migraciones
+nuevas siguen sin aplicarse automaticamente ni contra desarrollo en estas fases.
 
 Todos los comandos de esta seccion parten de backend/:
 

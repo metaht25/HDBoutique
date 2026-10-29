@@ -124,7 +124,8 @@ de stock y movimientos se confirman juntas. Hay unicidad por linea recibida y
 CHECK de cantidades/delta/estado. Los repositorios no hacen commits.
 Referencia: [bloqueos PostgreSQL 17](https://www.postgresql.org/docs/17/explicit-locking.html).
 
-ETL mantiene las 17 tablas mapeadas y exige head actual con las 23 tablas vacias;
+ETL mantiene las 17 tablas mapeadas y exige head actual con las 24 tablas vacias
+desde fase 10 (0004_atomic_sales; [ventas](sales.md));
 no importa ni exporta identidad, workflows, costes reconstruidos o movimientos.
 Los manifiestos de revisiones previas requieren nuevo ensayo y evidencia,
 conservando los originales. La nueva revision se verifico solo en PostgreSQL
@@ -136,6 +137,7 @@ las rutas. No hay migraciones, compras o recepciones automaticas al arrancar.
 El downgrade elimina auditoria/costes/movimientos nuevos y no revierte el stock:
 no equivale a deshacer recepciones y requiere respaldo y plan operativo.
 
-Frontend, ventas, ajustes, devoluciones, anulaciones y otras reglas B03/B04/B06/B07
-permanecen en sus fases o pendientes de acuerdo. Ver [reglas](business-rules.md),
+Fase 10 incorpora [ventas](sales.md), salidas y reglas B03/B04 confirmadas.
+Frontend, ajustes, devoluciones, anulaciones y B06/B07 permanecen en sus fases o
+pendientes de acuerdo. Ver [reglas](business-rules.md),
 [migraciones](migration.md) y [resultados](characterization.md).

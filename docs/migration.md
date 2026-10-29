@@ -11,6 +11,14 @@ tratarse como un nuevo ensayo autorizado. El corte operativo corresponde a fase 
 
 ## Operar el esquema con Alembic
 
+Fase 10 lleva head a 0004_atomic_sales, 24 tablas: sale_workflows para autoria/
+idempotencia y salidas por sale_item_id en inventory_movements. Conserva las
+entradas existentes y los historicos, sin estados ni salidas inferidos. Upgrade,
+downgrade desde vacio, conservacion y drift se verifican en PostgreSQL aislado;
+no se migra desarrollo. Downgrade con salidas se rechaza antes de descartarlas;
+no restaura stock ni constituye anulacion de ventas. Requiere respaldo y plan
+operativo incluso sin salidas, pues elimina auditoria. Ver [ventas](sales.md).
+
 Fase 9 lleva head a 0003_purchase_receipts: tres tablas nuevas de workflow, coste
 historico y movimientos. No cambia el contenido de las tablas legacy, no asigna
 estados/precios a compras previas ni convierte stock null en cero. Upgrade desde

@@ -42,7 +42,7 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   deshabilitados por defecto; fase 8 incorpora autenticacion y permisos obligatorios.
   Production exige origen HTTPS y cookies Secure. Contratos y
   compatibilidad confirmada: docs/foundation-api.md. Empleados sigue pendiente.
-  Hay 23 modelos SQLAlchemy; head 0003_purchase_receipts agrega workflows, costes
+  Hay 24 modelos SQLAlchemy; 0003_purchase_receipts agrega workflows, costes
   historicos y movimientos de recepcion. Compras e inventario de fase 9 implementados
   segun docs/purchases-inventory.md, sin aplicar migraciones contra desarrollo.
   La revision inicial 0001_compatibility se conserva, sin historicos
@@ -51,6 +51,12 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   confirmados en fase 9: stock disponible, cantidadstock legacy inmutable, recepcion
   completa unica, precios de proveedor historicos y envio separado. Stock nuevo
   cero, campos de stock solo lectura en CRUD; no convertir nulos existentes a cero.
+  Fase 10 implementa ventas segun docs/sales.md; head 0004_atomic_sales agrega
+  auditoria/idempotencia y salidas de inventario, sin migrar desarrollo. B03 de
+  ventas/B04 y permisos B09 confirmados: precio de producto copiado, total de
+  servidor, NIO/Decimal/dos decimales, sin descuentos/precio editable; ventas
+  inmutables sin edicion/borrado/anulacion. Los tres roles registran y consultan
+  ventas, con empleado vinculado o existente explicito y cuenta auditada.
   Las demas reglas definitivas siguen pendientes; el usuario confirmo conservar ambos
   campos de existencias y direccion ligada solo a departamento en esta base inicial.
   Docker/Compose y PostgreSQL local estan disponibles; readiness comprueba conexion

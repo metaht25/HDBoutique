@@ -54,10 +54,10 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 
 | ID | Decision | Evidencia y riesgo | Propuesta para evaluar | Momento limite |
 | --- | --- | --- | --- | --- |
-| B01 | Existencia disponible y campo legacy | Confirmado fase 9: stock disponible; cantidadstock legacy, sin actualizar | Productos nuevos con stock cero; ambos campos de solo lectura en CRUD; nulos existentes requieren conteo, no se convierten en cero | Implementado para compras/inventario; ventas lo aplicara en fase 10 |
+| B01 | Existencia disponible y campo legacy | Confirmado fase 9: stock disponible; cantidadstock legacy, sin actualizar | Productos nuevos con stock cero; ambos campos de solo lectura en CRUD; nulos existentes requieren conteo, no se convierten en cero | Implementado para compras y ventas/inventario |
 | B02 | Entrada de compra al inventario | Confirmado fase 9: solo al recibir completamente | registered -> received, una sola vez, sin recepciones parciales | Implementado con movimientos, rollback e idempotencia |
-| B03 | Precios, descuentos y redondeo | Compras confirmado fase 9: coste vigente del proveedor copiado por linea, NIO/Decimal/dos decimales; envio separado y sin descuentos | Sin prorrateo ni redondeo implicito; politica de venta y cambios de precio/descuentos de venta siguen pendientes | Compras implementado; resolver lo restante antes de fase 10 |
-| B04 | Correccion de ventas confirmadas | CRUD permite modificar/borrar cabecera y lineas por separado | Correcciones trazables y atomicas; decidir anulacion y efectos en stock/abonos | Antes de ventas |
+| B03 | Precios, descuentos y redondeo | Compras confirmado fase 9; ventas confirmado fase 10: precio vigente del producto copiado por linea, total de servidor, NIO/Decimal/dos decimales | Sin descuentos ni precio editable; rechazar precio null/no positivo; envio de compra separado sin prorrateo | Implementado para compras y ventas; no redondeo implicito |
+| B04 | Correccion de ventas confirmadas | Confirmado fase 10: ventas inmutables para todos los roles | Sin editar, borrar ni anular; correcciones/devoluciones requieren flujo trazable posterior, sin cobros ni deuda en esta fase | Implementado; correcciones futuras requieren nuevo acuerdo |
 | B05 | Fechas legacy y recepcion | Confirmado fase 9: revision/relleno se conservan sin efecto en inventario | received_at nuevo e independiente, sin inferir recepcion desde fechas antiguas | Implementado sin reconstruir historicos |
 | B06 | Deuda, abono y saldo | Modelo guarda abonos, no principal ni estado | Confirmar origen de deuda, pagos parciales, sobrepagos y relacion cliente/venta | Antes de implementar cobros |
 | B07 | Efecto y persistencia de desactivacion | Clientes/Productos solo cambian estado local | Persistir estado conservando historia; decidir bloqueo de nuevas operaciones | Antes de completar activacion en API/frontend |
@@ -69,8 +69,8 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 | B13 | Telefono y datos obligatorios | Formulario y modelo tienen reglas distintas | Confirmar regla nicaraguense y tratamiento de historicos de otra longitud | Antes de endurecer validaciones |
 | B14 | Definicion de bajo stock | Cero incluido en unas pantallas y excluido en otras | Separar agotado y bajo stock, con umbral acordado | Antes de dashboard/reportes definitivos |
 
-B01/B02/B05/B09 estan confirmados para sus alcances; B03 tiene politica de compras
-confirmada y venta pendiente. Las demas decisiones definitivas siguen pendientes,
+B01/B02/B03/B04/B05/B09 estan confirmados para sus alcances actuales.
+Las demas decisiones definitivas siguen pendientes,
 con los acuerdos de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
 fase no aprueba por si sola sus alternativas. Las fases documentales y la preparacion del
 entorno pueden continuar; el trabajo dependiente debe respetar estos limites.
@@ -84,6 +84,14 @@ se describe en [data-model.md](data-model.md) y evolucionara por Alembic cuando
 se acuerde cada regla pertinente.
 
 ## Ejemplos sinteticos y preguntas de aceptacion
+
+Acuerdo de fase 10, confirmado expresamente por el usuario: precio vigente del
+producto copiado por linea, total calculado por servidor, NIO/Decimal/dos decimales,
+sin descuentos ni precio editable, precios null/no positivos rechazados. Ventas
+inmutables sin edicion/borrado/anulacion; correcciones/devoluciones posteriores,
+sin cobros/deuda. Administrator, Manager y Cashier registran y consultan ventas,
+usando empleado vinculado o uno existente explicito si no hay vinculo, con cuenta
+autenticada auditada. B01 rige las salidas atomicas. Ver [ventas](sales.md).
 
 Acuerdo de fase 9, confirmado expresamente por el usuario: stock es disponible y
 cantidadstock se conserva como legado sin actualizar; productos nuevos con stock
