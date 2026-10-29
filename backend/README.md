@@ -22,11 +22,12 @@ compose.test.yaml, base tmpfs y datos sinteticos; no apuntarla a desarrollo.
 [Comandos de desarrollo](../docs/development.md).
 
 app/modules/ agrupa catalogo, ubicaciones, clientes, proveedores, identidad,
-compras, ventas, inventario y reportes por capas. Servicios controlan transacciones;
+compras, ventas, caja, inventario y reportes por capas. Servicios controlan transacciones;
 repositorios no confirman por su cuenta. Dinero Decimal y salida textual exacta.
-Empleados conserva su modelo y relaciones; CRUD/abonos/caja siguen pendientes.
+Empleados conserva su modelo y relaciones; CRUD pendiente. Abonos/credito quedan
+excluidos permanentemente. [Caja y cobros completos](../docs/cash-register.md).
 
-24 modelos/tablas, Alembic head 0004_atomic_sales. Revisiones anteriores intactas.
+30 modelos/tablas, Alembic head 0005_cash_checkout. Revisiones anteriores intactas.
 La base local hdboutique se actualizo desde 0001 tras respaldo restaurado y
 conciliacion, sin carga comercial: no existe origen/historicos SQL Server.
 No se ejecutan migraciones ni bootstrap al arrancar la API.

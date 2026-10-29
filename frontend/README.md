@@ -1,8 +1,9 @@
 # Frontend H&D Boutique
 
 React/Vite con TypeScript estricto, Router, sesion y cliente HTTP /api/v1.
-Siete pantallas operativas FastAPI; Caja mantiene el prototipo visible sin dinero
-persistente. No quedan servicios/adaptadores/proxy Django. [Contratos](../docs/frontend-modules.md).
+Ocho pantallas FastAPI, incluida [Caja](../docs/cash-register.md) persistente con
+turnos, cobros completos efectivo/transferencia y anulacion total supervisada.
+No quedan servicios/adaptadores/proxy Django. [Contratos](../docs/frontend-modules.md).
 
 Node >=24 <25 (24.22.2 verificado), npm y package-lock.json. Desde frontend/:
 

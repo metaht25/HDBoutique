@@ -22,8 +22,10 @@ por ID; claves idempotentes evitan duplicados de reintentos. Dinero Decimal/NIO 
 texto decimal en JSON. No se reconstruyen precios o movimientos historicos.
 
 Modulos activos: locations, catalog, customers, suppliers, identity, purchases,
-sales, inventory y reporting. staff conserva modelos/relaciones, sin CRUD.
-Caja, deuda/abonos, activacion y nuevas devoluciones requieren reglas/autorizacion.
+sales, cash, inventory y reporting. staff conserva modelos/relaciones, sin CRUD.
+[Caja](cash-register.md) agrega turnos y pago completo con venta, correcciones
+mediante anulacion total y movimientos compensatorios. Credito/abonos excluidos
+permanentemente; activacion y ampliaciones de devolucion siguen fuera del alcance.
 
 El frontend organiza app (rutas), layouts, features (modulos) y shared (HTTP,
 sesion, formularios/UI). Solo /api/v1, respuestas externas validadas, dinero textual,
@@ -35,7 +37,7 @@ Nginx sirve dist y dirige /api/v1 a FastAPI manteniendo el origen. El despliegue
 local usa loopback/HTTP y cookies locales; production exige HTTPS/Secure y su
 propia infraestructura. No hay proxy ni servicio Django.
 
-24 tablas SQLAlchemy y cuatro revisiones Alembic hasta 0004_atomic_sales.
+30 tablas SQLAlchemy y cinco revisiones Alembic hasta 0005_cash_checkout.
 0001_compatibility se conserva; el corte local actualizo la base existente tras
 respaldo restaurado y comparacion de sus datos/identidades. No hay SQL Server ni
 historicos disponibles; data_migration mantiene herramientas offline de referencia,

@@ -1,5 +1,8 @@
 # Autenticacion y permisos: fase 8
 
+Incremento posterior: caja y cobros completos, head 0005_cash_checkout.
+La referencia siguiente a 0004 describe el hito del corte de fase 15.
+
 Actualizacion de fase 15: Django retirado; siete pantallas FastAPI con login.
 El destino local hdboutique esta migrado a 0004_atomic_sales y tiene su primer
 Administrator, creado expresamente tras respaldo/restauracion. No repetir bootstrap.
@@ -40,7 +43,9 @@ conserva permisos de compras. Fase 13 extiende B09 expresamente: dashboard y
 reportes de ventas/catalogo/clientes para los tres roles; compras y datos de
 proveedores/costes solo Administrator/Manager. Cashier no recibe esos campos
 en dashboard ni puede consultar el reporte de compras. [Contrato](reporting.md).
-Caja sigue pendiente de B10 y fuera del incremento solicitado.
+Caja se incorpora tras el corte: Cashier abre/consulta/opera sus turnos y cierra
+sin diferencia; Administrator/Manager supervisan todos, autorizan movimientos,
+cierres con diferencia y anulaciones totales. [Contrato](cash-register.md).
 Cashier no consulta costes de compra. Para crear clientes usa address_id existente:
 no se amplio su permiso a ubicaciones. Las cuentas se deshabilitan, no se borran.
 Una cuenta puede vincularse a un empleado existente; el vinculo es opcional,

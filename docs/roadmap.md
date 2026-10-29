@@ -6,6 +6,12 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 
 ## Estado de avance
 
+Incremento posterior al corte solicitado por el usuario: [caja y correccion de
+ventas](cash-register.md), con contado exclusivo en efectivo/transferencia,
+sin abonos/credito en ninguna version. Implementacion agrega revision 0005 y
+sustituye el prototipo de caja. No reabre la migracion SQL Server ni declara
+completado el modulo de empleados/configuracion inicial.
+
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |
 | 0 | Rama y saneamiento de README | Completada: 9bc044c; punto de partida f67910b |

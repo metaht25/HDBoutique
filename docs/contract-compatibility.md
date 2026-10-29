@@ -1,5 +1,10 @@
 # Matriz de compatibilidad propuesta
 
+Actualizacion posterior al corte: Django ya fue retirado. [Caja](cash-register.md)
+agrega payment obligatorio a la venta y POST /api/v1/sales/{id}/void; no hay
+customer-payments ni abonos/credito, excluidos definitivamente por el usuario.
+Las propuestas y menciones Django siguientes son referencias de la transicion.
+
 Estado: nombres y estrategia, implementados parcialmente en fase 7 para
 ubicaciones/catalogo y clientes/proveedores; ver [contrato vigente](foundation-api.md).
 Las demas rutas siguen propuestas. Origen: [contratos actuales](legacy-api-contracts.md).

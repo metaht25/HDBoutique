@@ -1,5 +1,9 @@
 # Migracion funcional del frontend: fase 12
 
+Actualizacion posterior al corte: [Caja](cash-register.md) ya usa TS/FastAPI;
+Ventas exige pago completo efectivo/transferencia y permite anulacion total
+supervisada. Sustituye las menciones historicas al prototipo en esta guia.
+
 Se ejecuta por incrementos: Productos primero y Clientes despues, por solicitud
 expresa. Dashboard/Reportes se migran en [fase 13](reporting.md).
 Ventas/Compras/Proveedores se integraron durante la [fase 14](stabilization.md);

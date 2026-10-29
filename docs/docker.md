@@ -30,7 +30,8 @@ No hay servicio Django ni destino a 8000 en el host. Ninguna pantalla usa Django
 Python 3.13.15/uv 0.12.10 y Node 24.22.2 estan fijados por version/digest.
 backend development instala runtime+dev y herramientas; runtime excluye dev/uv.
 Ambos carecen de Django/DRF/mssql-django/pyodbc. uv es el unico gestor Python.
-Los 24 modelos SQLAlchemy y head 0004_atomic_sales se conservan sin reescritura.
+El incremento de caja incorpora 30 modelos y head 0005_cash_checkout, conservando
+las revisiones anteriores sin reescritura. [Contrato y operacion](cash-register.md).
 
 frontend/Dockerfile construye con npm ci y sirve solo dist desde Nginx 1.30.6,
 fijado por digest. Ejecuta como nginx, puerto interno 8080, raiz de solo lectura y

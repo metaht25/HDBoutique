@@ -128,11 +128,21 @@ destino. No hay retorno automatico ni traslado inverso a SQL Server.
 
 ## Limites conservados
 
-Empleados/abonos siguen pendientes por confirmacion B11; Caja es prototipo B10,
-sin pagos, deuda, devoluciones nuevas ni activacion. No se aprobo ninguna regla
-pendiente por retirar Django. Al estar vacia la base comercial, una venta/compra
+Al cerrar fase 15, empleados/abonos y caja quedaron fuera del corte. Un acuerdo
+posterior excluye definitivamente abonos/credito e incorpora [caja](cash-register.md)
+y correccion de ventas supervisada mediante revision nueva 0005. No se aprobo
+ninguna regla pendiente por el mero retiro de Django. En una base comercial vacia, una venta/compra
 requiere primero sus referencias validas, incluido un empleado existente: este
 corte no crea empleados ni datos comerciales. Catalogos/ubicaciones/ofertas y
 cuentas tienen las APIs autenticadas existentes, sin prometer un panel admin nuevo.
 La publicacion productiva externa sigue requiriendo TLS, secretos, observabilidad
 y un procedimiento de respaldo/retencion del entorno correspondiente.
+
+## Incremento posterior: caja
+
+0005_cash_checkout aplicado en el mismo destino local autorizado, despues de
+respaldo/restauracion y ensayo en copia. Se preservaron las 24 tablas/identidades
+anteriores; seis tablas nuevas vacias. Respaldo final restaurado y conciliado en
+hdboutique_cash_final_verify: 30 tablas. Evidencia privada en la subcarpeta
+cash-checkout del respaldo original; sin eliminar las evidencias previas.
+[Reglas, operacion, verificaciones y limites](cash-register.md).

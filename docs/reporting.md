@@ -1,5 +1,10 @@
 # Dashboard y reportes: fase 13
 
+Actualizacion posterior al corte: [caja](cash-register.md) implementada. Ventas
+anuladas permanecen en el detalle con source=voided e importe original; la suma
+total_amount las excluye. Se mantiene el filtro por fecha documental de venta.
+Los reintegros pertenecen a la fecha/turno de caja, sin modificar cierres anteriores.
+
 Dashboard y Reportes migrados a TypeScript/FastAPI, con acceso de sesion, estados
 de carga/vacio/error, recuperacion explicita, tablas accesibles y responsive.
 La peticion del usuario excluye implementar caja; su [propuesta](cash-register-proposal.md)

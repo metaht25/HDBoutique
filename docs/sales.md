@@ -1,5 +1,14 @@
 # Ventas atomicas: fase 10
 
+Acuerdo posterior a fase 15: ventas solo y siempre al contado, cobro completo en
+efectivo o transferencia; sin credito/abonos/pagos parciales en ninguna version.
+El usuario autoriza correcciones trazables de ventas equivocadas, conservando el
+original. El incremento de [caja](cash-register.md) implementa payment obligatorio
+en POST /api/v1/sales y anulacion total supervisada. No inferir que una venta
+historica existente ya tiene cobro. [Reglas vigentes](business-rules.md).
+El resto conserva el contrato de fase 10 anterior al cobro; agregar payment a
+sus ejemplos de registro segun el contrato de caja.
+
 B03/B04 y permisos de venta B09 confirmados expresamente por el usuario el
 28 de octubre de 2026. Administrator, Manager y Cashier registran y consultan
 ventas. Se exige sesion y, en escrituras, Origin exacto y X-CSRF-Token valido.

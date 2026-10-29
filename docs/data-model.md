@@ -1,5 +1,10 @@
 # Modelo de datos: referencia, esquema inicial y limites
 
+Actualizacion posterior al corte: 30 modelos, head 0005_cash_checkout. Se agregan
+seis tablas de [caja](cash-register.md) y movimientos sale_return; no se infieren
+pagos historicos ni se modifican revisiones previas. Los hitos siguientes describen
+la evolucion del esquema y no sustituyen el contrato actual de caja.
+
 Desde fase 5 existe un esquema PostgreSQL inicial de compatibilidad: 17 modelos
 SQLAlchemy y revision Alembic `0001_compatibility`. La base local de desarrollo
 creada en fase 4 tiene ese esquema, sin registros de negocio. Esto no significa

@@ -57,13 +57,13 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 | B01 | Existencia disponible y campo legacy | Confirmado fase 9: stock disponible; cantidadstock legacy, sin actualizar | Productos nuevos con stock cero; ambos campos de solo lectura en CRUD; nulos existentes requieren conteo, no se convierten en cero | Implementado para compras y ventas/inventario |
 | B02 | Entrada de compra al inventario | Confirmado fase 9: solo al recibir completamente | registered -> received, una sola vez, sin recepciones parciales | Implementado con movimientos, rollback e idempotencia |
 | B03 | Precios, descuentos y redondeo | Compras confirmado fase 9; ventas confirmado fase 10: precio vigente del producto copiado por linea, total de servidor, NIO/Decimal/dos decimales | Sin descuentos ni precio editable; rechazar precio null/no positivo; envio de compra separado sin prorrateo | Implementado para compras y ventas; no redondeo implicito |
-| B04 | Correccion de ventas confirmadas | Confirmado fase 10: ventas inmutables para todos los roles | Sin editar, borrar ni anular; correcciones/devoluciones requieren flujo trazable posterior, sin cobros ni deuda en esta fase | Implementado; correcciones futuras requieren nuevo acuerdo |
+| B04 | Correccion de ventas confirmadas | Fase 10 conserva originales inmutables. Acuerdo posterior al corte: el usuario autoriza la correccion trazable recomendada | Implementar anulacion total autorizada, motivo obligatorio, original conservado, devolucion de importe y reposicion solo de mercancia efectivamente devuelta; sin editar/borrar la venta ni duplicar reintentos | Implementado en incremento de caja: anulacion total supervisada, atomica e idempotente |
 | B05 | Fechas legacy y recepcion | Confirmado fase 9: revision/relleno se conservan sin efecto en inventario | received_at nuevo e independiente, sin inferir recepcion desde fechas antiguas | Implementado sin reconstruir historicos |
-| B06 | Deuda, abono y saldo | Modelo guarda abonos, no principal ni estado | Confirmar origen de deuda, pagos parciales, sobrepagos y relacion cliente/venta | Antes de implementar cobros |
+| B06 | Deuda, abono y saldo | Confirmado por el usuario tras fase 15: ventas solo y siempre al contado; ningun abono en ninguna version | Excluir credito, deuda, pagos parciales y abonos del producto. Cobro completo por venta. Conservar tabla/modelo historico de compatibilidad sin exponer escrituras ni inferir saldos | Regla definitiva: pago completo obligatorio y atomico con venta; historicos preservados sin inferencias |
 | B07 | Efecto y persistencia de desactivacion | Clientes/Productos solo cambian estado local | Persistir estado conservando historia; decidir bloqueo de nuevas operaciones | Antes de completar activacion en API/frontend |
 | B08 | Direccion y municipio | Formulario solicita un campo que el modelo no tiene | Acordar FK municipio y consistencia con departamento; no inferir historicos | Antes del esquema de ubicaciones y alta de clientes |
 | B09 | Usuarios, empleados y permisos | Confirmado en fase 8: Administrator, Manager y Cashier; cuenta/empleado opcional y exclusivo | Matriz aprobada y contrato en [autenticacion](authentication.md) | Implementado y verificado en fase 8; frontend pendiente en sus fases |
-| B10 | Alcance real de caja | Apertura/cierre no persisten y ventas son manuales | Acordar turno, entradas/salidas, medios de pago y conciliacion antes de completar | Antes de backend de caja |
+| B10 | Alcance real de caja | Usuario confirma contado exclusivo en efectivo o transferencia; ningun abono ni tarjeta | Implementar cobro completo; transferencia con referencia/confirmacion manual separada del efectivo. Propuesta de turnos, apertura/cierre, movimientos y correcciones trazables en [caja](cash-register-proposal.md) | Implementado: caja principal, turnos, apertura/cierre, movimientos supervisados y conciliacion; [contrato](cash-register.md) |
 | B11 | Funciones utilizadas desde admin Django | Confirmado fase 15: no se utiliza /admin/; empleados/abonos pueden seguir pendientes | Django retirado sin crear funciones ni datos comerciales nuevos | Resuelto para este corte local |
 | B12 | Conservacion y corte de historicos | Confirmado fase 15: no hay origen/historicos SQL Server; destino hdboutique/volumen de desarrollo y ventana inmediata autorizados | Respaldos previo/final restaurados y conciliados; archivos/Git conservados sin borrado automatico; retorno en [corte](cutover.md) | Resuelto para este corte local; nuevos origenes requieren acuerdo propio |
 | B13 | Telefono y datos obligatorios | Formulario y modelo tienen reglas distintas | Confirmar regla nicaraguense y tratamiento de historicos de otra longitud | Antes de endurecer validaciones |
@@ -72,6 +72,9 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 B01/B02/B03/B04/B05/B09/B14 estan confirmados para sus alcances actuales.
 B11/B12 estan confirmados para el corte local de fase 15, sin origen SQL Server
 ni tareas utilizadas en /admin/; no aprueban reglas de empleados/abonos pendientes.
+Acuerdo posterior al corte: B06 excluye definitivamente abonos/credito y B04
+autoriza correcciones trazables. El incremento de [caja](cash-register.md)
+implementa cobro completo obligatorio, turnos y anulacion total supervisada.
 Las demas decisiones definitivas siguen pendientes,
 con los acuerdos de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
 fase no aprueba por si sola sus alternativas. Las fases documentales y la preparacion del
@@ -86,6 +89,9 @@ se describe en [data-model.md](data-model.md) y evolucionara por Alembic cuando
 se acuerde cada regla pertinente.
 
 ## Ejemplos sinteticos y preguntas de aceptacion
+
+Los acuerdos por fase siguientes son historicos. B04/B06/B10 actuales se concretan
+en [caja](cash-register.md); el prototipo de caja ya fue sustituido.
 
 Acuerdo de fase 13, confirmado expresamente por el usuario: politica B14 indicada
 arriba; fecha comercial America/Managua, hoy de servidor, filtros inclusivos sobre

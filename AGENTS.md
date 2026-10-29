@@ -36,6 +36,17 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 ## Estado y documentos de referencia
 
+- Acuerdo posterior al corte: ventas solo y siempre al contado, efectivo o
+  transferencia; sin abonos, credito ni pagos parciales en ninguna version.
+  El usuario autoriza correcciones trazables: anulacion total
+  supervisada, motivo, original conservado, devolucion del importe y reposicion
+  solo de mercancia efectivamente devuelta. Implementados caja principal/turnos,
+  apertura/cierre, movimientos supervisados, pago completo atomico obligatorio
+  con venta y anulacion auditada. Revision 0005_cash_checkout, 30 tablas.
+  Historicos sin pago no se marcan como cobrados. Ver B04/B06/B10 y
+  docs/cash-register.md. Empleados/configuracion inicial siguen pendientes.
+  No ampliar a tarjeta, credito ni abonos.
+
 - Fase 15 cerrada para el corte local autorizado en hdboutique-dev/base hdboutique,
   volumen hdboutique-dev_postgres_data. Web http://127.0.0.1:8080 (Nginx),
   FastAPI 127.0.0.1:8001 y PostgreSQL 127.0.0.1:5433. Solo loopback, no despliegue
