@@ -1,0 +1,6 @@
+# Synthetic idempotency keys in isolated historical tests; no authentication secrets.
+c9c6970d6baabf83f377b9f9e9e40d4ad1048368:backend/tests/integration/test_sales.py:generic-api-key:59
+71e09ac2b1f28717c17f6c1cd6b25c24e93a834f:backend/tests/integration/test_purchase_workflows.py:generic-api-key:161
+71e09ac2b1f28717c17f6c1cd6b25c24e93a834f:backend/tests/integration/test_purchase_workflows.py:generic-api-key:186
+71e09ac2b1f28717c17f6c1cd6b25c24e93a834f:backend/tests/integration/test_purchase_workflows.py:generic-api-key:241
+71e09ac2b1f28717c17f6c1cd6b25c24e93a834f:backend/tests/integration/test_purchase_workflows.py:generic-api-key:469
