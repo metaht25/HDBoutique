@@ -23,7 +23,7 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 | 12 | Migracion funcional de pantallas | Productos/Clientes completados en fase 12; Ventas/Compras/Proveedores integrados durante fase 14. Caja sigue excluida, pendiente B10. Ver [contratos](frontend-modules.md) |
 | 13 | Dashboard y reportes; caja segun alcance | Dashboard/reportes completados: agregaciones y filtros de servidor, fecha Managua, B14 y permisos confirmados; caja excluida por el usuario, pendiente B10 con [propuesta](cash-register-proposal.md). Ver [contrato](reporting.md) |
 | 14 | Integracion, seguridad y estabilizacion | Completada para el alcance disponible: 222 pruebas backend/PostgreSQL, 80 E2E simuladas y 4 conectadas, auditorias, volumen y restauracion de 24 tablas. Sin origen SQL Server disponible ni corte operativo. Ver [informe y riesgos](stabilization.md) |
-| 15 | Corte de datos y retirada de Django | Pendiente; requiere instruccion expresa y verificaciones operativas |
+| 15 | Corte de datos y retirada de Django | Corte local autorizado completado: hdboutique a head 0004, respaldo previo/final restaurados y conciliados; Django/DRF/drivers/adaptadores retirados; web Nginx/FastAPI/PostgreSQL en loopback. Sin origen SQL Server ni carga comercial, B11 confirmado. Ver [resultado y limites](cutover.md) |
 
 Este documento registra el estado, sin sustituir los resultados detallados de
 [characterization.md](characterization.md). Actualizar cada fila al cerrar su fase.

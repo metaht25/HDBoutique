@@ -1,5 +1,9 @@
 # Estabilizacion de fase 14
 
+Registro historico de fase 14. La [fase 15](cutover.md) retira Django, cambia las
+pruebas conectadas a la imagen Nginx y actualiza comandos en [desarrollo](development.md).
+Los conteos, dependencias y comandos siguientes describen exclusivamente fase 14.
+
 Verificada el 29 de octubre de 2026 en `Cris-develop`, con datos sinteticos y sin
 acceso al remoto. Se retomo el trabajo interrumpido sin commits posteriores a
 fase 13. El candidato FastAPI/React queda verificado para el alcance implementado;

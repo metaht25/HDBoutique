@@ -1,5 +1,12 @@
 # Autenticacion y permisos: fase 8
 
+Actualizacion de fase 15: Django retirado; siete pantallas FastAPI con login.
+El destino local hdboutique esta migrado a 0004_atomic_sales y tiene su primer
+Administrator, creado expresamente tras respaldo/restauracion. No repetir bootstrap.
+Operacion actual: [corte](cutover.md) y [Docker](docker.md). Los detalles de fase 8
+siguientes conservan el contrato de identidad; los hitos antiguos no describen
+el estado de migracion del destino local despues del corte.
+
 B09 confirmado por el usuario el 28 de octubre de 2026. Identidad propia de
 FastAPI, independiente de usuarios Django y de la identidad historica de empleados.
 No se importan contraseñas ni se crean cuentas automaticamente.
@@ -7,9 +14,8 @@ No se importan contraseñas ni se crean cuentas automaticamente.
 Fase 11 agrega [contexto de sesion frontend](frontend-foundation.md): me, CSRF,
 login como API del contexto y logout, identidad del encabezado desde servidor.
 Fase 12 incorpora login reutilizable y acceso autenticado dentro de Productos y
-Clientes, con permisos de esta matriz. Otras pantallas siguen pendientes:
-[alcance actual](frontend-modules.md). Esto no habilita rutas ni protege
-automaticamente los endpoints Django.
+Clientes, con permisos de esta matriz. Las fases 13/14 completan las siete
+pantallas operativas; [alcance actual](frontend-modules.md). Ya no hay endpoints Django.
 
 ## Permisos aprobados e implementados
 
@@ -152,8 +158,8 @@ uv run --locked python -m app.modules.identity.cli purge-expired --database NOMB
 Elimina sesiones vencidas/inactivas y contadores fuera de la ventana conservada.
 Programar su ejecucion periodica en la operacion; esta entrega no crea tareas.
 El downgrade de 0002 elimina datos de identidad: respaldar antes de considerarlo.
-No se entregaron MFA, recuperacion por correo ni integracion de login frontend;
-el consumidor React continua en Django hasta las fases 11/12.
+No se entregaron MFA ni recuperacion por correo. El login frontend moderno ya
+esta integrado y Django se retiro en fase 15.
 
 Fuentes tecnicas: [argon2-cffi](https://argon2-cffi.readthedocs.io/en/stable/api.html),
 [sesiones OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)

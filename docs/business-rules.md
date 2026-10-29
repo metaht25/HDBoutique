@@ -64,12 +64,14 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 | B08 | Direccion y municipio | Formulario solicita un campo que el modelo no tiene | Acordar FK municipio y consistencia con departamento; no inferir historicos | Antes del esquema de ubicaciones y alta de clientes |
 | B09 | Usuarios, empleados y permisos | Confirmado en fase 8: Administrator, Manager y Cashier; cuenta/empleado opcional y exclusivo | Matriz aprobada y contrato en [autenticacion](authentication.md) | Implementado y verificado en fase 8; frontend pendiente en sus fases |
 | B10 | Alcance real de caja | Apertura/cierre no persisten y ventas son manuales | Acordar turno, entradas/salidas, medios de pago y conciliacion antes de completar | Antes de backend de caja |
-| B11 | Funciones utilizadas desde admin Django | Los 17 modelos estan registrados en admin | Enumerar tareas operativas que necesiten reemplazo antes de retirar Django | Antes de retirada del backend anterior |
-| B12 | Conservacion y corte de historicos | No se inspecciono la base real | Preservar IDs, fechas, abonos y operaciones; acordar ventana y rollback | Antes de migracion operativa |
+| B11 | Funciones utilizadas desde admin Django | Confirmado fase 15: no se utiliza /admin/; empleados/abonos pueden seguir pendientes | Django retirado sin crear funciones ni datos comerciales nuevos | Resuelto para este corte local |
+| B12 | Conservacion y corte de historicos | Confirmado fase 15: no hay origen/historicos SQL Server; destino hdboutique/volumen de desarrollo y ventana inmediata autorizados | Respaldos previo/final restaurados y conciliados; archivos/Git conservados sin borrado automatico; retorno en [corte](cutover.md) | Resuelto para este corte local; nuevos origenes requieren acuerdo propio |
 | B13 | Telefono y datos obligatorios | Formulario y modelo tienen reglas distintas | Confirmar regla nicaraguense y tratamiento de historicos de otra longitud | Antes de endurecer validaciones |
 | B14 | Definicion de bajo stock | Confirmado en fase 13: disponible 0 agotado, 1–10 bajo stock, >10 suficiente | Nulos y negativos separados, pendientes de conteo; sin usar cantidadstock como fallback | Implementado en dashboard/reportes FastAPI; pantallas legacy restantes conservan sus limites |
 
 B01/B02/B03/B04/B05/B09/B14 estan confirmados para sus alcances actuales.
+B11/B12 estan confirmados para el corte local de fase 15, sin origen SQL Server
+ni tareas utilizadas en /admin/; no aprueban reglas de empleados/abonos pendientes.
 Las demas decisiones definitivas siguen pendientes,
 con los acuerdos de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
 fase no aprueba por si sola sus alternativas. Las fases documentales y la preparacion del

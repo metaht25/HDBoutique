@@ -1,5 +1,9 @@
 # Base del frontend: fase 11
 
+Referencia historica: fase 15 ya retiro adaptadores/servicios Django. Estado y
+comandos actuales en [modulos](frontend-modules.md), [desarrollo](development.md)
+y [corte](cutover.md).
+
 Este documento describe la entrega de fase 11. Productos y Clientes se migran
 posteriormente por incrementos: estado actual y contratos en
 [frontend-modules.md](frontend-modules.md).

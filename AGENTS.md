@@ -36,68 +36,43 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 ## Estado y documentos de referencia
 
-- Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`. Frontend
-  React/Vite con base TypeScript estricta de fase 11, Router, HTTP/sesion y CSS
-  Modules. Fase 12 parcial: Productos y Clientes migrados a TS/FastAPI con consulta,
-  alta, edicion, busqueda/paginacion de servidor, acceso y login dentro del modulo.
-  Productos: stocks de solo lectura, dinero textual; Cashier solo consulta.
-  Clientes: direccion existente, Cashier indica ID sin consultar ubicaciones;
-  telefono textual hasta 10 caracteres. Sin activacion (B07), municipio ni deuda.
-  Fase 14 integra tambien Ventas/Compras/Proveedores TS/FastAPI: venta completa
-  atomica, compra/recepcion separadas, consulta y alta/edicion de proveedores,
-  intenciones monetarias persistidas por pestana/cuenta y sesion entre pestanas.
-  Siete pantallas operativas migradas; Caja sigue JSX/prototipo pendiente B10.
-  Adaptadores JS, contratos Django y reexportaciones conservados hasta fase 15.
-  Sesion sin usuario fijo. Informe/limites: docs/stabilization.md. Fase 14 cerrada
-  para el alcance disponible: 222 pruebas backend/PostgreSQL, 80 E2E simuladas,
-  cuatro conectadas, auditorias y restauracion de 24 tablas aprobadas. Sin datos
-  reales ni corte; no iniciar fase 15 sin instruccion expresa.
-  Fase 13: dashboard/reportes TS/FastAPI de solo lectura, sumas globales SQL y
-  paginas de detalle, costes historicos/faltantes explicitos, fecha America/Managua.
-  B14 confirmado: agotado 0, bajo stock 1–10, suficiente >10; null/negativo aparte.
-  Cashier sin compras/proveedores/costes; Administrator/Manager completos.
-  Contrato: docs/reporting.md. Caja sigue pendiente por instruccion del usuario,
-  sin implementar B10: recomendacion no aprobada en docs/cash-register-proposal.md.
-  Comandos/limites: docs/frontend-foundation.md y docs/frontend-modules.md. Node 24, npm ci y lock;
-  compose.frontend-test.yaml verifica sin red/backend y con API sintetica.
-  FastAPI en `backend/app/` ofrece salud.
-  Los modulos de fase 7 locations/catalog/customers/suppliers estan implementados,
-  deshabilitados por defecto; fase 8 incorpora autenticacion y permisos obligatorios.
-  Production exige origen HTTPS y cookies Secure. Contratos y
-  compatibilidad confirmada: docs/foundation-api.md. Empleados sigue pendiente.
-  Hay 24 modelos SQLAlchemy; 0003_purchase_receipts agrega workflows, costes
-  historicos y movimientos de recepcion. Compras e inventario de fase 9 implementados
-  segun docs/purchases-inventory.md, sin aplicar migraciones contra desarrollo.
-  La revision inicial 0001_compatibility se conserva, sin historicos
-  trasladados. B09 confirmado y fase 8 verificada en PostgreSQL aislado;
-  contratos/operacion en docs/authentication.md. B01/B02/B05 y B03 para compras
-  confirmados en fase 9: stock disponible, cantidadstock legacy inmutable, recepcion
-  completa unica, precios de proveedor historicos y envio separado. Stock nuevo
-  cero, campos de stock solo lectura en CRUD; no convertir nulos existentes a cero.
-  Fase 10 implementa ventas segun docs/sales.md; head 0004_atomic_sales agrega
-  auditoria/idempotencia y salidas de inventario, sin migrar desarrollo. B03 de
-  ventas/B04 y permisos B09 confirmados: precio de producto copiado, total de
-  servidor, NIO/Decimal/dos decimales, sin descuentos/precio editable; ventas
-  inmutables sin edicion/borrado/anulacion. Los tres roles registran y consultan
-  ventas, con empleado vinculado o existente explicito y cuenta auditada.
-  Las demas reglas definitivas siguen pendientes; el usuario confirmo conservar ambos
-  campos de existencias y direccion ligada solo a departamento en esta base inicial.
-  Docker/Compose y PostgreSQL local estan disponibles; readiness comprueba conexion
-  cuando esta configurada. Operacion y secretos: [docs/docker.md](docs/docker.md).
-- Fase 6 completada para el alcance disponible: no existe instancia/copia SQL
-  Server ni historicos a trasladar. Herramientas en backend/data_migration/ y
-  ensayos sinteticos verificados contra `db:5432/hdboutique_test`. Si aparece un
-  origen futuro, debe inventariarse y conciliarse antes de usarlo. Procedimiento y
-  limites: [docs/data-transfer.md](docs/data-transfer.md).
-- Arquitectura: [docs/architecture.md](docs/architecture.md).
-- Convenciones: [docs/conventions.md](docs/conventions.md).
-- API existente: [docs/legacy-api-contracts.md](docs/legacy-api-contracts.md).
-- Cambios de contrato: [docs/contract-compatibility.md](docs/contract-compatibility.md).
-- Esquema y traslado: [docs/data-model.md](docs/data-model.md) y
-  [docs/migration.md](docs/migration.md).
-- Calidad y comandos: [docs/quality.md](docs/quality.md),
-  [docs/development.md](docs/development.md) y
-  [docs/characterization.md](docs/characterization.md).
+- Fase 15 cerrada para el corte local autorizado en hdboutique-dev/base hdboutique,
+  volumen hdboutique-dev_postgres_data. Web http://127.0.0.1:8080 (Nginx),
+  FastAPI 127.0.0.1:8001 y PostgreSQL 127.0.0.1:5433. Solo loopback, no despliegue
+  publico. Compose base mantiene production/negocio false y HTTPS/Secure al habilitar.
+- Django/DRF, grupo legacy, requirements.txt, drivers SQL Server y adaptadores/
+  servicios frontend retirados. Codigo anterior preservado en Git/archivo privado.
+  Siete pantallas TS/FastAPI. Caja sigue JSX/prototipo sin persistencia B10.
+- El usuario confirmo que no existe origen/historicos SQL Server y no utiliza
+  /admin/ (B11). Empleados/abonos siguen pendientes; no crear datos ficticios para
+  completar referencias. Una venta/compra requiere un empleado existente.
+- Corte local 0001 -> 0004_atomic_sales: respaldo previo/final restaurados en bases
+  separadas, filas/identidades conciliadas. 24 tablas mas alembic_version. Ninguna
+  revision editada ni migracion automatica. Sin carga de registros comerciales.
+  Primer Administrator creado expresamente; credenciales privadas en carpeta de
+  respaldo ignorada. No repetir bootstrap ni imprimir credenciales/evidencias.
+- Operacion, limites y retorno: [docs/cutover.md](docs/cutover.md). Conservar
+  .env.docker, respaldos y volumen. No usar down -v ni restaurar --clean sobre
+  desarrollo. Autorizar nuevos destinos/trabajos de datos antes de ejecutarlos.
+- B01/B02/B03/B04/B05/B09/B14 confirmados para sus alcances: stock disponible,
+  cantidadstock legado inmutable; nuevo stock cero, nulos requieren conteo;
+  recepcion completa unica y ventas inmutables; dinero NIO/Decimal/dos decimales,
+  precio/total de servidor y cuenta/empleado auditados. B14: 0 agotado, 1-10 bajo,
+  >10 suficiente; null/negativo aparte. Fecha comercial America/Managua.
+- Cashier consulta catalogo/clientes/ventas, crea/edita clientes y registra ventas;
+  sin compras/proveedores/costes. Administrator/Manager segun la matriz confirmada.
+  Telefono textual hasta 10 y direccion existente ligada a departamento; sin
+  activacion, deuda, municipio inferido, descuentos o devoluciones nuevas.
+- [Reglas](docs/business-rules.md), [autenticacion](docs/authentication.md),
+  [frontend](docs/frontend-modules.md), [compras](docs/purchases-inventory.md),
+  [ventas](docs/sales.md), [reportes](docs/reporting.md).
+- [Arquitectura](docs/architecture.md), [convenciones](docs/conventions.md),
+  [calidad](docs/quality.md), [desarrollo](docs/development.md),
+  [resultados](docs/characterization.md), [Docker](docs/docker.md),
+  [datos](docs/data-model.md), [migracion](docs/migration.md).
+- data_migration mantiene herramientas y ensayos offline historicos sin drivers
+  SQL Server distribuidos. Un origen futuro requiere inventario/ensayo autorizado;
+  no presentar los ensayos sinteticos como traslado de datos reales.
 
 ## Implementacion
 
@@ -124,10 +99,9 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   pruebas y calidad. Para Pytest/Uvicorn preferir `python -m pytest` y
   `python -m uvicorn` dentro de uv, compatibles con los lanzadores de este Windows.
   Cambios de dependencias mediante uv.
-- Los grupos dev/legacy se instalan por defecto durante la transicion. Para
-  instalacion solo runtime usar `uv sync --locked --no-default-groups`; --no-dev
-  por si solo no excluye Django. requirements.txt es una exportacion de legacy,
-  no se edita manualmente; su comando esta en la guia de desarrollo.
+- Solo el grupo dev se instala por defecto. Para runtime usar
+  `uv sync --locked --no-default-groups`. No reintroducir grupo legacy,
+  requirements.txt, Django ni drivers SQL Server retirados en fase 15.
 - Mientras no exista ese entorno, las pruebas sin dependencias pueden ejecutarse
   con Python/Node existentes segun la guia de caracterizacion.
 - No instalar dependencias, iniciar servicios ni crear entornos durante una fase
@@ -143,8 +117,8 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 - No imprimir secretos, leer/exportar datos personales sin necesidad ni incorporar
   .env, respaldos, archivos de base o credenciales a codigo, logs, pruebas o imagenes.
-- Usar datos sinteticos en pruebas. La caracterizacion Django utiliza su ejecutor
-  aislado con motor dummy; no sustituirlo por settings productivos.
+- Usar datos sinteticos en pruebas. La caracterizacion Django fue retirada con
+  su backend; los contratos de referencia conservados son historicos.
 - No consultar ni modificar una base real por el mero hecho de encontrar una
   configuracion local. Para la fase de datos, confirmar origen/destino autorizados.
 - Compose de desarrollo usa .env.docker ignorado y volumen hdboutique-dev_postgres_data.

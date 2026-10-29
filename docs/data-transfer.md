@@ -1,6 +1,10 @@
 # Herramientas de traslado y conciliacion — fase 6
 
 Implementadas en `backend/data_migration/`, fuera del runtime y de FastAPI.
+Actualizacion fase 15: [corte local](cutover.md) realizado sin origen/historicos
+SQL Server. Se mantienen herramientas y ensayos offline; pyodbc/ODBC ya no se
+distribuyen como dependencias. Inventario/extraccion de un origen futuro requieren
+un nuevo alcance de operador, sus drivers y una copia expresamente autorizada.
 No consultan settings Django, no leen .env ni reutilizan credenciales de desarrollo.
 La matriz ejecutable contiene las 17 tablas y todos sus campos declarados;
 `mapping` la exporta con tipos, nulabilidad y revision de destino.

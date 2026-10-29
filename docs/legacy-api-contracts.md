@@ -1,5 +1,8 @@
 # Contratos actuales de HDBoutique
 
+Documento historico de fase 1: Django se retiro en fase 15. Estos endpoints ya no
+estan activos; [corte](cutover.md) y [contratos modernos](frontend-modules.md).
+
 Referencia: commit `9bc044c`, inicio de la fase 1. Este documento describe el
 backend Django/DRF existente; no define todavia una API FastAPI.
 
@@ -13,7 +16,8 @@ backend Django/DRF existente; no define todavia una API FastAPI.
   Desde fase 11 las vistas/adaptadores viven en `frontend/src/features/`, con
   reexportaciones en services y HTTP compartido; se conservan estos contratos.
 - Ejemplos completos de los 17 recursos:
-  [legacy_contracts.json](../backend/tests/characterization/fixtures/legacy_contracts.json).
+  [legacy-contracts.json](reference/legacy-contracts.json), referencia historica
+  conservada al retirar Django en fase 15; no es un contrato activo.
   Son datos sinteticos, no respuestas capturadas de una base real.
 
 Las rutas y declaraciones se verifican estaticamente. En fase 3 las pruebas

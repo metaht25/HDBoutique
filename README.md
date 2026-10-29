@@ -1,109 +1,62 @@
 # H&D Boutique
 
-Sistema web administrativo para inventarios, compras y ventas de una tienda de
-ropa. Incluye gestion de productos, clientes y proveedores, consultas de reportes
-y un prototipo de caja. Su alcance es la administracion interna de la tienda.
+Sistema local de inventarios, compras, ventas, clientes, proveedores y reportes.
+FastAPI/PostgreSQL y React/Vite/TypeScript. Django y sus adaptadores se retiraron
+en fase 15; historial y contratos anteriores conservados como referencia.
 
-## Estado del proyecto
+## Aplicacion local
 
-El candidato modernizado utiliza FastAPI, PostgreSQL y React/Vite con TypeScript.
-Django/DRF y sus contratos SQL Server se conservan hasta un corte expresamente
-autorizado. La refactorizacion conserva datos y comportamiento valido; no existe
-una instancia/copia SQL Server ni historicos disponibles para trasladar.
-
-| Area | Implementacion existente | Objetivo de la refactorizacion |
-| --- | --- | --- |
-| Backend | FastAPI autenticado con catalogo/clientes/proveedores, compras, ventas y reportes; Django conservado | Completar funciones pendientes y retirada autorizada |
-| Persistencia | Django ORM activo; 24 modelos SQLAlchemy y Alembic hasta 0004_atomic_sales | Ampliar reglas y restricciones por funcionalidad |
-| Base de datos | SQL Server legacy y PostgreSQL local con esquema inicial vacio | PostgreSQL con datos conciliados y reglas confirmadas |
-| Dependencias Python | uv, pyproject.toml y uv.lock; exportacion requirements.txt legacy | Retirar el grupo legacy al completar la sustitucion |
-| Frontend | Siete pantallas operativas TS/FastAPI; Caja JSX como prototipo | Caja solo tras aprobar B10; adaptadores legacy hasta fase 15 |
-| Entorno | Docker/Compose para FastAPI y PostgreSQL; legacy conserva SQL Server | Completar integracion funcional progresiva |
-
-Python 3.13.15 y uv 0.12.10 estan fijados para el backend. Las versiones resueltas
-estan en uv.lock; las de frontend, en package-lock.json. Docker/PostgreSQL local
-estan preparados; los [modulos fundamentales FastAPI](docs/foundation-api.md)
-estan implementados para desarrollo/pruebas, deshabilitados por defecto.
-La [fase 8](docs/authentication.md) agrega sesiones, CSRF y permisos de los tres
-roles aprobados. Migracion y primer administrador se preparan explicitamente.
-La [fase 9](docs/purchases-inventory.md) implementa compras atomicas, costes
-historicos y recepcion unica de inventario con las reglas confirmadas.
-La [fase 10](docs/sales.md) implementa ventas atomicas e idempotentes, precios
-historicos y salidas de inventario seguras ante concurrencia.
-La [fase 11](docs/frontend-foundation.md) agrega URLs, cliente HTTP, contexto de
-sesion, CSS aislado, componentes compartidos y pruebas frontend.
-Las fases 12/13 y la [fase 14](docs/stabilization.md) integran las siete pantallas
-operativas con FastAPI y verifican concurrencia, E2E conectadas, seguridad,
-volumen sintetico y restauracion. Caja, empleados y otras reglas pendientes
-conservan sus limites; el negocio sigue deshabilitado por defecto. Django y
-adaptadores se conservan, sin iniciar automaticamente fase 15.
-
-## Empezar
-
-Trabajar sobre esta copia local del repositorio y revisar primero
-[AGENTS.md](AGENTS.md). Participa un solo desarrollador en `Cris-develop`.
-Codex crea commits locales; el propietario realiza el push manualmente.
-
-Desde la raiz, con uv 0.12.10 disponible:
+Web activa: http://127.0.0.1:8080. Usuario inicial administrador; credenciales en
+el archivo privado de la carpeta de respaldo del corte, nunca versionadas.
+[Resultado, ubicacion privada y retorno](docs/cutover.md).
 
 ```powershell
-cd backend
-uv sync --locked
-uv run --locked python -m pytest
-uv run --locked python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
-```
-
-El ultimo comando inicia FastAPI en el puerto 8001; Django conserva el 8000.
-La nueva API publica `/health/live`, `/health/ready` y documentacion `/docs` en
-desarrollo. Readiness comprueba PostgreSQL si esta configurado; sin base mantiene
-scope=process. Las pruebas aisladas no consultan SQL Server.
-
-Para trabajar sin instalar Python/PostgreSQL en el equipo, desde la raiz:
-
-```powershell
-./infra/scripts/Initialize-LocalEnvironment.ps1
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d --wait --wait-timeout 180
-docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic upgrade head
+docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml ps
 ```
 
-Requiere Docker en modo Linux. Ver [Docker](docs/docker.md) para claves locales,
-puertos, persistencia, pruebas y respaldos; [desarrollo](docs/development.md) para uv.
-Alembic crea/actualiza explicitamente el esquema PostgreSQL local; no migra SQL
-Server ni se ejecuta automaticamente al arrancar. La suite PostgreSQL completa
-usa compose.test.yaml segun [migraciones](docs/migration.md).
+Conservar .env.docker y el volumen hdboutique-dev_postgres_data; no usar down -v.
+El entorno local habilitado solo publica en loopback. Produccion externa requiere
+HTTPS/Secure y configuracion propia; no se ha realizado despliegue publico.
+Ningun servicio migra ni crea cuentas al arrancar.
+
+## Estado
+
+24 modelos SQLAlchemy y Alembic head 0004_atomic_sales. El corte local autorizado
+actualizo hdboutique desde 0001 despues de respaldo restaurado y conciliacion;
+no existe origen/historicos SQL Server y no se cargaron datos comerciales.
+Administrador inicial sin empleado inventado. Empleados/abonos siguen pendientes
+por confirmacion B11; Caja conserva prototipo sin persistencia hasta resolver B10.
+Una compra/venta requiere previamente sus referencias validas, incluido empleado.
+
+Siete pantallas operativas usan exclusivamente /api/v1. Ventas atomicas e
+idempotentes, compra/recepcion separadas, dinero Decimal/NIO/texto, precios
+historicos, permisos por rol y reportes de servidor. No se infieren deuda, pagos,
+utilidad, estados o costes ausentes. [Reglas](docs/business-rules.md).
+
+## Desarrollo y verificacion
+
+Python 3.13.15/uv 0.12.10 y Node 24.22.2/npm, con bloqueos versionados.
+Solo grupo dev por defecto; no hay requirements.txt ni dependencias Django/ODBC.
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from backend
+docker compose -p hdboutique-test -f compose.test.yaml down
+docker compose -f compose.frontend-test.yaml build frontend
+docker compose -f compose.frontend-test.yaml run --rm -T frontend
+```
+
+Las pruebas usan datos sinteticos y proyectos aislados, nunca desarrollo. E2E
+habituales interceptan API; el perfil integration verifica Nginx/FastAPI/PostgreSQL.
+Comandos completos en [desarrollo](docs/development.md). Trabajar en Cris-develop,
+commits locales, sin push/fetch/pull/PR; [instrucciones](AGENTS.md).
 
 ## Documentacion
 
-| Documento | Contenido |
-| --- | --- |
-| [Plan por fases](docs/roadmap.md) | Estado, entregables y criterios para avanzar |
-| [Desarrollo](docs/development.md) | Requisitos, comandos y preparacion del entorno |
-| [Docker](docs/docker.md) | FastAPI/PostgreSQL local, persistencia y recuperacion |
-| [Arquitectura](docs/architecture.md) | Organizacion existente y monolito modular objetivo |
-| [Convenciones](docs/conventions.md) | Nombres, tipado, contratos y separacion de responsabilidades |
-| [Datos](docs/data-model.md) | Relaciones comprobadas y limites del modelo |
-| [Migracion](docs/migration.md) | Alembic local, pruebas aisladas y estrategia de datos historicos |
-| [Calidad](docs/quality.md) | Pruebas, verificaciones y definicion de tarea terminada |
-| [Git y colaboracion](docs/collaboration.md) | Trabajo individual, revision y commits locales |
-| [Contratos actuales](docs/legacy-api-contracts.md) | Recursos, campos y ejemplos de la API Django |
-| [Compatibilidad](docs/contract-compatibility.md) | Traducciones propuestas y cambios coordinados |
-| [Reglas del negocio](docs/business-rules.md) | Comportamiento observado y decisiones B01-B14 pendientes |
-| [Caracterizacion](docs/characterization.md) | Ejecucion, resultados registrados y defectos D01-D12 |
-| [Estabilizacion](docs/stabilization.md) | Fase 14: pruebas conectadas, restauracion, volumen y riesgos residuales |
-| [ADR 0001](docs/decisions/0001-phase-one-characterization.md) | Decision de caracterizar antes de sustituir |
-| [ADR 0002](docs/decisions/0002-backend-foundation.md) | Base uv/FastAPI y convivencia temporal con Django |
-| [ADR 0003](docs/decisions/0003-local-containers.md) | Contenedores locales y conectividad PostgreSQL |
-| [ADR 0004](docs/decisions/0004-compatible-schema-foundation.md) | Esquema inicial de compatibilidad y Alembic |
-
-Las guias de backend y frontend se encuentran en
-[backend/README.md](backend/README.md) y [frontend/README.md](frontend/README.md).
-
-## Datos y configuracion
-
-`.env.example` documenta la configuracion legacy y contiene valores de ejemplo.
-Los archivos `.env`, `.env.docker`, los respaldos y los datos personales no se versionan. La guia
-de desarrollo explica cuando configurar una copia autorizada de SQL Server.
-
-Las decisiones pendientes del negocio no se consideran aprobadas por iniciar una
-fase documental. Se avanza unicamente en la fase solicitada y se informa su cierre
-con verificaciones, limites y commits locales.
+- [Corte y operacion](docs/cutover.md), [Docker](docs/docker.md), [desarrollo](docs/development.md).
+- [Fases](docs/roadmap.md), [pruebas/resultados](docs/characterization.md), [calidad](docs/quality.md).
+- [Arquitectura](docs/architecture.md), [convenciones](docs/conventions.md), [colaboracion](docs/collaboration.md).
+- [Autenticacion](docs/authentication.md), [API fundamental](docs/foundation-api.md), [frontend](docs/frontend-modules.md).
+- [Compras/inventario](docs/purchases-inventory.md), [ventas](docs/sales.md), [reportes](docs/reporting.md).
+- [Datos](docs/data-model.md), [migraciones](docs/migration.md), [traslado offline](docs/data-transfer.md).
+- [Contratos historicos](docs/legacy-api-contracts.md), [compatibilidad](docs/contract-compatibility.md).

@@ -1,5 +1,33 @@
 # Pruebas de caracterizacion y regresion
 
+## Verificacion de fase 15
+
+El 29 de octubre de 2026 se ejecuto el [corte local autorizado](cutover.md): base
+hdboutique de 0001 a head 0004, sin origen/historicos SQL Server ni carga comercial.
+Respaldo previo/final restaurados en bases separadas y conciliados por filas,
+columnas, conteos, hashes e identidades; siete rutas/login/logout/lecturas reales
+aprobados sin escrituras comerciales. Primer Administrator creado expresamente.
+
+221 pruebas backend con --run-postgres aprobadas, cobertura app 97.62%; Ruff,
+formato (130 archivos), mypy (86), uv lock --check aprobados. Frontend tipos/lint,
+77 Vitest/componentes, build y 80 E2E Chromium escritorio/movil aprobados. Cinco
+E2E conectadas contra la imagen Nginx real/FastAPI/PostgreSQL aprobadas: ventas,
+recepciones, permisos, sesion entre pestanas, recarga SPA y rechazo de endpoints
+retirados. Las escrituras de esas pruebas permanecen en hdboutique-test/tmpfs.
+
+Se retiraron cuatro pruebas Pytest de caracterizacion Django y 41 pruebas Node
+de sus adaptadores junto con el codigo sin consumidores; se agregaron tres
+regresiones de snapshots/destinos y un rechazo de ruta legacy en cliente HTTP.
+No se declara que D03 haya sido corregido en Django: ya no se distribuye ese backend.
+Un primer ensayo detecto un error de preparacion en la prueba nueva de snapshots;
+se corrigio usando datos sinteticos confirmados y se repitio la suite completa.
+Las E2E Nginx usan relay TCP para conservar el origen loopback del entorno real,
+sin desactivar seguridad del navegador. Runtime y development sin Django/DRF/ODBC
+comprobados mediante imports; revisiones y datos comerciales se conservan intactos.
+
+No hubo push ni acceso al remoto. Los resultados de fases anteriores siguientes
+son historicos; comandos vigentes en [desarrollo](development.md).
+
 ## Verificacion de fase 14
 
 El 29 de octubre de 2026 se retomo y cerro la estabilizacion del alcance disponible.

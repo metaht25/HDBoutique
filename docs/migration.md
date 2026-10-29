@@ -1,5 +1,11 @@
 # Migraciones de esquema y estrategia de datos
 
+Actualizacion fase 15: corte local ejecutado en el destino hdboutique autorizado,
+0001 -> 0004, con respaldo previo/final restaurados y conciliados. Sin origen SQL
+Server ni carga comercial. [Evidencia y retorno](cutover.md). Los hitos de fases
+anteriores siguientes conservan su contexto; para comandos actuales ver
+[desarrollo](development.md) y [Docker](docker.md).
+
 Estado desde fase 5: Alembic implementado para el esquema PostgreSQL inicial de
 compatibilidad, revision `0001_compatibility`. Aplicada explicitamente en la base
 local vacia hdboutique de fase 4, con respaldo previo. Fase 6 incorpora herramientas

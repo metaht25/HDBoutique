@@ -4,7 +4,7 @@ Se ejecuta por incrementos: Productos primero y Clientes despues, por solicitud
 expresa. Dashboard/Reportes se migran en [fase 13](reporting.md).
 Ventas/Compras/Proveedores se integraron durante la [fase 14](stabilization.md);
 Caja mantiene el prototipo hasta resolver B10. Las siete pantallas operativas
-usan FastAPI; los adaptadores y sus pruebas legacy se conservan hasta fase 15.
+usan FastAPI; los adaptadores y sus pruebas legacy se retiraron en [fase 15](cutover.md).
 
 ## Productos
 
@@ -115,7 +115,7 @@ Resultados y limites de cada incremento en [characterization.md](characterizatio
 E2E usa respuestas sinteticas interceptadas; verifica navegador, formulario,
 payload y recarga del estado simulado, no conexion real frontend/PostgreSQL.
 Las pruebas HTTP de backend usan PostgreSQL aislado migrado desde vacio.
-Fase 14 agrega cuatro E2E sin interceptar API, con Chromium/FastAPI/PostgreSQL
-sintetico y persistencia tras recarga. Resultados, comandos y limites en
-[estabilizacion](stabilization.md). No se consultan ni migran bases reales.
-Head Alembic permanece en 0004.
+Fase 14 agrega cuatro E2E sin interceptar API. Fase 15 las ejecuta contra la imagen
+Nginx real y agrega verificacion de recarga/404/sesion anonima, con datos sinteticos.
+El corte local autorizado migro hdboutique a head 0004 tras respaldo/conciliacion;
+no se cargaron datos comerciales. [Evidencia y limites](cutover.md).
