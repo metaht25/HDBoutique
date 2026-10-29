@@ -1,0 +1,37 @@
+/** New API contracts preserve decimal money as text and unknown external data. */
+export type DecimalMoney = string
+export type Role = 'Administrator' | 'Manager' | 'Cashier'
+
+export interface Account {
+  user_id: number
+  username: string
+  role: Role
+  is_active: boolean
+  employee_id: number | null
+}
+
+export interface ValidationField {
+  location: (string | number)[]
+  type: string
+}
+
+export interface ErrorEnvelope {
+  error: { code: string; message: string; fields?: ValidationField[] }
+}
+
+export interface LegacyPage<T> {
+  count: number
+  next: string | null
+  previous: string | null
+  results: T[]
+}
+
+export function isAccount(value: unknown): value is Account {
+  if (typeof value !== 'object' || value === null) return false
+  const account = value as Record<string, unknown>
+  return Number.isInteger(account.user_id) && Number(account.user_id) > 0
+    && typeof account.username === 'string' && typeof account.is_active === 'boolean'
+    && ['Administrator', 'Manager', 'Cashier'].includes(String(account.role))
+    && (account.employee_id === null
+      || (Number.isInteger(account.employee_id) && Number(account.employee_id) > 0))
+}

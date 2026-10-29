@@ -1,0 +1,12 @@
+FROM node:24.22.2-bookworm@sha256:e7add2a490bb17d97b485b8641bd88455fff7839ade0f5eba493c3508124d413
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+WORKDIR /workspace/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+RUN npx playwright install --with-deps chromium
+RUN mkdir -p node_modules/.vitest-cache node_modules/.vite node_modules/.vite-temp && \
+    chown node:node /workspace/frontend node_modules/.vitest-cache node_modules/.vite node_modules/.vite-temp
+COPY --chown=node:node frontend/ ./
+COPY --chown=node:node backend/tests/characterization/fixtures/legacy_contracts.json /workspace/backend/tests/characterization/fixtures/legacy_contracts.json
+USER node
+CMD ["npm", "run", "verify"]

@@ -1,0 +1,10 @@
+name: hdboutique-frontend-test
+services:
+  frontend:
+    image: hdboutique-frontend:test
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.test
+    init: true
+    shm_size: 1gb
+    network_mode: none

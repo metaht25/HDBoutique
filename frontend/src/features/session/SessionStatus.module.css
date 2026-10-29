@@ -1,0 +1,4 @@
+.session { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: #4b5563; font-size: 14px; }
+.session button { padding: 8px 12px; font: inherit; border: 1px solid #9ca3af; border-radius: 6px; background: white; color: #111827; cursor: pointer; }
+.session button:disabled { cursor: wait; }
+.error { width: 100%; color: #9f1239; }
