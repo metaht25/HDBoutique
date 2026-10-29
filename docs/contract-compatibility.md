@@ -10,6 +10,10 @@ El frontend aun conserva los contratos Django.
 Fase 10 implementa [ventas](sales.md): una solicitud atomica e idempotente,
 precio/total de servidor, salidas y ventas inmutables. No se publican escrituras
 de cabecera/lineas separadas ni ediciones/borrados financieros.
+Fase 11 centraliza HTTP/errores y organiza las vistas por funcionalidad, conservando
+los payloads/metodos/rutas Django y los servicios como reexportaciones. La sesion
+consulta /api/v1/auth/* mediante proxy separado; no constituye migracion de los
+formularios a FastAPI. Alcance en [base frontend](frontend-foundation.md).
 
 Actualizacion de fase 5: las tablas/modelos nuevos ya usan estos nombres en
 persistencia, con las precisiones siguientes. Las rutas HTTP y los contratos

@@ -455,6 +455,52 @@ No se consulto SQL Server, cambiaron secretos, habilitaron rutas locales ni
 migraron pantallas. Correcciones, devoluciones, cobros/deuda/caja y frontend
 quedan fuera del alcance confirmado. No se inicia fase 11.
 
+## Verificacion de fase 11: base frontend
+
+28 de octubre de 2026. React/Vite conservados; base TypeScript estricta con
+allowJs para vistas/adaptadores legacy. [Contrato y limites](frontend-foundation.md).
+
+| Comprobacion | Resultado real |
+| --- | --- |
+| Entorno | Node 24.22.2, TypeScript 6.0.3, React 19.2.5, Router 7.18.5, Vite 8.3.5; dependencias npm ci bloqueadas |
+| Tipos/lint/build | tsc estricto sin omitir tipos de librerias, ESLint TS/JSX y build Vite aprobados; vistas lazy separadas por pantalla |
+| Vitest/Testing Library | 40 aprobadas: cliente HTTP, sesion, rutas, errores de servidor, campos accesibles, paginacion y componentes compartidos |
+| Caracterizacion Node | 41 aprobadas: rutas/metodos/cuerpos/IDs/decimales/nulos/envoltorios legacy conservados; ahora lee errores del backend intencionadamente |
+| Playwright | 30 aprobadas, 15 por perfil Chromium escritorio/movil, sobre dist y preview; 0 omitidas/reintentos |
+| URLs | Las ocho pantallas abren directamente y recargan; navegacion, atras/adelante, enlace activo y pagina desconocida recuperable |
+| Sesion | Cuenta de servidor en encabezado, StrictMode sin duplicar restauracion, CSRF/rotacion/logout 204, fallo de logout, 401/503, cuenta invalida y respuesta antigua tras login |
+| HTTP | Un solo fetch; dinero textual/nulos preservados, 204, errores FastAPI/DRF/HTML/JSON invalido, AbortSignal, CSRF solo versionado, origen local y sin reintentos de escritura |
+| Accesibilidad/responsive | Menu movil, foco al navegar, salto al contenido por teclado, errores enlazados, paginacion/busqueda; sin desbordamiento horizontal de pagina en las ocho rutas probadas |
+| CSS | 483 selectores de pantallas comprobados dentro de scope; una tabla externa conserva su estilo tras cargar Productos; tablas internas desplazables |
+| Revision visual | Cuatro capturas de Productos y Dashboard, escritorio/movil, inspeccionadas; ajustes de coherencia de etiqueta compartida y boton de menu verificados |
+| Dependencias | npm audit --audit-level=low: 0 vulnerabilidades reportadas al verificar; no es garantia futura |
+
+Verificacion final desde imagen reconstruida, sin montajes de codigo y como
+usuario node. compose.frontend-test.yaml ejecuta con network_mode none, sin
+puertos, volumenes de datos ni servicios backend. E2E intercepta /api con fixtures
+sinteticos; no certifica login real ni persistencia. El contexto Docker excluye
+secretos y usa solo frontend mas el fixture de contratos legacy. Capturas/trazas
+en test-results estan ignoradas; no se agregan datos reales a Git.
+
+Comandos desde raiz:
+
+```powershell
+docker compose -p hdboutique-frontend-test -f compose.frontend-test.yaml build frontend
+docker compose -p hdboutique-frontend-test -f compose.frontend-test.yaml run --rm frontend
+docker compose -p hdboutique-frontend-test -f compose.frontend-test.yaml down
+```
+
+El comando predeterminado npm run verify ejecuta tipos, lint, pruebas unitarias/
+componentes, caracterizacion, build y E2E. npm audit se ejecuto con acceso al
+registro npm, por separado; los recorridos del navegador corren sin red.
+
+No se modifico backend, migraciones, base de desarrollo, secretos, cuentas ni
+habilitacion de FastAPI. Las vistas JSX/JS y formularios conservan contratos y
+limites Django (incluidos defectos comerciales pendientes); login visual, guardas
+por modulo y migracion funcional quedan para fase 12. No se afirma cobertura
+frontend porcentual ni se repite la suite backend por este cambio de base web.
+No se inicia fase 12 automaticamente ni se publica el frontend.
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

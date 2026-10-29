@@ -7,9 +7,9 @@ proveedores, compras y ventas. Cada aplicacion contiene modelos unmanaged,
 ModelSerializers y ModelViewSets. La ruta habitual es router -> ViewSet ->
 serializer -> Django ORM -> SQL Server. No hay una capa propia de casos de uso.
 
-El frontend React/Vite contiene un layout, ocho paginas y siete servicios fetch.
-El estado de navegacion y formularios reside en componentes; gran parte de la
-validacion y los calculos estan dentro de las paginas. Los contratos, consumidores
+El frontend legacy partia de un layout, ocho paginas y siete servicios fetch.
+Fase 11 sustituye su navegacion por estado local por Router y centraliza HTTP;
+formularios, validacion y calculos legacy siguen en las vistas. Los contratos, consumidores
 y limitaciones se detallan en [legacy-api-contracts.md](legacy-api-contracts.md).
 
 Desde fase 3 existe ademas `backend/app/`: main.py crea FastAPI, core/config.py
@@ -134,7 +134,14 @@ de compras e inventario con una sola sesion; bloquea productos en orden estable.
 Fase 10 agrega SaleService: precio/total de servidor, cabecera/lineas, salidas e
 idempotencia en una transaccion. SaleWorkflow conserva autoria y claves sin
 reconstruir historicos. Ventas y recepciones comparten el bloqueo ordenado de
-productos. Contrato en [ventas](sales.md). Staff y frontend siguen pendientes.
+productos. Contrato en [ventas](sales.md). Staff sigue pendiente.
+
+Fase 11 organiza frontend/src/app (rutas), layouts, features y shared. Arranque,
+layout, sesion, cliente HTTP y componentes estan en TypeScript estricto; las
+vistas/adaptadores legacy JSX/JS se conservan con allowJs hasta fase 12. Router
+reemplaza la navegacion por estado local, CSS Modules aisla cada pantalla y
+SessionProvider obtiene identidad de FastAPI. Vite separa los proxies FastAPI/
+Django; los formularios siguen usando contratos Django. [Base frontend](frontend-foundation.md).
 
 ## Fronteras y compatibilidad
 

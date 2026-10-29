@@ -4,6 +4,11 @@ B09 confirmado por el usuario el 28 de octubre de 2026. Identidad propia de
 FastAPI, independiente de usuarios Django y de la identidad historica de empleados.
 No se importan contraseñas ni se crean cuentas automaticamente.
 
+Fase 11 agrega [contexto de sesion frontend](frontend-foundation.md): me, CSRF,
+login como API del contexto y logout, identidad del encabezado desde servidor.
+La pantalla de login y la migracion de acceso por modulo quedan en fase 12;
+esta base no habilita rutas ni protege automaticamente los endpoints Django.
+
 ## Permisos aprobados e implementados
 
 | Operacion | Administrator | Manager | Cashier |

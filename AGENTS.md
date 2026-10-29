@@ -36,8 +36,14 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 ## Estado y documentos de referencia
 
-- Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`, React/Vite
-  JavaScript en `frontend/`. FastAPI en `backend/app/` ofrece salud.
+- Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`. Frontend
+  React/Vite con base TypeScript estricta de fase 11, Router, HTTP/sesion y CSS
+  Modules; vistas/adaptadores legacy JSX/JS en frontend/src/features, contratos
+  Django conservados y reexportaciones en services hasta fase 12. Contexto de
+  sesion real sin usuario fijo; login visual y acceso por modulo pendientes.
+  Comandos/limites: docs/frontend-foundation.md. Node 24, npm ci y lock;
+  compose.frontend-test.yaml verifica sin red/backend y con API sintetica.
+  FastAPI en `backend/app/` ofrece salud.
   Los modulos de fase 7 locations/catalog/customers/suppliers estan implementados,
   deshabilitados por defecto; fase 8 incorpora autenticacion y permisos obligatorios.
   Production exige origen HTTPS y cookies Secure. Contratos y

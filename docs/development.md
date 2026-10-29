@@ -204,16 +204,21 @@ Ese comando puede acceder a SQL Server al atender peticiones y no se uso en las
 pruebas de fase 3. No ejecutar manage.py migrate como paso automatico: los 17
 modelos de negocio unmanaged no se reconstruyen con sus migraciones.
 
-## Frontend existente
+## Frontend desde fase 11
 
-No se cambia su entorno en fase 3. Desde frontend/, cuando esten preparadas sus
-dependencias: npm ci instala package-lock.json; npm run dev inicia Vite,
-npm run lint ejecuta ESLint, npm run build genera dist y npm run preview permite
-vista local de la construccion. Preview no es el servidor de produccion.
+Base TypeScript estricta, Router, sesion y HTTP compartidos; pantallas legacy JSX
+por funcionalidad, sin cambiar sus contratos hasta fase 12. Node >=24 <25,
+verificado con 24.22.2, npm y lock. Desde frontend/: npm ci, npm run dev,
+npm run typecheck, npm run lint, npm test y npm run build. Build ejecuta tsc/Vite;
+npm run preview verifica dist, no sirve produccion. Para E2E: instalar Chromium
+con npx playwright install chromium y ejecutar npm run test:e2e tras build.
 
-Node 24 satisface los rangos del lock de Vite y ESLint; el proyecto aun no fija
-un parche oficial de Node. No hay TypeScript ni script npm test todavia.
-La caracterizacion Node puede ejecutarse desde la raiz sin instalar paquetes:
+Vite separa /api/v1 hacia FastAPI 8001 y /api legacy hacia Django 8000, con destinos
+de desarrollo HDB_FASTAPI_TARGET/HDB_LEGACY_API_TARGET. No se habilitan rutas ni
+sesiones operativas automaticamente. Contrato, permisos y despliegue en
+[base frontend](frontend-foundation.md); comandos Docker sin Node nativo en
+[frontend/README](../frontend/README.md). La caracterizacion se ejecuta con Node 24
+desde raiz, sin instalar dependencias del frontend:
 
 ```powershell
 node --test --test-reporter=spec frontend/tests/characterization/services.test.js

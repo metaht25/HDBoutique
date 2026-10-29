@@ -45,9 +45,12 @@ persistencia del volumen y restauracion de una sonda sintetica. Los escenarios
 de negocio, sus restricciones y concurrencia siguen pendientes de sus fases.
 Ver [Docker](docker.md) y los resultados de [caracterizacion](characterization.md).
 
-El frontend incorporara pruebas de componentes y recorridos E2E en su fase.
-Las herramientas se eligen por su funcion; no se agregan dependencias de testing
-a la aplicacion final de produccion.
+Desde fase 11, frontend verifica TypeScript estricto, ESLint, Vitest/Testing
+Library, caracterizacion Node y Playwright Chromium en escritorio/movil sobre
+dist. compose.frontend-test.yaml ejecuta sin red ni backend, con /api interceptada
+y datos sinteticos: no certifica persistencia o login contra base real. Las vistas
+legacy siguen parcialmente tipadas. Herramientas de pruebas solo en devDependencies;
+alcance y comandos en [base frontend](frontend-foundation.md).
 
 Fase 5 incorpora compose.test.yaml como entorno independiente: PostgreSQL tmpfs,
 sin puertos, claves sinteticas, --run-postgres explicito y guardas de base vacia.

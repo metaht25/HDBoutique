@@ -9,7 +9,9 @@ backend Django/DRF existente; no define todavia una API FastAPI.
 - Controladores: los `api/views.py` utilizan `ModelViewSet` sin personalizaciones.
 - Entrada/salida: los `api/serializers.py` utilizan `ModelSerializer` con
   `fields = '__all__'`; los campos proceden de los seis `models.py`.
-- Consumidores: `frontend/src/services/` y `frontend/src/pages/`.
+- Consumidores originales: `frontend/src/services/` y `frontend/src/pages/`.
+  Desde fase 11 las vistas/adaptadores viven en `frontend/src/features/`, con
+  reexportaciones en services y HTTP compartido; se conservan estos contratos.
 - Ejemplos completos de los 17 recursos:
   [legacy_contracts.json](../backend/tests/characterization/fixtures/legacy_contracts.json).
   Son datos sinteticos, no respuestas capturadas de una base real.

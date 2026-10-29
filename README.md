@@ -16,7 +16,7 @@ refactorizacion conserva los datos y el comportamiento valido del sistema.
 | Persistencia | Django ORM activo; 24 modelos SQLAlchemy y Alembic hasta 0004_atomic_sales | Ampliar reglas y restricciones por funcionalidad |
 | Base de datos | SQL Server legacy y PostgreSQL local con esquema inicial vacio | PostgreSQL con datos conciliados y reglas confirmadas |
 | Dependencias Python | uv, pyproject.toml y uv.lock; exportacion requirements.txt legacy | Retirar el grupo legacy al completar la sustitucion |
-| Frontend | React 19.2.5, Vite 8.0.10 y JavaScript/JSX | Conservar React/Vite; incorporar TypeScript y organizacion por funcionalidades |
+| Frontend | React/Vite, base TypeScript estricta, Router y vistas legacy JSX por funcionalidad | Migrar pantallas a FastAPI por incrementos en fase 12 |
 | Entorno | Docker/Compose para FastAPI y PostgreSQL; legacy conserva SQL Server | Completar integracion funcional progresiva |
 
 Python 3.13.15 y uv 0.12.10 estan fijados para el backend. Las versiones resueltas
@@ -29,6 +29,8 @@ La [fase 9](docs/purchases-inventory.md) implementa compras atomicas, costes
 historicos y recepcion unica de inventario con las reglas confirmadas.
 La [fase 10](docs/sales.md) implementa ventas atomicas e idempotentes, precios
 historicos y salidas de inventario seguras ante concurrencia.
+La [fase 11](docs/frontend-foundation.md) agrega URLs, cliente HTTP, contexto de
+sesion, CSS aislado, componentes compartidos y pruebas frontend.
 Django sigue atendiendo los contratos
 actuales y el frontend conserva su integracion con ese backend.
 
