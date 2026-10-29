@@ -67,9 +67,9 @@ endurecen restricciones sobre historicos sin perfilarlos primero.
 | B11 | Funciones utilizadas desde admin Django | Los 17 modelos estan registrados en admin | Enumerar tareas operativas que necesiten reemplazo antes de retirar Django | Antes de retirada del backend anterior |
 | B12 | Conservacion y corte de historicos | No se inspecciono la base real | Preservar IDs, fechas, abonos y operaciones; acordar ventana y rollback | Antes de migracion operativa |
 | B13 | Telefono y datos obligatorios | Formulario y modelo tienen reglas distintas | Confirmar regla nicaraguense y tratamiento de historicos de otra longitud | Antes de endurecer validaciones |
-| B14 | Definicion de bajo stock | Cero incluido en unas pantallas y excluido en otras | Separar agotado y bajo stock, con umbral acordado | Antes de dashboard/reportes definitivos |
+| B14 | Definicion de bajo stock | Confirmado en fase 13: disponible 0 agotado, 1–10 bajo stock, >10 suficiente | Nulos y negativos separados, pendientes de conteo; sin usar cantidadstock como fallback | Implementado en dashboard/reportes FastAPI; pantallas legacy restantes conservan sus limites |
 
-B01/B02/B03/B04/B05/B09 estan confirmados para sus alcances actuales.
+B01/B02/B03/B04/B05/B09/B14 estan confirmados para sus alcances actuales.
 Las demas decisiones definitivas siguen pendientes,
 con los acuerdos de compatibilidad de fases 5/7 indicados abajo. La autorizacion para ejecutar una
 fase no aprueba por si sola sus alternativas. Las fases documentales y la preparacion del
@@ -84,6 +84,15 @@ se describe en [data-model.md](data-model.md) y evolucionara por Alembic cuando
 se acuerde cada regla pertinente.
 
 ## Ejemplos sinteticos y preguntas de aceptacion
+
+Acuerdo de fase 13, confirmado expresamente por el usuario: politica B14 indicada
+arriba; fecha comercial America/Managua, hoy de servidor, filtros inclusivos sobre
+sale_date/purchase_date guardadas sin reinterpretar historicos ni usar auditoria
+como fecha documental. B09: Administrator/Manager acceso completo a dashboard y
+reportes; Cashier ventas, catalogo y clientes, sin compras/proveedores/costes en
+las respuestas API. [Contrato](reporting.md). Caja queda pendiente por instruccion
+expresa: [recomendacion B10 para revisar](cash-register-proposal.md), sin aprobar
+pagos/deuda ni implementar sus movimientos.
 
 Acuerdo de fase 10, confirmado expresamente por el usuario: precio vigente del
 producto copiado por linea, total calculado por servidor, NIO/Decimal/dos decimales,

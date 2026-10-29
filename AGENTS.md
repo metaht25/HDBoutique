@@ -45,6 +45,12 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   telefono textual hasta 10 caracteres. Sin activacion (B07), municipio ni deuda.
   Resto de pantallas/adaptadores JSX/JS y contratos Django conservados;
   reexportaciones en services mientras tengan consumidores. Sesion sin usuario fijo.
+  Fase 13: dashboard/reportes TS/FastAPI de solo lectura, sumas globales SQL y
+  paginas de detalle, costes historicos/faltantes explicitos, fecha America/Managua.
+  B14 confirmado: agotado 0, bajo stock 1–10, suficiente >10; null/negativo aparte.
+  Cashier sin compras/proveedores/costes; Administrator/Manager completos.
+  Contrato: docs/reporting.md. Caja sigue pendiente por instruccion del usuario,
+  sin implementar B10: recomendacion no aprobada en docs/cash-register-proposal.md.
   Comandos/limites: docs/frontend-foundation.md y docs/frontend-modules.md. Node 24, npm ci y lock;
   compose.frontend-test.yaml verifica sin red/backend y con API sintetica.
   FastAPI en `backend/app/` ofrece salud.

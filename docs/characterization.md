@@ -554,6 +554,42 @@ rutas/cuentas ni lecturas/escrituras de datos reales. PostgreSQL usa solo
 hdboutique-test/compose.test.yaml y tmpfs. La fase 12 queda parcial: estos dos
 modulos terminados, los demas pendientes de solicitud. No se inicia fase 13.
 
+## Verificacion de fase 13: dashboard y reportes
+
+28 de octubre de 2026. Alcance solicitado terminado: dashboard/reportes;
+caja excluida expresamente y pendiente B10 con [propuesta no aprobada](cash-register-proposal.md).
+B14, fechas America/Managua y extension B09 confirmadas expresamente por el
+usuario. [Contrato completo](reporting.md).
+
+| Comprobacion | Resultado real |
+| --- | --- |
+| Backend | 214 aprobadas con --run-postgres y cobertura app 98.38%, desde imagen development reconstruida sin montajes |
+| Nuevos casos PostgreSQL | 12: sumas exactas y globales sobre mas de 20 filas, pagina fuera de rango, filtros inclusivos, fechas invalidas/invertidas, stock null/-1/0/1/10/11, costes guardados y faltantes, tipos con nombres repetidos, tres roles y dos limites horarios UTC/Managua |
+| Contratos/permisos | GET unicamente, deshabilitado por defecto, sin base 503, anonimo 401, Cashier compras 403; dashboard Cashier sin datos de compras/proveedores/costes |
+| Calidad backend | Ruff, formato 125 archivos, mypy 84 y uv lock --check aprobados |
+| Tipos/lint/frontend | tsc estricto, ESLint, 67 pruebas Vitest/componentes y 41 legacy aprobadas |
+| Build y navegador | Build Vite y 72 E2E Chromium aprobados, 36 escritorio y 36 movil, sin omisiones/reintentos |
+| Ajuste visual final | Tarjetas monetarias en una columna movil; imagen frontend reconstruida, build/tipos y 46 E2E afectados repetidos y aprobados |
+| Revision visual | Capturas dashboard/reportes escritorio/movil inspeccionadas; importes legibles y tablas desplazables, sin desbordamiento de pagina |
+
+Cada reporte obtiene resumen y pagina en una sentencia SQL, con snapshot comun;
+los totales no dependen de la pagina mostrada. La suite completa conserva pruebas
+de compras/ventas atomicas, idempotencia, rollback y concurrencia, migraciones,
+identidad y compatibilidad. Django conserva D03 como fallo esperado.
+D01/D09/D12 de dashboard/reportes se corrigen para este contrato, sin afirmar
+corte de seguridad ni migracion de todas las pantallas legacy. La fecha de hoy
+no usa new Date().toISOString() en el navegador: pruebas verifican 00:30 UTC
+todavia dia anterior en Managua y 06:00 UTC como inicio del siguiente.
+
+Imagenes de pruebas sin montajes para las verificaciones finales; PostgreSQL
+exclusivamente hdboutique-test/compose.test.yaml desde vacio en tmpfs, datos
+sinteticos. E2E frontend intercepta API: verifica navegador/contrato/recarga,
+no conexion navegador-PostgreSQL ni despliegue operativo. Sin migraciones nuevas
+(head 0004), cuentas, habilitacion, consultas o escrituras de datos reales.
+tzdata 2026.2 pasa a runtime sin cambiar version; lock y exportacion legacy
+regenerados con uv. No se implementan caja, pagos, deuda, exportaciones o graficos.
+Fase 12 conserva otros modulos pendientes. No se inicia fase 14.
+
 ## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar

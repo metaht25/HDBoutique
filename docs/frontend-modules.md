@@ -1,7 +1,9 @@
 # Migracion funcional del frontend: fase 12
 
 Se ejecuta por incrementos: Productos primero y Clientes despues, por solicitud
-expresa. Las otras pantallas conservan su contrato legacy y quedan pendientes.
+expresa. Dashboard/Reportes se migran en [fase 13](reporting.md).
+Ventas/Compras/Proveedores conservan su contrato legacy y quedan pendientes;
+Caja mantiene el prototipo hasta resolver B10.
 
 ## Productos
 

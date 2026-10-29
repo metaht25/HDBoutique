@@ -30,7 +30,11 @@ consultan inventario; Cashier no tiene acceso. Ver [contrato](purchases-inventor
 Fase 10 extiende B09 expresamente: los tres roles registran y consultan ventas,
 con empleado vinculado o existente explicito y cuenta auditada. Las ventas son
 inmutables para todos; [contrato](sales.md). El historial general de inventario
-conserva permisos de compras. Caja y reportes siguen en fases posteriores.
+conserva permisos de compras. Fase 13 extiende B09 expresamente: dashboard y
+reportes de ventas/catalogo/clientes para los tres roles; compras y datos de
+proveedores/costes solo Administrator/Manager. Cashier no recibe esos campos
+en dashboard ni puede consultar el reporte de compras. [Contrato](reporting.md).
+Caja sigue pendiente de B10 y fuera del incremento solicitado.
 Cashier no consulta costes de compra. Para crear clientes usa address_id existente:
 no se amplio su permiso a ubicaciones. Las cuentas se deshabilitan, no se borran.
 Una cuenta puede vincularse a un empleado existente; el vinculo es opcional,

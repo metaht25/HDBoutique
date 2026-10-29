@@ -1,11 +1,13 @@
 # Frontend H&D Boutique
 
 React/Vite con base TypeScript estricta, React Router y cliente HTTP compartido.
-Las ocho pantallas se organizan en src/features y tienen URL propia. Productos y
-Clientes usan TS/FastAPI con acceso autenticado e inicio de sesion dentro del
-modulo; el resto conserva JSX/contratos Django. Caja sigue siendo un prototipo
-sin persistencia. Ver [base frontend](../docs/frontend-foundation.md) y
+Las ocho pantallas se organizan en src/features y tienen URL propia. Productos,
+Clientes, Dashboard y Reportes usan TS/FastAPI con acceso autenticado e inicio de
+sesion dentro del modulo; Ventas/Compras/Proveedores conservan JSX/contratos Django.
+Caja sigue siendo un prototipo sin persistencia. Ver [base frontend](../docs/frontend-foundation.md) y
 [modulos migrados](../docs/frontend-modules.md).
+Dashboard/reportes y sus reglas: [fase 13](../docs/reporting.md). Caja pendiente:
+[propuesta para revisar](../docs/cash-register-proposal.md).
 
 Node 24 (verificado con 24.22.2), npm y package-lock.json. Desde frontend/:
 

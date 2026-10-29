@@ -3,6 +3,7 @@
 Este documento describe la entrega de fase 11. Productos y Clientes se migran
 posteriormente por incrementos: estado actual y contratos en
 [frontend-modules.md](frontend-modules.md).
+Dashboard/Reportes se migran posteriormente en [fase 13](reporting.md).
 
 React/Vite conservados. TypeScript estricto para arranque, rutas, layout, sesion,
 cliente HTTP, componentes compartidos, configuracion y pruebas. allowJs permite
