@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import contracts from '../../../backend/tests/characterization/fixtures/legacy_contracts.json' with { type: 'json' }
 import { reportingResponse } from '../fixtures/reporting'
+import { purchase, sale, supplierRows } from '../fixtures/transactions'
 
 const account = { user_id: 101, username: 'synthetic-manager', role: 'Manager', is_active: true, employee_id: 102 }
 const routes = [
@@ -40,13 +41,15 @@ async function syntheticApi(page: Page, options: {
     if (path === '/api/v1/customer-types') return route.fulfill({ json: [{ customer_type_id: 107, name: 'Registrado' }] })
     if (path === '/api/v1/addresses') return route.fulfill({ json: [{ address_id: 103, department_id: 101, address_line: 'Dirección sintética' }] })
     if (path === '/api/v1/departments') return route.fulfill({ json: [{ department_id: 101, name: 'Managua' }] })
-    if (options.suppliers && path === '/api/proveedores/proveedores/') return route.fulfill({
-      json: Array.from({ length: options.suppliers }, (_, index) => ({
-        id_proveedor: index + 1, nombreempresa: `Empresa sintética ${index + 1}`,
-        nombrecontacto: 'Contacto', apellidocontacto: 'Sintético',
-        numerotelefono: '00000000', correoprofesional: null, id_direccion: 101,
-      })),
-    })
+    if (path === '/api/v1/sales') return route.fulfill({ json: [sale] })
+    if (path === '/api/v1/purchases') return route.fulfill({ json: [purchase] })
+    if (path === '/api/v1/supplier-products') return route.fulfill({ json: [{ supplier_product_id: 201, product_id: 109, purchase_price: '120.50' }] })
+    if (path === '/api/v1/supplier-offerings') return route.fulfill({ json: [{ offering_id: 1, supplier_id: 106, supplier_product_id: 201 }] })
+    if (path === '/api/v1/suppliers') {
+      const url = new URL(route.request().url()), offset = Number(url.searchParams.get('offset') ?? 0)
+      const filtered = supplierRows(options.suppliers).filter(row => row.company_name.includes(url.searchParams.get('q') ?? ''))
+      return route.fulfill({ json: filtered.slice(offset, offset + Number(url.searchParams.get('limit') ?? 50)) })
+    }
     const resource = contracts.resources.find(item => item.path === path)
     return route.fulfill({ json: resource ? [resource.example] : [] })
   })
@@ -68,12 +71,12 @@ for (const [path, label] of routes) {
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(label)
     expect(exceptions).toEqual([])
-    if (path === '/products' || path === '/dashboard' || path === '/customers' || path === '/reports') {
+    if (path !== '/cash-register') {
       await expect(page.getByText('Cargando pantalla…')).toHaveCount(0)
       if (path === '/products') await expect(page.getByRole('button', { name: 'Guardar producto' })).toBeVisible()
       else if (path === '/customers') await expect(page.getByRole('button', { name: 'Guardar cliente' })).toBeVisible()
       else if (path === '/reports') await expect(page.getByRole('heading', { name: 'Reportes', exact: true, level: 2 })).toBeVisible()
-      else await expect(page.getByRole('heading', { name: 'Resumen general' })).toBeVisible()
+      else if (path === '/dashboard') await expect(page.getByRole('heading', { name: 'Resumen general' })).toBeVisible()
       await expect(page.locator('main table').first()).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath('screen.png'), fullPage: true })
     }
@@ -124,13 +127,14 @@ test('anonymous legacy access and unknown routes remain recoverable', async ({ p
 test('supplier pagination and search keep all loaded records accessible', async ({ page }) => {
   await syntheticApi(page, { suppliers: 21 })
   await page.goto('/suppliers')
-  await expect(page.getByText('Página 1 de 2')).toBeVisible()
+  await expect(page.getByText('Empresa sintética 1', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Siguiente' }).click()
   await expect(page.getByText('Empresa sintética 21', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Siguiente' })).toBeDisabled()
   await page.getByRole('searchbox', { name: 'Buscar proveedor' }).fill('Empresa sintética 1')
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click()
   await expect(page.getByText('Empresa sintética 1', { exact: true })).toBeVisible()
-  await expect(page.getByRole('navigation', { name: 'Paginación' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Siguiente' })).toBeDisabled()
 })
 
 test('keyboard skip link and linked form validation are usable', async ({ page }) => {

@@ -18,9 +18,12 @@ function mockBackend(options: { authenticated?: boolean; administrator?: boolean
     if (options.productError && path === '/api/v1/products') return new Response(JSON.stringify({
       error: { code: 'database_unavailable', message: 'Servicio de productos no disponible' },
     }), { status: 503 })
-    const body = path === '/api/proveedores/proveedores/' ? Array.from({ length: options.suppliers ?? 0 }, (_, i) => ({
-      id_proveedor: i + 1, nombreempresa: `Empresa ${i + 1}`, correoprofesional: null,
-    })) : []
+    const url = new URL(String(input), 'http://test')
+    const suppliers = Array.from({ length: options.suppliers ?? 0 }, (_, i) => ({ supplier_id: i + 1, company_name: `Empresa ${i + 1}`, work_email: null,
+      address_id: 1, contact_first_names: 'Contacto', contact_last_names: 'Prueba', phone_number: '0000000000' }))
+    const filtered = suppliers.filter(row => row.company_name.includes(url.searchParams.get('q') ?? ''))
+    const offset = Number(url.searchParams.get('offset') ?? 0)
+    const body = path === '/api/v1/suppliers' ? filtered.slice(offset, offset + Number(url.searchParams.get('limit') ?? 50)) : []
     return new Response(JSON.stringify(body))
   })
   vi.stubGlobal('fetch', mock)
@@ -92,16 +95,18 @@ it('exposes linked field errors without sending an invalid product', async () =>
   expect(fetchMock.mock.calls.every(([, options]) => options?.method !== 'POST')).toBe(true)
 })
 
-it('paginates the loaded supplier list and resets when filtering', async () => {
-  mockBackend({ suppliers: 21 })
+it('paginates suppliers on the server and resets when filtering', async () => {
+  mockBackend({ suppliers: 21, authenticated: true, administrator: true })
   const user = userEvent.setup()
   renderApp('/suppliers')
-  await screen.findByText('Página 1 de 2')
+  await screen.findByText('Página 1')
+  await screen.findByText('Empresa 1')
   expect(screen.queryByText('Empresa 21')).toBeNull()
   await user.click(screen.getByRole('button', { name: 'Siguiente' }))
   await screen.findByText('Empresa 21')
   expect(screen.queryByText('Empresa 1')).toBeNull()
   await user.type(screen.getByRole('searchbox', { name: 'Buscar proveedor' }), 'Empresa 1')
+  await user.click(screen.getByRole('button', { name: 'Buscar' }))
   await screen.findByText('Empresa 1')
-  expect(screen.queryByRole('navigation', { name: 'Paginación' })).toBeNull()
+  expect(screen.getByRole('button', { name: 'Siguiente' }).hasAttribute('disabled')).toBe(true)
 })

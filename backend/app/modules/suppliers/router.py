@@ -35,8 +35,11 @@ def list_supplier(
     session: DatabaseSession,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    q: Annotated[str | None, Query(max_length=100)] = None,
 ) -> object:
-    return SuppliersService(session).list_supplier(offset, limit)
+    return SuppliersService(session).list_supplier(
+        offset, limit, q.strip() if q else None
+    )
 
 
 @router.get("/suppliers/{record_id}", response_model=SupplierRead)

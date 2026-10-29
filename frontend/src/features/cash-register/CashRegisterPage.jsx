@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Message } from '../../shared/ui/Feedback'
 import styles from './CashRegisterPage.module.css'
 
 const CAJA_INICIAL = {
@@ -207,5 +208,5 @@ function Caja() {
 }
 
 export default function CashRegisterPage() {
-  return <div className={styles.scope}><Caja /></div>
+  return <div className={styles.scope}><Message variant="info">Prototipo de caja pendiente de reglas B10. Esta pantalla no registra ni concilia dinero.</Message><Caja /></div>
 }

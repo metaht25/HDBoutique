@@ -21,9 +21,11 @@ class SuppliersService:
         self.session = session
         self.repository = SuppliersRepository(session)
 
-    def list_supplier(self, offset: int, limit: int) -> list[Supplier]:
+    def list_supplier(
+        self, offset: int, limit: int, query: str | None = None
+    ) -> list[Supplier]:
         with self.session.begin():
-            return self.repository.list_supplier(offset, limit)
+            return self.repository.list_supplier(offset, limit, query)
 
     def get_supplier(self, record_id: int) -> Supplier:
         with self.session.begin():

@@ -1,6 +1,6 @@
 """Concrete suppliers persistence; callers own the transaction."""
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.modules.catalog.models import Product
@@ -12,13 +12,23 @@ class SuppliersRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def list_supplier(self, offset: int, limit: int) -> list[Supplier]:
+    def list_supplier(
+        self, offset: int, limit: int, query: str | None = None
+    ) -> list[Supplier]:
+        statement = select(Supplier)
+        if query:
+            statement = statement.where(
+                or_(
+                    Supplier.company_name.icontains(query, autoescape=True),
+                    (
+                        Supplier.contact_first_names + " " + Supplier.contact_last_names
+                    ).icontains(query, autoescape=True),
+                    Supplier.phone_number.icontains(query, autoescape=True),
+                )
+            )
         return list(
             self.session.scalars(
-                select(Supplier)
-                .order_by(Supplier.supplier_id)
-                .offset(offset)
-                .limit(limit)
+                statement.order_by(Supplier.supplier_id).offset(offset).limit(limit)
             )
         )
 
