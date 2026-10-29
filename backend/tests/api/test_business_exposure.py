@@ -40,7 +40,9 @@ def test_business_openapi_and_database_unavailable() -> None:
         assert "/api/v1/customers" in schema["paths"]
         assert set(schema["paths"]["/api/v1/sales"]) == {"get", "post"}
         assert set(schema["paths"]["/api/v1/sales/{sale_id}"]) == {"get"}
-        assert "/api/v1/employees" not in schema["paths"]
+        assert set(schema["paths"]["/api/v1/employees"]) == {"get", "post"}
+        assert set(schema["paths"]["/api/v1/employees/{record_id}"]) == {"get", "patch"}
+        assert set(schema["paths"]["/api/v1/employee-options"]) == {"get"}
         for path in (
             "dashboard",
             "reports/sales",

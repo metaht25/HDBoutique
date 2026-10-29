@@ -1,1 +1,1 @@
-"""Employees independent of future authentication identities."""
+"""Employee records and minimal operational identity selectors."""

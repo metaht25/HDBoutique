@@ -19,6 +19,7 @@ from app.modules.locations.router import router as locations_router
 from app.modules.purchases.router import router as purchases_router
 from app.modules.reporting.router import router as reporting_router
 from app.modules.sales.router import router as sales_router
+from app.modules.staff.router import router as staff_router
 from app.modules.suppliers.router import router as suppliers_router
 
 
@@ -70,6 +71,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             catalog_router,
             customers_router,
             suppliers_router,
+            staff_router,
             purchases_router,
             sales_router,
             cash_router,
