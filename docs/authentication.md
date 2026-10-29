@@ -1,5 +1,11 @@
 # Autenticacion y permisos: fase 8
 
+Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
+edicion, consulta y selector operativo; Administrator/Manager gestionan,
+Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
+sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
+actualiza las referencias historicas a empleados pendientes que siguen abajo.
+
 Incremento posterior: caja y cobros completos, head 0005_cash_checkout.
 La referencia siguiente a 0004 describe el hito del corte de fase 15.
 
@@ -49,8 +55,8 @@ cierres con diferencia y anulaciones totales. [Contrato](cash-register.md).
 Cashier no consulta costes de compra. Para crear clientes usa address_id existente:
 no se amplio su permiso a ubicaciones. Las cuentas se deshabilitan, no se borran.
 Una cuenta puede vincularse a un empleado existente; el vinculo es opcional,
-exclusivo y protegido por FK RESTRICT e indice unico. No se implemento CRUD de
-empleados ni se presupone que un cargo equivale a un rol.
+exclusivo y protegido por FK RESTRICT e indice unico. La gestion de
+empleados se incorpora en [Empleados](employees.md); un cargo no equivale a un rol.
 
 ## Contrato HTTP
 

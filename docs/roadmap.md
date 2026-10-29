@@ -1,5 +1,11 @@
 # Plan de refactorizacion por fases
 
+Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
+edicion, consulta y selector operativo; Administrator/Manager gestionan,
+Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
+sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
+actualiza las referencias historicas a empleados pendientes que siguen abajo.
+
 Se trabaja con una sola persona, en Cris-develop y con commits locales. Cada fase
 se inicia por instruccion del usuario, entrega un resultado verificable y se
 detiene al cerrar su alcance. El push es manual a cargo del propietario.
@@ -10,7 +16,8 @@ Incremento posterior al corte solicitado por el usuario: [caja y correccion de
 ventas](cash-register.md), con contado exclusivo en efectivo/transferencia,
 sin abonos/credito en ninguna version. Implementacion agrega revision 0005 y
 sustituye el prototipo de caja. No reabre la migracion SQL Server ni declara
-completado el modulo de empleados/configuracion inicial.
+completada la configuracion inicial. Empleados se completo posteriormente
+segun el contrato enlazado al inicio.
 
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |
@@ -21,7 +28,7 @@ completado el modulo de empleados/configuracion inicial.
 | 4 | Docker, Compose y PostgreSQL local | Completada: 7cb3f92 y 9def699; construccion, conexion, persistencia y restauracion sintetica verificadas; ver [Docker](docker.md) y [resultados](characterization.md#verificacion-de-fase-4) |
 | 5 | Modelos SQLAlchemy y migraciones Alembic | Completada como esquema inicial de compatibilidad acordado: 17 modelos, revision 0001_compatibility y 38 pruebas aprobadas; ver [modelo](data-model.md) y [resultados](characterization.md#verificacion-de-fase-5) |
 | 6 | Herramientas y ensayos de migracion SQL Server | Completada para el alcance disponible: el proyecto no dispone de instancia/copia SQL Server ni historicos. Herramientas preparadas y 60 pruebas aprobadas contra PostgreSQL aislado `db:5432/hdboutique_test`; ver [traslado](data-transfer.md) |
-| 7 | Modulos fundamentales FastAPI | Incrementos solicitados completados: ubicaciones/catalogo y clientes/proveedores implementados y probados bajo compatibilidad confirmada. Fase parcial: empleados pendiente y fuera del incremento solicitado; ver [API fundamental](foundation-api.md) |
+| 7 | Modulos fundamentales FastAPI | Incrementos solicitados completados: ubicaciones/catalogo y clientes/proveedores implementados y probados bajo compatibilidad confirmada. Empleados completado en incremento posterior: gestion y selector, ver [contrato](employees.md); ver tambien [API fundamental](foundation-api.md) |
 | 8 | Autenticacion y autorizacion | Completada: B09 confirmado, cuentas/empleado, sesiones revocables, CSRF, Argon2id y permisos de los tres roles; 114 pruebas aprobadas, incluidas 54 PostgreSQL; ver [autenticacion](authentication.md) |
 | 9 | Compras e inventario | Completada: reglas confirmadas, registro atomico/idempotente, costes historicos, recepcion completa unica y movimientos; 152 pruebas aprobadas, incluidas 85 PostgreSQL; ver [compras e inventario](purchases-inventory.md) |
 | 10 | Ventas transaccionales | Completada: B03/B04 y permisos confirmados, venta atomica e idempotente, precio/total de servidor y salidas seguras; 200 pruebas aprobadas, incluidas 119 PostgreSQL; ver [ventas](sales.md) |

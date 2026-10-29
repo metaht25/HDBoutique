@@ -1,5 +1,11 @@
 # Migracion funcional del frontend: fase 12
 
+Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
+edicion, consulta y selector operativo; Administrator/Manager gestionan,
+Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
+sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
+actualiza las referencias historicas a empleados pendientes que siguen abajo.
+
 Actualizacion posterior al corte: [Caja](cash-register.md) ya usa TS/FastAPI;
 Ventas exige pago completo efectivo/transferencia y permite anulacion total
 supervisada. Sustituye las menciones historicas al prototipo en esta guia.
@@ -82,7 +88,8 @@ proveedores/costes. Inicio de sesion dentro del modulo y permisos del servidor.
 Las opciones se cargan completas por paginas; la fecha inicial procede de
 context.business_date del dashboard (America/Managua). El empleado vinculado se
 usa automaticamente; si falta, se exige un ID existente validado por servidor.
-No hay CRUD de empleados ni nuevas reglas de autoria.
+El incremento [Empleados](employees.md) agrega gestion y selector sin cambiar
+las reglas de autoria.
 
 Una solicitud POST guarda la operacion completa, sin precios/total del cliente.
 Venta: cliente, fecha e items producto/cantidad. Compra: proveedor, fecha, envio

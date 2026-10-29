@@ -25,12 +25,13 @@ Ningun servicio migra ni crea cuentas al arrancar.
 30 modelos SQLAlchemy y Alembic head 0005_cash_checkout. El corte local autorizado
 actualizo hdboutique desde 0001 despues de respaldo restaurado y conciliacion;
 no existe origen/historicos SQL Server y no se cargaron datos comerciales.
-Administrador inicial sin empleado inventado. Empleados/configuracion inicial
-siguen pendientes. [Caja](docs/cash-register.md) registra turnos, apertura/cierre,
+Administrador inicial sin empleado inventado. [Empleados](docs/employees.md)
+implementado; configuracion inicial sigue pendiente. [Caja](docs/cash-register.md)
+registra turnos, apertura/cierre,
 cobros completos y correcciones supervisadas. Abonos/credito excluidos permanentemente.
 Una compra/venta requiere previamente sus referencias validas, incluido empleado.
 
-Ocho pantallas usan exclusivamente /api/v1. Ventas atomicas con pago completo en
+Nueve pantallas usan exclusivamente /api/v1. Ventas atomicas con pago completo en
 efectivo o transferencia, sin pagos parciales; anulacion total auditada. Operaciones
 idempotentes, compra/recepcion separadas, dinero Decimal/NIO/texto, precios
 historicos, permisos por rol y reportes de servidor. No se infieren pagos historicos,

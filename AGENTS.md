@@ -44,7 +44,8 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   apertura/cierre, movimientos supervisados, pago completo atomico obligatorio
   con venta y anulacion auditada. Revision 0005_cash_checkout, 30 tablas.
   Historicos sin pago no se marcan como cobrados. Ver B04/B06/B10 y
-  docs/cash-register.md. Empleados/configuracion inicial siguen pendientes.
+  docs/cash-register.md. Empleados implementado: docs/employees.md; configuracion
+  inicial sigue pendiente.
   No ampliar a tarjeta, credito ni abonos.
 
 - Fase 15 cerrada para el corte local autorizado en hdboutique-dev/base hdboutique,
@@ -53,9 +54,9 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   publico. Compose base mantiene production/negocio false y HTTPS/Secure al habilitar.
 - Django/DRF, grupo legacy, requirements.txt, drivers SQL Server y adaptadores/
   servicios frontend retirados. Codigo anterior preservado en Git/archivo privado.
-  Siete pantallas TS/FastAPI. Caja sigue JSX/prototipo sin persistencia B10.
+  Nueve pantallas TS/FastAPI, incluida Caja persistente y Empleados.
 - El usuario confirmo que no existe origen/historicos SQL Server y no utiliza
-  /admin/ (B11). Empleados/abonos siguen pendientes; no crear datos ficticios para
+  /admin/ (B11). Empleados implementado; abonos excluidos; no crear datos ficticios para
   completar referencias. Una venta/compra requiere un empleado existente.
 - Corte local 0001 -> 0004_atomic_sales: respaldo previo/final restaurados en bases
   separadas, filas/identidades conciliadas. 24 tablas mas alembic_version. Ninguna

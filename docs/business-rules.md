@@ -1,5 +1,11 @@
 # Diccionario del negocio y decisiones pendientes
 
+Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
+edicion, consulta y selector operativo; Administrator/Manager gestionan,
+Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
+sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
+actualiza las referencias historicas a empleados pendientes que siguen abajo.
+
 Estado de la fase 1: comportamiento observado en codigo, recomendaciones y
 preguntas pendientes. Una recomendacion no constituye una regla aprobada.
 Referencia tecnica: commit `9bc044c` y [contratos actuales](legacy-api-contracts.md).

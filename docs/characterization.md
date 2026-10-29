@@ -1,5 +1,32 @@
 # Pruebas de caracterizacion y regresion
 
+## Incremento Empleados (29 de octubre de 2026)
+
+API y pantalla /employees, selector minimo integrado en compras/recepcion,
+ventas y apertura de caja. Contrato y reglas confirmadas: [Empleados](employees.md).
+
+Verificacion ejecutada:
+
+- Backend Linux/Python 3.13.15: 255 pruebas con --run-postgres aprobadas en
+  hdboutique-test/compose.test.yaml (base tmpfs vacia); cobertura 97.60%.
+  Incluye permisos, privacidad, CSRF, referencias, null/omision y vinculo exclusivo
+  cuenta/empleado. Ruff, formato (146 archivos), mypy (96) y uv lock --check aprobados.
+- Frontend en imagen Node 24: tipos, ESLint sin avisos y build aprobados;
+  80 Vitest aprobados. 80 E2E previas aprobadas; cuatro nuevas de Empleados
+  aprobadas en escritorio/movil. Tras corregir la simulacion CSRF de Cashier,
+  repeticion focal Empleados/transacciones: 12 aprobadas. Capturas revisadas.
+- Siete pruebas conectadas Nginx/FastAPI/PostgreSQL aprobadas, incluida persistencia
+  y privacidad de Empleados y selector de compras. Se actualizo el selector de
+  la prueba de venta para usar combobox en lugar del antiguo ID escrito.
+- Aplicacion local actualizada sin migraciones ni cargas comerciales; salud
+  live/ready y /employees responden 200, API de empleados/selector sin sesion 401.
+  Volumen y archivo privado conservados. No se leyeron credenciales ni expedientes
+  reales. Sin nuevas dependencias; head 0005 y 30 tablas se conservan.
+- Enlaces locales de documentos modificados y diff revisados. Commits locales
+  de implementacion: 46fb956 (backend), 981ebe6 (frontend). Sin remoto/push.
+
+Configuracion inicial y su pantalla de cuentas/catalogos siguen pendientes.
+
 ## Verificacion de fase 15
 
 El 29 de octubre de 2026 se ejecuto el [corte local autorizado](cutover.md): base

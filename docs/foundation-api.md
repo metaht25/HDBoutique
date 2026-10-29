@@ -1,5 +1,11 @@
 # API fundamental: incrementos de fase 7
 
+Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
+edicion, consulta y selector operativo; Administrator/Manager gestionan,
+Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
+sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
+actualiza las referencias historicas a empleados pendientes que siguen abajo.
+
 Implementados ubicaciones/catalogo y clientes/proveedores con schemas explicitos,
 repositorios concretos y transacciones en servicios. Empleados no forma parte del
 incremento solicitado. Django y sus consumidores conservan sus rutas.
