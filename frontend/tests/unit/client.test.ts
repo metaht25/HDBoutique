@@ -65,14 +65,14 @@ describe('shared API client', () => {
     const body = { results: [{ unit_price: '199.50', stock: null }], next: null }
     const fetchMock = vi.fn().mockResolvedValue(json(body))
     vi.stubGlobal('fetch', fetchMock)
-    const result = await new ApiClient().request('/api/productos/productos/')
+    const result = await new ApiClient().request('/api/v1/products')
     expect(result).toEqual(body)
-    expect(fetchMock).toHaveBeenCalledWith('/api/productos/productos/', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('/api/v1/products', expect.objectContaining({
       credentials: 'same-origin', cache: 'no-store', method: 'GET',
     }))
   })
 
-  it('bootstraps CSRF once for concurrent writes, rotates it and keeps it off legacy calls', async () => {
+  it('bootstraps CSRF once for concurrent writes and rotates it', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(json({ csrf_token: 'synthetic-csrf' }))
       .mockResolvedValueOnce(json({ id: 1 }, 201, { 'X-CSRF-Token': 'rotated-csrf' }))
@@ -93,8 +93,6 @@ describe('shared API client', () => {
     })
     await client.request('/api/v1/customers', { method: 'POST', body: {} })
     expect(fetchMock.mock.calls[3]?.[1].headers['X-CSRF-Token']).toBe('rotated-csrf')
-    await client.request('/api/personas/clientes/', { method: 'POST', body: {} })
-    expect(fetchMock.mock.calls[4]?.[1].headers['X-CSRF-Token']).toBeUndefined()
   })
 
   it('handles logout 204 without JSON and preserves abort signals', async () => {
@@ -162,7 +160,7 @@ describe('shared API client', () => {
 
   it.each([
     'https://invalid.example/api/v1/sales', '//invalid.example/api/v1/sales',
-    '/api/../../outside', '/api/\\invalid',
+    '/api/../../outside', '/api/\\invalid', '/api/personas/clientes/',
   ])('rejects non-local API target %s before sending credentials', async path => {
       const fetchMock = vi.fn()
       vi.stubGlobal('fetch', fetchMock)
@@ -187,9 +185,9 @@ describe('typed errors', () => {
     expect(error.fields).toEqual([{ location: ['body', 'items', 0, 'quantity'], type: 'greater_than' }])
     expect(getErrorMessage(error, 'Fallback')).toBe('Datos inválidos')
   })
-  it('accepts DRF field errors without flattening successful paginated data', () => {
+  it('uses a safe fallback for retired or unrecognized error formats', () => {
     expect(responseError(400, { nombre: ['Obligatorio'], nested: { price: ['Inválido'] } }, 'Fallback').message)
-      .toBe('nombre: Obligatorio · nested.price: Inválido')
+      .toBe('Fallback')
     expect(responseError(503, null, 'No disponible').message).toBe('No disponible')
   })
 })

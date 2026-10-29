@@ -7,6 +7,5 @@ RUN npx playwright install --with-deps chromium
 RUN mkdir -p node_modules/.vitest-cache node_modules/.vite node_modules/.vite-temp && \
     chown node:node /workspace/frontend node_modules/.vitest-cache node_modules/.vite node_modules/.vite-temp
 COPY --chown=node:node frontend/ ./
-COPY --chown=node:node backend/tests/characterization/fixtures/legacy_contracts.json /workspace/backend/tests/characterization/fixtures/legacy_contracts.json
 USER node
 CMD ["npm", "run", "verify"]

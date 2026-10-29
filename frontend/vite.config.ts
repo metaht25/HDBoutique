@@ -10,7 +10,6 @@ export default defineConfig(({ mode }) => {
       host: '127.0.0.1',
       proxy: {
         '/api/v1': { target: env.HDB_FASTAPI_TARGET ?? 'http://127.0.0.1:8001' },
-        '/api': { target: env.HDB_LEGACY_API_TARGET ?? 'http://127.0.0.1:8000' },
       },
     },
     test: {

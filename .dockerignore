@@ -2,11 +2,6 @@
 **
 !frontend/
 !frontend/**
-!backend/
-!backend/tests/
-!backend/tests/characterization/
-!backend/tests/characterization/fixtures/
-!backend/tests/characterization/fixtures/legacy_contracts.json
 frontend/node_modules/
 frontend/dist/
 frontend/test-results/

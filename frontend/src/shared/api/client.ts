@@ -49,9 +49,9 @@ export class ApiClient {
 
   async request<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
     const url = new URL(path, 'http://same-origin.invalid')
-    if (!path.startsWith('/api/') || path.includes('\\')
-      || url.origin !== 'http://same-origin.invalid' || !url.pathname.startsWith('/api/')) {
-      throw new Error('Only same-origin API paths are supported')
+    if (!path.startsWith('/api/v1/') || path.includes('\\')
+      || url.origin !== 'http://same-origin.invalid' || !url.pathname.startsWith('/api/v1/')) {
+      throw new Error('Only same-origin versioned API paths are supported')
     }
     const method = options.method ?? 'GET'
     const write = method !== 'GET'

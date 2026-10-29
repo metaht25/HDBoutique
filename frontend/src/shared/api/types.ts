@@ -19,13 +19,6 @@ export interface ErrorEnvelope {
   error: { code: string; message: string; fields?: ValidationField[] }
 }
 
-export interface LegacyPage<T> {
-  count: number
-  next: string | null
-  previous: string | null
-  results: T[]
-}
-
 export function isAccount(value: unknown): value is Account {
   if (typeof value !== 'object' || value === null) return false
   const account = value as Record<string, unknown>

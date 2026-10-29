@@ -41,12 +41,11 @@ COPY --from=development-dependencies --chown=app:app /opt/venv /opt/venv
 COPY --chown=app:app pyproject.toml uv.lock .python-version README.md ./
 COPY --chown=app:app tests ./tests
 COPY --chown=app:app data_migration ./data_migration
-COPY --chown=app:app hdboutique ./hdboutique
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_CACHE_DIR=/tmp/uv-cache \
     UV_PYTHON_DOWNLOADS=never \
     UV_LINK_MODE=copy
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "app"]
 
-# El objetivo por defecto excluye uv, pruebas, Django y herramientas de desarrollo.
+# El objetivo por defecto excluye uv, pruebas y herramientas de desarrollo.
 FROM base AS runtime

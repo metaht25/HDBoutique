@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import contracts from '../../../backend/tests/characterization/fixtures/legacy_contracts.json' with { type: 'json' }
 import { reportingResponse } from '../fixtures/reporting'
 import { purchase, sale, supplierRows } from '../fixtures/transactions'
 
@@ -50,8 +49,7 @@ async function syntheticApi(page: Page, options: {
       const filtered = supplierRows(options.suppliers).filter(row => row.company_name.includes(url.searchParams.get('q') ?? ''))
       return route.fulfill({ json: filtered.slice(offset, offset + Number(url.searchParams.get('limit') ?? 50)) })
     }
-    const resource = contracts.resources.find(item => item.path === path)
-    return route.fulfill({ json: resource ? [resource.example] : [] })
+    throw new Error(`Unexpected API request: ${path}`)
   })
 }
 

@@ -24,21 +24,11 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.17.3",
 ]
-legacy = [
-    "asgiref==3.11.1",
-    "django==6.0.9",
-    "djangorestframework==3.18.3",
-    "mssql-django==1.7.1",
-    "pyodbc==5.3.0",
-    "python-decouple==3.8",
-    "pytz==2026.1.post1",
-    "sqlparse==0.6.0",
-]
 
 [tool.uv]
 required-version = "==0.12.10"
 package = false
-default-groups = ["dev", "legacy"]
+default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -52,7 +42,6 @@ markers = ["postgres: requires an explicitly configured, empty, isolated Postgre
 target-version = "py313"
 line-length = 88
 src = ["."]
-extend-exclude = ["hdboutique", "modelos_bd.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
