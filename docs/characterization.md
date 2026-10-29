@@ -501,7 +501,7 @@ por modulo y migracion funcional quedan para fase 12. No se afirma cobertura
 frontend porcentual ni se repite la suite backend por este cambio de base web.
 No se inicia fase 12 automaticamente ni se publica el frontend.
 
-## Criterio de mantenimiento
+## Verificacion de fase 12 por modulos
 
 ### Fase 12, primer incremento: Productos
 
@@ -518,6 +518,43 @@ insensible a mayusculas, antes de paginar, mas workflows CRUD existentes. Ruff
 y mypy (79 archivos) aprobados. Sin migraciones nuevas, habilitacion operativa
 ni consultas a datos reales. Clientes se aborda solo despues de cerrar Productos;
 resto de fase 12 pendiente.
+
+### Fase 12, segundo incremento: Clientes
+
+28 de octubre de 2026. Despues de cerrar Productos en ee9766e, Clientes migrado
+a TS/FastAPI con alta, edicion y consulta para los tres roles. Direcciones
+existentes seleccionadas por Administrator/Manager o indicadas por ID por Cashier,
+sin consultas de ubicaciones de este ultimo. Telefono textual de hasta 10
+caracteres; se conserva 0012345678. Sin activacion, municipio, deuda ni borrado.
+
+Desde imagen reconstruida sin montajes: tipos, ESLint, 59 pruebas Vitest/componentes,
+41 legacy, build y 56 E2E Chromium aprobados (28 escritorio y 28 movil), sin
+omisiones ni reintentos. Incluyen alta/edicion y recarga con cada rol, validacion,
+CSRF, doble envio, errores 422/409 sin reintento automatico ni perdida del borrador,
+listas vacias, recuperacion de opciones fallidas, busqueda/paginacion y acceso
+anonimo sin consultas de clientes. Capturas de Productos/Clientes en escritorio
+y movil inspeccionadas, tablas desplazables sin desbordar la pagina.
+
+E2E intercepta API sintetica; la recarga verifica su estado simulado, sin afirmar
+conexion de navegador a PostgreSQL ni corte operativo. D04/D06 se evitan en el
+nuevo formulario porque solo pide una direccion existente y nunca la crea;
+D05 deja de simular activacion, sin resolver B07 definitivo. D01/D09 y acceso
+D12 de los modulos legacy conservan sus limites fuera de este incremento.
+
+Backend desde imagen development reconstruida sin montajes: 202 pruebas
+aprobadas con --run-postgres y cobertura app 98.31% (umbral 90%). Incluye
+PostgreSQL aislado migrado desde vacio, ambos filtros q, CRUD, permisos,
+rollback, idempotencia y concurrencia de compras/ventas. Ruff, formato (119
+archivos), mypy (79) y uv lock --check aprobados. Los dos nuevos casos de
+busqueda verifican coincidencia literal, mayusculas, offset/limit global,
+q vacio/sin resultados/excesivo; Clientes verifica nombre completo y telefono.
+
+Sin nuevas migraciones (head 0004), cambios de dependencias, habilitacion de
+rutas/cuentas ni lecturas/escrituras de datos reales. PostgreSQL usa solo
+hdboutique-test/compose.test.yaml y tmpfs. La fase 12 queda parcial: estos dos
+modulos terminados, los demas pendientes de solicitud. No se inicia fase 13.
+
+## Criterio de mantenimiento
 
 Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar
 fixture/documentacion si cambia el contrato y registrar la incompatibilidad

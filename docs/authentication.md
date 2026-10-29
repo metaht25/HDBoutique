@@ -6,8 +6,10 @@ No se importan contraseñas ni se crean cuentas automaticamente.
 
 Fase 11 agrega [contexto de sesion frontend](frontend-foundation.md): me, CSRF,
 login como API del contexto y logout, identidad del encabezado desde servidor.
-La pantalla de login y la migracion de acceso por modulo quedan en fase 12;
-esta base no habilita rutas ni protege automaticamente los endpoints Django.
+Fase 12 incorpora login reutilizable y acceso autenticado dentro de Productos y
+Clientes, con permisos de esta matriz. Otras pantallas siguen pendientes:
+[alcance actual](frontend-modules.md). Esto no habilita rutas ni protege
+automaticamente los endpoints Django.
 
 ## Permisos aprobados e implementados
 

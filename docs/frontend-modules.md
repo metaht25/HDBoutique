@@ -36,7 +36,32 @@ retiran botones que cambiaban estado solo en memoria. No se agrega borrado,
 umbral de bajo stock (B14) ni reglas comerciales nuevas. Los adaptadores legacy
 se conservan mientras existan consumidores y pruebas de compatibilidad.
 
-## Verificacion
+## Clientes
+
+`/customers` usa TypeScript y `/api/v1/customers`: los tres roles consultan,
+crean y editan. Nombres/apellidos obligatorios de hasta 40 caracteres y telefono
+textual obligatorio de hasta 10, sin conversion numerica, regla de ocho digitos
+ni eliminacion de ceros iniciales. Los tipos provienen de customer-types; sus
+IDs/nombres reales no implican frecuencia, deuda ni otra clasificacion inferida.
+
+Se exige un `address_id` existente, segun acuerdo expreso. Administrator/Manager
+seleccionan direcciones con detalle y departamento; se cargan todas las paginas
+de direcciones/departamentos/tipos. Cashier introduce un ID y no solicita rutas
+de ubicaciones. El servidor valida la referencia al guardar, sin ampliar permisos.
+El listado muestra solo el ID de direccion a Cashier; si falla una consulta
+auxiliar, los IDs siguen identificando referencias sin inventar datos.
+
+Una sola escritura POST/PATCH guarda el cliente. No hay alta inline de direccion,
+municipio, deuda, activacion/desactivacion ni borrado. Si faltan direcciones o
+tipos, se explica el requisito de registro por personal autorizado. No se generan
+direcciones huerfanas al rechazar el cliente (D06 del formulario anterior).
+
+GET customers admite `q` opcional de hasta 100 caracteres para nombre completo
+o telefono, literal e insensible a mayusculas, antes de offset/limit. Se conservan
+pagina/busqueda en URL y los mismos estados, cancelacion de lecturas, errores por
+campo, bloqueo de doble envio y confirmacion de guardado que en Productos.
+
+## Verificacion de los incrementos
 
 Resultados y limites de cada incremento en [characterization.md](characterization.md).
 E2E usa respuestas sinteticas interceptadas; verifica navegador, formulario,

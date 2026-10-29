@@ -21,7 +21,7 @@ Fase 9 define B01 y costes de compra B03: legacy_stock es disponible y
 legacy_stock_quantity queda legado. Ambos campos de stock son de solo lectura
 en el CRUD y el producto nuevo comienza con disponible cero. Recepciones y
 movimientos en [compras e inventario](purchases-inventory.md).
-B07 y las reglas de ventas/deuda pendientes conservan sus limites.
+B07 y deuda siguen pendientes. Ventas se define en fase 10 en [sales.md](sales.md).
 
 ## Recursos
 
@@ -54,7 +54,13 @@ unicidades de pares. Fase 8 agrega identidad mediante una revision separada.
 - GET devuelve 200, POST 201, PUT/PATCH 200 y DELETE 204 sin cuerpo.
 - Listas ordenadas por ID, con offset >= 0 y limit entre 1 y 100 (defecto 50).
   Devuelven una lista, incluida []; avanzar offset hasta recibir una lista vacia.
-  El frontend actual no consume estas listas ni cambia su paginacion.
+  Productos y Clientes consumen estas listas desde fase 12 con paginacion de
+  servidor; los demas modulos frontend siguen usando sus contratos legacy.
+- GET products/customers acepta `q` opcional de hasta 100 caracteres. Se retiran
+  espacios externos y se filtra antes de offset/limit, con coincidencia literal
+  insensible a mayusculas (%, _ no son comodines). Productos busca en nombre;
+  Clientes en nombre completo o telefono. Sin q se conserva la lista anterior.
+  [Contratos frontend](frontend-modules.md).
 - PUT reemplaza los campos: los opcionales omitidos pasan a null. PATCH conserva
   los omitidos; null solo se permite en columnas anulables. PATCH vacio no cambia
   valores. No se permiten campos ajenos ni escribir IDs generados.
@@ -90,7 +96,8 @@ Ejemplo de direccion sintetica:
 No se acepta municipality_id ni direccionexacta: se rechazan explicitamente
 para evitar la perdida silenciosa de D04. Una direccion se registra como recurso
 independiente; customers/suppliers reciben address_id existente. No se afirma
-atomicidad conjunta de direccion y persona ni se migra el formulario legacy.
+atomicidad conjunta de direccion y persona. Fase 12 migra Clientes reutilizando
+direcciones, sin alta inline; el formulario de Proveedores sigue legacy.
 Una alta atomica anidada y la relacion municipio requieren concretar B08.
 
 Las pruebas HTTP de PostgreSQL usan compose.test.yaml, Alembic y datos sinteticos,

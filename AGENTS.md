@@ -38,10 +38,14 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 - Aplicacion legacy: Django/DRF y SQL Server en `backend/hdboutique/`. Frontend
   React/Vite con base TypeScript estricta de fase 11, Router, HTTP/sesion y CSS
-  Modules; vistas/adaptadores legacy JSX/JS en frontend/src/features, contratos
-  Django conservados y reexportaciones en services hasta fase 12. Contexto de
-  sesion real sin usuario fijo; login visual y acceso por modulo pendientes.
-  Comandos/limites: docs/frontend-foundation.md. Node 24, npm ci y lock;
+  Modules. Fase 12 parcial: Productos y Clientes migrados a TS/FastAPI con consulta,
+  alta, edicion, busqueda/paginacion de servidor, acceso y login dentro del modulo.
+  Productos: stocks de solo lectura, dinero textual; Cashier solo consulta.
+  Clientes: direccion existente, Cashier indica ID sin consultar ubicaciones;
+  telefono textual hasta 10 caracteres. Sin activacion (B07), municipio ni deuda.
+  Resto de pantallas/adaptadores JSX/JS y contratos Django conservados;
+  reexportaciones en services mientras tengan consumidores. Sesion sin usuario fijo.
+  Comandos/limites: docs/frontend-foundation.md y docs/frontend-modules.md. Node 24, npm ci y lock;
   compose.frontend-test.yaml verifica sin red/backend y con API sintetica.
   FastAPI en `backend/app/` ofrece salud.
   Los modulos de fase 7 locations/catalog/customers/suppliers estan implementados,
