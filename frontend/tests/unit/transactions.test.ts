@@ -6,7 +6,7 @@ import { clearIntent, isDefinitiveRejection, readIntent, storeIntent } from '../
 import { purchase, sale } from '../fixtures/transactions'
 
 beforeEach(() => { sessionStorage.clear() })
-const intent = { key: 'synthetic-intent-123', body: { customer_id: 108, employee_id: 102, sale_date: '2026-10-28', items: [{ product_id: 109, quantity: 1 }] } }
+const intent = { key: 'synthetic-intent-123', body: { customer_id: 108, employee_id: 102, sale_date: '2026-10-28', payment: { shift_id: 1, method: 'cash' as const, received_amount: '200.00' }, items: [{ product_id: 109, quantity: 1 }] } }
 
 it('keeps one immutable intent across remounts scoped to account and operation', () => {
   storeIntent(1, 'sales', intent)

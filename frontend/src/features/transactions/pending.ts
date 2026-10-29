@@ -1,6 +1,7 @@
 import { ApiError } from '../../shared/api/errors'
 import { record, positiveId, requiredText } from '../../shared/api/validation'
 import type { TransactionInput, TransactionKind } from './api'
+import type { PaymentInput } from '../cash-register/api'
 
 export interface PendingIntent { key: string; body: TransactionInput }
 const storageKey = (userId: number, kind: TransactionKind) => `hdb.pending.v1.${userId}.${kind}`
@@ -20,9 +21,16 @@ export function readIntent(userId: number, kind: TransactionKind): PendingIntent
     if (new Set(items.map(item => item[sales ? 'product_id' : 'supplier_product_id'])).size !== items.length) throw new Error('Duplicate draft')
     const shipping = sales ? undefined : requiredText(body.shipping_cost)
     if (shipping !== undefined && !/^\d{1,8}\.\d{2}$/.test(shipping)) throw new Error('Invalid amount')
+    let payment: PaymentInput | undefined
+    if (sales) {
+      const saved = record(body.payment), shift_id = positiveId(saved.shift_id)
+      if (saved.method === 'cash' && /^\d{1,10}\.\d{2}$/.test(requiredText(saved.received_amount))) payment = { shift_id, method: 'cash', received_amount: requiredText(saved.received_amount) }
+      else if (saved.method === 'transfer' && saved.transfer_confirmed === true && /^\d{1,10}\.\d{2}$/.test(requiredText(saved.received_amount))) payment = { shift_id, method: 'transfer', received_amount: requiredText(saved.received_amount), reference: requiredText(saved.reference), transfer_confirmed: true }
+      else throw new Error('Invalid payment')
+    }
     return { key, body: { [sales ? 'customer_id' : 'supplier_id']: partyId, [sales ? 'sale_date' : 'purchase_date']: date,
       ...(body.employee_id !== undefined ? { employee_id: positiveId(body.employee_id) } : {}),
-      ...(!sales ? { shipping_cost: shipping } : {}), items } }
+      ...(!sales ? { shipping_cost: shipping } : { payment }), items } }
   } catch {
     throw new ApiError(409, 'pending_unavailable', 'No se puede recuperar la solicitud pendiente. Revisa el historial antes de volver a registrar.')
   }

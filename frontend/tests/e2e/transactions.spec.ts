@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import { reportingResponse } from '../fixtures/reporting'
-import { purchase, sale, supplierRows } from '../fixtures/transactions'
+import { purchase, sale, shift, supplierRows } from '../fixtures/transactions'
 
 async function backend(page: Page, settings: { lostResponse?: boolean; role?: string } = {}) {
   const writes: { path: string; key: string | undefined; body: unknown }[] = [], requested: string[] = []
@@ -11,6 +11,7 @@ async function backend(page: Page, settings: { lostResponse?: boolean; role?: st
     requested.push(path)
     if (path === '/api/v1/auth/me') return route.fulfill({ json: { user_id: 1, username: 'synthetic', role: settings.role ?? 'Manager', employee_id: 102, is_active: true } })
     if (path === '/api/v1/auth/csrf') return route.fulfill({ json: { csrf_token: 'csrf-test' } })
+    if (path === '/api/v1/cash/shifts') return route.fulfill({ json: [shift] })
     const report = reportingResponse(url, settings.role !== 'Cashier')
     if (report) return route.fulfill({ json: report })
     if (path === '/api/v1/products') return route.fulfill({ json: [{ product_id: 109, category_id: 1, size_id: 1, name: 'Camisa', unit_price: '199.50', legacy_stock: 3, legacy_stock_quantity: 12 }] })
@@ -45,6 +46,7 @@ test('lost sale responses recover with the identical payload and key after reloa
   await page.getByRole('combobox', { name: 'Cliente', exact: true }).selectOption('108')
   await page.getByRole('combobox', { name: 'Producto', exact: true }).selectOption('109')
   await page.getByRole('button', { name: 'Agregar línea' }).click()
+  await page.getByRole('textbox', { name: 'Efectivo recibido (NIO)' }).fill('200.00')
   await page.getByRole('button', { name: 'Confirmar venta' }).click()
   await expect(page.getByRole('button', { name: 'Reintentar misma solicitud' })).toBeVisible()
   await page.reload()
@@ -54,7 +56,7 @@ test('lost sale responses recover with the identical payload and key after reloa
   expect(api.writes).toHaveLength(2)
   expect(api.writes[0]?.key).toBeTruthy()
   expect(api.writes[0]).toEqual(api.writes[1])
-  expect(api.writes[0]?.body).toEqual({ customer_id: 108, sale_date: '2026-10-28', items: [{ product_id: 109, quantity: 1 }] })
+  expect(api.writes[0]?.body).toEqual({ customer_id: 108, sale_date: '2026-10-28', payment: { shift_id: 1, method: 'cash', received_amount: '200.00' }, items: [{ product_id: 109, quantity: 1 }] })
   expect(await page.evaluate(() => sessionStorage.length)).toBe(0)
   expect(api.requested.every(path => path.startsWith('/api/v1/'))).toBe(true)
 })

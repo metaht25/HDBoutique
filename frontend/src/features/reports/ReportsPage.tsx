@@ -22,7 +22,7 @@ function Summary({ data }: { data: Report }) {
     <div className={styles.cards}><Card label="Ventas del período">{data.summary.total_count}</Card>
       <Card label="Importe vendido">{reportMoney(data.summary.total_amount)}</Card>
       <Card label="Ventas históricas">{data.summary.legacy_count}</Card></div>
-    <p className={styles.note}>Importe documental guardado por venta. No representa cobros, utilidad ni saldo de caja.</p>
+    <p className={styles.note}>El importe vendido excluye las ventas anuladas. El detalle conserva su importe original. No representa utilidad ni saldo de caja.</p>
   </>
   if (data.kind === 'purchases') return <>
     <div className={styles.cards}><Card label="Compras del período">{data.summary.total_count}</Card>
@@ -46,7 +46,7 @@ function ReportTable({ data }: { data: Report }) {
   if (data.kind === 'sales') return <TableContainer label="Reporte de ventas"><table>
     <thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total NIO</th><th>Origen</th></tr></thead>
     <tbody>{data.items.map(row => <tr key={row.sale_id}><td>{row.sale_id}</td><td>{row.sale_date}</td>
-      <td>{row.customer_name} (#{row.customer_id})</td><td>{reportMoney(row.total)}</td><td>{row.source === 'legacy' ? 'Histórico' : 'Confirmada'}</td></tr>)}</tbody>
+      <td>{row.customer_name} (#{row.customer_id})</td><td>{reportMoney(row.total)}</td><td>{row.source === 'voided' ? 'Anulada' : row.source === 'legacy' ? 'Histórico' : 'Confirmada'}</td></tr>)}</tbody>
   </table></TableContainer>
   if (data.kind === 'purchases') return <TableContainer label="Reporte de compras"><table>
     <thead><tr><th>ID</th><th>Fecha</th><th>Proveedor</th><th>Estado</th><th>Mercancía NIO</th><th>Envío NIO</th><th>Total NIO</th></tr></thead>

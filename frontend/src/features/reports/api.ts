@@ -6,7 +6,7 @@ export const stockLabels = { out_of_stock: 'Agotado', low_stock: 'Bajo stock', a
 export type StockStatus = keyof typeof stockLabels
 export interface Context { business_date: string; timezone: string; generated_at: string; start_date: string | null; end_date: string | null }
 export interface SalesSummary { total_count: number; total_amount: string; legacy_count: number }
-export interface SaleRow { sale_id: number; sale_date: string; customer_id: number; customer_name: string; total: string; source: 'confirmed' | 'legacy' }
+export interface SaleRow { sale_id: number; sale_date: string; customer_id: number; customer_name: string; total: string; source: 'confirmed' | 'legacy' | 'voided' }
 export type StockSummary = Record<StockStatus, number>
 export interface InventoryRow { product_id: number; name: string | null; available_stock: number | null; historical_stock: number | null; status: StockStatus }
 export interface PurchaseSummary { total_count: number; known_merchandise_total: string; unknown_merchandise_count: number; known_shipping_total: string; unknown_shipping_count: number; known_total: string; unknown_total_count: number; legacy_count: number }
@@ -46,7 +46,7 @@ function salesSummary(value: unknown): SalesSummary {
 }
 function sale(value: unknown): SaleRow {
   const row = record(value)
-  if (row.source !== 'confirmed' && row.source !== 'legacy') return invalidResponse()
+  if (row.source !== 'confirmed' && row.source !== 'legacy' && row.source !== 'voided') return invalidResponse()
   return { sale_id: positiveId(row.sale_id), sale_date: isoDate(row.sale_date), customer_id: positiveId(row.customer_id),
     customer_name: requiredText(row.customer_name), total: money(row.total), source: row.source }
 }

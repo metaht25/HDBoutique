@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import { reportingResponse } from '../fixtures/reporting'
-import { purchase, sale, supplierRows } from '../fixtures/transactions'
+import { purchase, sale, shift, supplierRows } from '../fixtures/transactions'
 
 const account = { user_id: 101, username: 'synthetic-manager', role: 'Manager', is_active: true, employee_id: 102 }
 const routes = [
@@ -41,6 +41,7 @@ async function syntheticApi(page: Page, options: {
     if (path === '/api/v1/addresses') return route.fulfill({ json: [{ address_id: 103, department_id: 101, address_line: 'Dirección sintética' }] })
     if (path === '/api/v1/departments') return route.fulfill({ json: [{ department_id: 101, name: 'Managua' }] })
     if (path === '/api/v1/sales') return route.fulfill({ json: [sale] })
+    if (path === '/api/v1/cash/shifts') return route.fulfill({ json: [shift] })
     if (path === '/api/v1/purchases') return route.fulfill({ json: [purchase] })
     if (path === '/api/v1/supplier-products') return route.fulfill({ json: [{ supplier_product_id: 201, product_id: 109, purchase_price: '120.50' }] })
     if (path === '/api/v1/supplier-offerings') return route.fulfill({ json: [{ offering_id: 1, supplier_id: 106, supplier_product_id: 201 }] })

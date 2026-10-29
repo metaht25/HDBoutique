@@ -20,7 +20,7 @@ function DashboardWorkspace() {
       <button type="button" onClick={() => setRevision(value => value + 1)}>Recargar dashboard</button></div>
     {!result ? <LoadingState>Cargando dashboard…</LoadingState> : result.error !== undefined
       ? <Message>{getErrorMessage(result.error, 'No se pudo cargar el dashboard.')}</Message> : data && <>
-        <p className={styles.note}>Fecha comercial: <strong>{data.context.business_date}</strong> · {data.context.timezone}. Las ventas indicadas no representan cobros.</p>
+        <p className={styles.note}>Fecha comercial: <strong>{data.context.business_date}</strong> · {data.context.timezone}. El importe vendido excluye anulaciones; consulta caja para distinguir efectivo y transferencias.</p>
         <div className={styles.cards}>
           <Card label="Ventas del día">{data.sales.total_count}</Card>
           <Card label="Importe vendido del día">{reportMoney(data.sales.total_amount)}</Card>
@@ -38,7 +38,7 @@ function DashboardWorkspace() {
           {data.recent_sales.length === 0 ? <p>No hay ventas registradas para esta fecha.</p> : <TableContainer label="Últimas ventas"><table>
             <thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total NIO</th><th>Origen</th></tr></thead>
             <tbody>{data.recent_sales.map(sale => <tr key={sale.sale_id}><td>{sale.sale_id}</td><td>{sale.sale_date}</td>
-              <td>{sale.customer_name}</td><td>{reportMoney(sale.total)}</td><td>{sale.source === 'legacy' ? 'Histórico' : 'Confirmada'}</td></tr>)}</tbody>
+              <td>{sale.customer_name}</td><td>{reportMoney(sale.total)}</td><td>{sale.source === 'voided' ? 'Anulada' : sale.source === 'legacy' ? 'Histórico' : 'Confirmada'}</td></tr>)}</tbody>
           </table></TableContainer>}
           <Link to="/reports?type=sales">Consultar reporte de ventas</Link>
         </section>

@@ -16,6 +16,7 @@ import { listTransactions, receivePurchase, registerTransaction, transactionOpti
 import type { Transaction, TransactionInput, TransactionKind } from './api'
 import { clearIntent, isDefinitiveRejection, readIntent, storeIntent } from './pending'
 import type { PendingIntent } from './pending'
+import { VoidSaleForm } from './VoidSaleForm'
 import styles from '../../shared/ui/Management.module.css'
 
 type Options = Awaited<ReturnType<typeof transactionOptions>>
@@ -31,6 +32,11 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
   const [date, setDate] = useState(restored.intent?.body[sales ? 'sale_date' : 'purchase_date'] ?? options.today)
   const [employee, setEmployee] = useState(String(linkedEmployee ?? restored.intent?.body.employee_id ?? ''))
   const [shipping, setShipping] = useState(restored.intent?.body.shipping_cost ?? '0.00')
+  const [shiftId, setShiftId] = useState(String(restored.intent?.body.payment?.shift_id ?? options.shifts[0]?.shift_id ?? ''))
+  const [method, setMethod] = useState(restored.intent?.body.payment?.method ?? 'cash')
+  const [received, setReceived] = useState(restored.intent?.body.payment?.received_amount ?? '')
+  const [reference, setReference] = useState(restored.intent?.body.payment?.reference ?? '')
+  const [transferConfirmed, setTransferConfirmed] = useState(restored.intent?.body.payment?.transfer_confirmed ?? false)
   const [lines, setLines] = useState<DraftLine[]>(restored.intent?.body.items.map(item => ({ id: (sales ? item.product_id : item.supplier_product_id)!, quantity: item.quantity })) ?? [])
   const [selected, setSelected] = useState(''), [quantity, setQuantity] = useState('1')
   const [error, setError] = useState(restored.error), [busy, setBusy] = useState(false)
@@ -38,6 +44,12 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
   const choices = sales ? options.products.map(row => ({ id: row.product_id, product_id: row.product_id, price: row.unit_price, stock: row.legacy_stock }))
     : options.costs.filter(cost => options.offerings.some(offering => offering.supplier_id === Number(party) && offering.supplier_product_id === cost.id))
       .map(cost => ({ ...cost, stock: undefined }))
+  const estimatedCents = sales ? lines.reduce<bigint | null>((total, line) => {
+    const price = options.products.find(row => row.product_id === line.id)?.unit_price
+    if (total === null || !price) return null
+    const cents = BigInt(price.replace('.', ''))
+    return cents > 0n ? total + cents * BigInt(line.quantity) : null
+  }, 0n) : null
   function lineName(id: number) {
     const productId = sales ? id : options.costs.find(row => row.id === id)?.product_id
     return options.products.find(row => row.product_id === productId)?.name ?? `Producto #${productId ?? id}`
@@ -54,11 +66,16 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
     let intent = pending
     if (!intent) {
       const partyId = inputId(party), employeeId = inputId(employee), shippingCost = exactMoney(shipping)
+      const shift = inputId(shiftId), cashReceived = exactMoney(received)
+      if (sales && (!shift || cashReceived === null || cashReceived.startsWith('-') || (method === 'transfer' && (!reference.trim() || !transferConfirmed)))) {
+        setError('Selecciona un turno abierto e indica el efectivo recibido o confirma la transferencia con su referencia.'); return
+      }
       if (!partyId || !employeeId || !date || !lines.length || (!sales && (shippingCost === null || shippingCost.startsWith('-')))) {
         setError('Completa fecha, cliente/proveedor, empleado existente y líneas; el envío debe ser un importe no negativo con dos decimales.'); return
       }
       const body: TransactionInput = { [sales ? 'customer_id' : 'supplier_id']: partyId, [sales ? 'sale_date' : 'purchase_date']: date,
         ...(linkedEmployee === null ? { employee_id: employeeId } : {}), ...(!sales ? { shipping_cost: shippingCost! } : {}),
+        ...(sales ? { payment: method === 'cash' ? { shift_id: shift!, method, received_amount: cashReceived! } : { shift_id: shift!, method, received_amount: cashReceived!, reference, transfer_confirmed: true } } : {}),
         items: lines.map(row => ({ [sales ? 'product_id' : 'supplier_product_id']: row.id, quantity: row.quantity })) }
       intent = { key: crypto.randomUUID(), body }
       try { storeIntent(userId, kind, intent) } catch (error) { setError(getErrorMessage(error, 'No se pudo proteger la solicitud.')); return }
@@ -83,6 +100,17 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
         </SelectField>
         <TextField label="ID de empleado existente" inputMode="numeric" value={employee} disabled={locked || linkedEmployee !== null} onChange={event => setEmployee(event.target.value)} />
         {!sales && <TextField label="Costo de envío (NIO)" inputMode="decimal" value={shipping} disabled={locked} onChange={event => setShipping(event.target.value)} />}
+        {sales && <>
+          <SelectField label="Turno de caja" value={shiftId} disabled={locked} onChange={event => { setShiftId(event.target.value); if (linkedEmployee === null) setEmployee(String(options.shifts.find(row => String(row.shift_id) === event.target.value)?.employee_id ?? '')) }}>
+            <option value="">Selecciona</option>{options.shifts.map(row => <option key={row.shift_id} value={row.shift_id}>Turno #{row.shift_id} · Empleado #{row.employee_id}</option>)}
+          </SelectField>
+          <SelectField label="Medio de pago completo" value={method} disabled={locked} onChange={event => { setMethod(event.target.value as 'cash' | 'transfer'); setReceived(''); setTransferConfirmed(false) }}><option value="cash">Efectivo</option><option value="transfer">Transferencia</option></SelectField>
+          <TextField label={method === 'cash' ? 'Efectivo recibido (NIO)' : 'Importe recibido por transferencia (NIO)'} inputMode="decimal" value={received} disabled={locked} onChange={event => { setReceived(event.target.value); setTransferConfirmed(false) }} />
+          {method === 'transfer' && <>
+            <TextField label="Referencia de transferencia" maxLength={100} value={reference} disabled={locked} onChange={event => setReference(event.target.value)} />
+            <label><input type="checkbox" checked={transferConfirmed} disabled={locked} onChange={event => setTransferConfirmed(event.target.checked)} /> Confirmé la recepción de la transferencia completa</label>
+          </>}
+        </>}
         <SelectField label={sales ? 'Producto' : 'Producto ofrecido por el proveedor'} value={selected} disabled={locked} onChange={event => setSelected(event.target.value)}>
           <option value="">Selecciona</option>{choices.map(row => <option key={row.id} value={row.id}>
             {lineName(row.id)} · {reportMoney(row.price)}{sales ? ` · Disponible: ${row.stock ?? 'Sin conteo'}` : ''} (#{row.id})</option>)}
@@ -93,7 +121,8 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
       <TableContainer label="Líneas pendientes"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Acciones</th></tr></thead><tbody>
         {lines.map(row => <tr key={row.id}><td>{lineName(row.id)}</td><td>{row.quantity}</td><td><button type="button" disabled={locked} aria-label={`Quitar línea ${row.id}`} onClick={() => setLines(lines.filter(line => line.id !== row.id))}>Quitar</button></td></tr>)}
       </tbody></table></TableContainer>
-      <p className={styles.note}>El servidor confirma precios e importes. {sales ? 'Una solicitud guarda toda la venta y descuenta el disponible. La venta confirmada es inmutable.' : 'Registrar no cambia existencias. La recepción completa se confirma por separado, una sola vez.'}</p>
+      {sales && <p>Total estimado del catálogo: {estimatedCents === null ? 'Sin precio válido' : `C$${estimatedCents / 100n}.${(estimatedCents % 100n).toString().padStart(2, '0')}`}. El servidor confirma el precio al guardar.</p>}
+      <p className={styles.note}>El servidor confirma precios e importes. {sales ? 'Venta, cobro completo y salida de inventario se confirman juntos. Abre caja antes de vender. No hay crédito ni abonos.' : 'Registrar no cambia existencias. La recepción completa se confirma por separado, una sola vez.'}</p>
       {pending && <Message variant="info">Hay una solicitud pendiente de confirmar. Se conserva la misma clave al reintentar o recargar esta pestaña.</Message>}
       {error && <Message>{error}</Message>}
       <div><button type="submit" disabled={busy || !!restored.error}>{busy ? 'Confirmando…' : pending ? 'Reintentar misma solicitud' : sales ? 'Confirmar venta' : 'Registrar compra'}</button></div>
@@ -131,18 +160,22 @@ function TransactionsWorkspace({ kind }: { kind: TransactionKind }) {
     {!result ? <LoadingState>Cargando operaciones…</LoadingState> : result.error !== undefined ? <Message>{getErrorMessage(result.error, 'No se pudieron cargar operaciones.')}</Message>
       : rows.length === 0 ? <p>No hay operaciones en esta página.</p> : <section className={styles.panel}><TableContainer label={sales ? 'Ventas' : 'Compras'}><table>
         <thead><tr><th>ID</th><th>Fecha</th><th>{sales ? 'Cliente' : 'Proveedor'}</th><th>Estado</th><th>Total NIO</th><th>Acciones</th></tr></thead><tbody>{rows.map(row => <tr key={row.id}>
-          <td>{row.id}</td><td>{row.date}</td><td>#{row.party_id}</td><td>{row.status === null ? 'Histórica' : row.status === 'confirmed' ? 'Confirmada' : row.status === 'received' ? 'Recibida' : 'Registrada'}</td><td>{reportMoney(row.total)}</td>
+          <td>{row.id}</td><td>{row.date}</td><td>#{row.party_id}</td><td>{row.status === null ? 'Histórica' : row.status === 'voided' ? 'Anulada' : row.status === 'confirmed' ? 'Confirmada' : row.status === 'received' ? 'Recibida' : 'Registrada'}</td><td>{reportMoney(row.total)}</td>
           <td><button type="button" onClick={() => { setSelected(row); setError('') }} aria-label={`Ver detalle ${row.id}`}>Ver detalle</button></td></tr>)}</tbody>
       </table></TableContainer></section>}
     <PageNavigation page={page} hasNext={(result?.data?.length ?? 0) > 20} onPageChange={next => setParams({ page: String(next) })} />
     {selected && <section className={styles.panel}><h3>Detalle #{selected.id}</h3><p>Fecha: {selected.date} · Empleado #{selected.employee_id} · Total: {reportMoney(selected.total)}</p>
       {!sales && <p>Mercancía: {reportMoney(selected.merchandise_total ?? null)} · Envío: {reportMoney(selected.shipping_cost ?? null)}</p>}
+      {sales && selected.payment && <p>Pago completo: {selected.payment.method === 'cash' ? 'Efectivo' : 'Transferencia'} · {reportMoney(selected.payment.amount)} · Recibido: {reportMoney(selected.payment.received_amount)} · Cambio: {reportMoney(selected.payment.change_amount)} · Referencia: {selected.payment.reference ?? 'No aplica'} · Turno #{selected.payment.shift_id}</p>}
+      {sales && selected.annulment && <Message variant="info">Venta anulada. Motivo: {selected.annulment.reason}. Reintegro completo: {reportMoney(selected.annulment.amount)} ({selected.annulment.method === 'cash' ? 'efectivo' : 'transferencia'}). Referencia: {selected.annulment.reference ?? 'No aplica'}. Mercancía devuelta: {selected.annulment.items.map(item => `línea #${item.sale_item_id}: ${item.returned_quantity}`).join('; ')}.</Message>}
       <TableContainer label="Detalle de operación"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio histórico NIO</th><th>Subtotal NIO</th></tr></thead>
         <tbody>{selected.items.map(line => <tr key={line.line_id}><td>{line.product_id === null ? `Proveedor-producto #${line.supplier_product_id}` : `Producto #${line.product_id}`}</td><td>{line.quantity}</td><td>{reportMoney(line.unit_price)}</td><td>{reportMoney(line.subtotal)}</td></tr>)}</tbody>
       </table></TableContainer>
       {!sales && selected.status === 'registered' && <><TextField label="ID de empleado para recepción" inputMode="numeric" disabled={receiving || account.employee_id !== null} value={account.employee_id ?? employee} onChange={event => setEmployee(event.target.value)} />
         <button disabled={receiving} type="button" onClick={() => void receive()}>{receiving ? 'Recibiendo…' : 'Confirmar recepción completa'}</button></>}
       {!sales && selected.status === null && <p>Compra histórica: requiere conciliación; no se infiere recepción ni coste faltante.</p>}
+      {sales && (selected.status === 'confirmed' || selected.status === 'voided') && selected.payment && account.role !== 'Cashier' && <VoidSaleForm key={`${account.user_id}:${selected.id}`} userId={account.user_id} sale={selected} shifts={options?.data?.shifts ?? []}
+        onSaved={() => { setNotice(`Venta #${selected.id} anulada con reintegro completo.`); setSelected(null); setRevision(value => value + 1) }} />}
       {error && <Message>{error}</Message>}
     </section>}
   </div>
