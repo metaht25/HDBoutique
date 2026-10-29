@@ -3,8 +3,9 @@
 Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
 edicion, consulta y selector operativo; Administrator/Manager gestionan,
 Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
-sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
-actualiza las referencias historicas a empleados pendientes que siguen abajo.
+sobre operaciones. [Configuracion inicial](initial-setup.md) completada posteriormente:
+catalogos, ubicaciones, costes/ofertas y cuentas con los permisos existentes.
+Estos contratos actualizan las referencias historicas pendientes que siguen abajo.
 
 Implementados ubicaciones/catalogo y clientes/proveedores con schemas explicitos,
 repositorios concretos y transacciones en servicios. Empleados no forma parte del

@@ -1,7 +1,8 @@
 # Empleados
 
 Incremento autorizado el 29 de octubre de 2026. Completa el modulo staff de
-fase 7 y su pantalla TypeScript `/employees`; configuracion inicial sigue pendiente.
+fase 7 y su pantalla TypeScript `/employees`. [Configuracion inicial](initial-setup.md)
+se completo posteriormente e incluye la administracion de cuentas.
 
 ## Reglas confirmadas
 

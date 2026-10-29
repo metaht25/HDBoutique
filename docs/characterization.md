@@ -1,5 +1,40 @@
 # Pruebas de caracterizacion y regresion
 
+## Configuracion inicial y cierre funcional de v1 (29 de octubre de 2026)
+
+[Configuracion inicial](initial-setup.md) completa las pantallas solicitadas:
+preparacion con referencias faltantes, catalogos/ubicaciones/costes/ofertas y
+cuentas con permisos existentes. Diez pantallas TS/FastAPI. No cambia backend,
+esquema, dependencias ni datos comerciales de desarrollo.
+
+Verificacion ejecutada sobre imagenes reconstruidas:
+
+- Node 24: TypeScript, ESLint sin avisos, 84 Vitest y build aprobados.
+- 110 E2E Chromium aprobadas en escritorio y movil (26 de Configuracion).
+  Incluyen alta/edicion de los siete catalogos, null, paginacion/recarga,
+  errores de preparacion, permisos, vinculo exclusivo y desactivacion de cuentas,
+  ultimo Administrator y retirada de acceso al modificar la cuenta actual.
+- Ocho E2E conectadas Nginx/FastAPI/PostgreSQL aprobadas en proyecto aislado
+  hdboutique-test, con base tmpfs desde vacio y semilla sintetica existente.
+  El nuevo recorrido prepara departamento/direccion/categoria/talla/tipo,
+  empleado/cuenta, cambia su contrasena, producto/proveedor/costo/oferta/cliente,
+  registra y recibe compra, abre caja con la nueva cuenta y vende por C$99.50.
+  Verifica stock final 1 tras recibir 2 y vender 1.
+- Se corrigio una notificacion de sesion que desmontaba la pantalla del actor
+  al guardar otra cuenta; la regresion valida que la confirmacion se conserve.
+  Cambiar la cuenta propia revalida sesion y notifica a las otras pestanas.
+- Capturas de preparacion, direcciones y cuentas revisadas en escritorio/movil.
+  Entorno local actualizado: /settings y /settings?section=accounts responden 200,
+  /api/v1/users sin sesion 401 y live/ready 200. Solo actualizacion de web;
+  backend y volumen de desarrollo conservados, sin migraciones ni bootstrap.
+- Backend sin cambios: la suite de 255 y su cobertura de Empleados son el hito
+  anterior, no se repitieron en este incremento. Las ocho pruebas conectadas
+  verifican persistencia y permisos reales de los flujos usados por la interfaz.
+
+Alcance funcional de la v1 local cerrado. Los datos reales se preparan por el
+propietario desde la interfaz. No se declara despliegue publico ni se amplian
+los alcances excluidos. Enlaces locales y diff revisados; commits solo locales.
+
 ## Incremento Empleados (29 de octubre de 2026)
 
 API y pantalla /employees, selector minimo integrado en compras/recepcion,

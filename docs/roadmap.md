@@ -3,8 +3,9 @@
 Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
 edicion, consulta y selector operativo; Administrator/Manager gestionan,
 Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
-sobre operaciones. Configuracion inicial permanece pendiente. Este contrato
-actualiza las referencias historicas a empleados pendientes que siguen abajo.
+sobre operaciones. [Configuracion inicial](initial-setup.md) completada posteriormente:
+catalogos, ubicaciones, costes/ofertas y cuentas con los permisos existentes.
+Estos contratos actualizan las referencias historicas pendientes que siguen abajo.
 
 Se trabaja con una sola persona, en Cris-develop y con commits locales. Cada fase
 se inicia por instruccion del usuario, entrega un resultado verificable y se
@@ -12,12 +13,17 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 
 ## Estado de avance
 
+Alcance funcional de la primera version local completado con Empleados y
+[Configuracion inicial](initial-setup.md). Diez pantallas TS/FastAPI. Se conserva
+head 0005 y 30 tablas; datos reales se preparan desde la interfaz, sin semillas.
+Sin despliegue publico ni reapertura de los alcances excluidos.
+
 Incremento posterior al corte solicitado por el usuario: [caja y correccion de
 ventas](cash-register.md), con contado exclusivo en efectivo/transferencia,
 sin abonos/credito en ninguna version. Implementacion agrega revision 0005 y
 sustituye el prototipo de caja. No reabre la migracion SQL Server ni declara
-completada la configuracion inicial. Empleados se completo posteriormente
-segun el contrato enlazado al inicio.
+modificadas las condiciones del corte original. Empleados y Configuracion inicial
+se completaron posteriormente segun los contratos enlazados al inicio.
 
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |
