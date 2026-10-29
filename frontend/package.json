@@ -13,6 +13,7 @@
     "test:legacy": "node --test tests/characterization/services.test.js",
     "test": "npm run test:unit && npm run test:legacy",
     "test:e2e": "playwright test",
+    "test:integration": "playwright test --config playwright.integration.config.ts",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build && npm run test:e2e"
   },
   "dependencies": {

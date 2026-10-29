@@ -25,7 +25,7 @@ services:
     build:
       context: ./backend
       target: development
-    environment:
+    environment: &test_database
       HDB_TEST_DATABASE_HOST: db
       HDB_TEST_DATABASE_PORT: "5432"
       HDB_TEST_DATABASE_NAME: hdboutique_test
@@ -43,3 +43,51 @@ services:
     healthcheck:
       disable: true
     command: ["uv", "run", "--locked", "python", "-m", "pytest", "--run-postgres", "--cov=app", "--cov-report=term-missing"]
+
+  seed:
+    profiles: [integration]
+    image: hdboutique-backend:development
+    environment: *test_database
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["uv", "run", "--locked", "python", "-m", "tests.stabilization_seed"]
+
+  api:
+    profiles: [integration]
+    image: hdboutique-backend:development
+    environment:
+      HDB_ENVIRONMENT: test
+      HDB_BUSINESS_API_ENABLED: "true"
+      HDB_AUTH_ORIGIN: http://127.0.0.1:4173
+      HDB_SESSION_COOKIE_SECURE: "false"
+      HDB_DATABASE_HOST: db
+      HDB_DATABASE_PORT: "5432"
+      HDB_DATABASE_NAME: hdboutique_test
+      HDB_DATABASE_USER: hdboutique_app
+      HDB_DATABASE_PASSWORD: isolated-test-app-password
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    command: ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2).close()"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  browser:
+    profiles: [integration]
+    image: hdboutique-frontend:test
+    init: true
+    shm_size: 1gb
+    environment:
+      HDB_FASTAPI_TARGET: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ["sh", "-c", "npm run build && npm run test:integration"]

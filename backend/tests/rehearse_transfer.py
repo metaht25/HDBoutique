@@ -8,6 +8,7 @@ from data_migration.target import load, read_target, target_engine
 from data_migration.validation import transform
 from tests.integration.conftest import migration_config
 from tests.migration_helpers import synthetic_source
+from tests.rehearsal_helpers import require_isolated_rehearsal
 
 
 def main() -> None:
@@ -19,6 +20,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.database not in ("hdboutique_test", "hdboutique_restore_test"):
         raise RuntimeError("Only synthetic Compose rehearsal databases allowed")
+    require_isolated_rehearsal()
     for suffix in ("HOST", "PORT", "NAME", "USER", "PASSWORD"):
         os.environ["HDB_MIGRATION_DATABASE_" + suffix] = os.environ[
             "HDB_TEST_DATABASE_" + suffix
