@@ -70,9 +70,11 @@ class CustomersService:
                 409, "integrity_conflict", "Record is referenced"
             ) from error
 
-    def list_customer(self, offset: int, limit: int) -> list[Customer]:
+    def list_customer(
+        self, offset: int, limit: int, query: str | None = None
+    ) -> list[Customer]:
         with self.session.begin():
-            return self.repository.list_customer(offset, limit)
+            return self.repository.list_customer(offset, limit, query)
 
     def get_customer(self, record_id: int) -> Customer:
         with self.session.begin():

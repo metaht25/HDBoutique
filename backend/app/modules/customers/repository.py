@@ -1,6 +1,6 @@
 """Concrete customers persistence; callers own the transaction."""
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.modules.customers.models import Customer, CustomerType
@@ -35,13 +35,22 @@ class CustomersRepository:
     def validate_customer_type_references(self, values: dict[str, object]) -> bool:
         return True
 
-    def list_customer(self, offset: int, limit: int) -> list[Customer]:
+    def list_customer(
+        self, offset: int, limit: int, query: str | None = None
+    ) -> list[Customer]:
+        statement = select(Customer)
+        if query:
+            statement = statement.where(
+                or_(
+                    (Customer.first_names + " " + Customer.last_names).icontains(
+                        query, autoescape=True
+                    ),
+                    Customer.phone_number.icontains(query, autoescape=True),
+                )
+            )
         return list(
             self.session.scalars(
-                select(Customer)
-                .order_by(Customer.customer_id)
-                .offset(offset)
-                .limit(limit)
+                statement.order_by(Customer.customer_id).offset(offset).limit(limit)
             )
         )
 

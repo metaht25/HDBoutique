@@ -32,6 +32,11 @@ async function syntheticApi(page: Page, options: {
     }] })
     if (path === '/api/v1/categories') return route.fulfill({ json: [{ category_id: 104, name: 'Ropa' }] })
     if (path === '/api/v1/sizes') return route.fulfill({ json: [{ size_id: 105, name: 'M' }] })
+    if (path === '/api/v1/customers') return route.fulfill({ json: [{ customer_id: 108, first_names: 'Cliente', last_names: 'Sintético',
+      phone_number: '0000000000', address_id: 103, customer_type_id: 107 }] })
+    if (path === '/api/v1/customer-types') return route.fulfill({ json: [{ customer_type_id: 107, name: 'Registrado' }] })
+    if (path === '/api/v1/addresses') return route.fulfill({ json: [{ address_id: 103, department_id: 101, address_line: 'Dirección sintética' }] })
+    if (path === '/api/v1/departments') return route.fulfill({ json: [{ department_id: 101, name: 'Managua' }] })
     if (options.suppliers && path === '/api/proveedores/proveedores/') return route.fulfill({
       json: Array.from({ length: options.suppliers }, (_, index) => ({
         id_proveedor: index + 1, nombreempresa: `Empresa sintética ${index + 1}`,
@@ -60,9 +65,10 @@ for (const [path, label] of routes) {
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(label)
     expect(exceptions).toEqual([])
-    if (path === '/products' || path === '/dashboard') {
+    if (path === '/products' || path === '/dashboard' || path === '/customers') {
       await expect(page.getByText('Cargando pantalla…')).toHaveCount(0)
       if (path === '/products') await expect(page.getByRole('button', { name: 'Guardar producto' })).toBeVisible()
+      else if (path === '/customers') await expect(page.getByRole('button', { name: 'Guardar cliente' })).toBeVisible()
       else await expect(page.getByRole('heading', { name: 'Resumen general' })).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath('screen.png'), fullPage: true })
     }

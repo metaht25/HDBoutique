@@ -6,7 +6,7 @@ import { PageBoundary } from './PageBoundary'
 
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage.jsx'))
 const ProductsPage = lazy(() => import('../features/products/ProductsPage'))
-const CustomersPage = lazy(() => import('../features/customers/CustomersPage.jsx'))
+const CustomersPage = lazy(() => import('../features/customers/CustomersPage'))
 const SalesPage = lazy(() => import('../features/sales/SalesPage.jsx'))
 const PurchasesPage = lazy(() => import('../features/purchases/PurchasesPage.jsx'))
 const SuppliersPage = lazy(() => import('../features/suppliers/SuppliersPage.jsx'))
