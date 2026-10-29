@@ -8,6 +8,7 @@ from app.modules.locations.models import Address, Department, Municipality
 from app.modules.purchases.models import Purchase, PurchaseItem
 from app.modules.purchases.workflow_models import PurchaseItemCost, PurchaseWorkflow
 from app.modules.sales.models import Sale, SaleItem
+from app.modules.sales.workflow_models import SaleWorkflow
 from app.modules.staff.models import Employee
 from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
@@ -25,6 +26,7 @@ __all__ = [
     "PurchaseItem",
     "Sale",
     "SaleItem",
+    "SaleWorkflow",
     "Size",
     "Supplier",
     "SupplierOffering",
