@@ -18,8 +18,11 @@ async function readSession(): Promise<Account | null> {
 }
 
 let pendingRestore: Promise<Account | null> | null = null
-export function restoreSession(): Promise<Account | null> {
-  pendingRestore ??= readSession().finally(() => { pendingRestore = null })
+export function restoreSession(force = false): Promise<Account | null> {
+  if (force || !pendingRestore) {
+    const pending = readSession().finally(() => { if (pendingRestore === pending) pendingRestore = null })
+    pendingRestore = pending
+  }
   return pendingRestore
 }
 

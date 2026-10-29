@@ -107,7 +107,7 @@ it('does not replace a newer login with a late restore response', async () => {
   await userEvent.setup().click(screen.getByRole('button', { name: 'Test login' }))
   await screen.findByText('new-session · Gerencia')
   await act(async () => { releaseRestore(json(account)); await oldRestore })
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
   expect(screen.queryByText('synthetic-manager · Gerencia')).toBeNull()
   expect(screen.getByText('new-session · Gerencia')).toBeDefined()
 })

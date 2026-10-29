@@ -7,6 +7,60 @@ function json(body: unknown, status = 200, headers: Record<string, string> = {})
 }
 
 describe('shared API client', () => {
+  it('refreshes rejected CSRF only on the next explicit write without retrying the first', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(json({ csrf_token: 'old-token' }))
+      .mockResolvedValueOnce(json({ error: { code: 'csrf_failed', message: 'CSRF' } }, 403))
+      .mockResolvedValueOnce(json({ csrf_token: 'fresh-token' })).mockResolvedValueOnce(json({}))
+    vi.stubGlobal('fetch', fetchMock)
+    const client = new ApiClient()
+    await expect(client.request('/api/v1/customers', { method: 'POST' })).rejects.toMatchObject({ status: 403 })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    await client.request('/api/v1/customers', { method: 'POST' })
+    expect(fetchMock.mock.calls[3]?.[1].headers['X-CSRF-Token']).toBe('fresh-token')
+  })
+  it('rejects stale success data when a response body finishes after login', async () => {
+    let finish: (body: unknown) => void = () => undefined
+    const body = new Promise(resolve => { finish = resolve })
+    const fetchMock = vi.fn().mockResolvedValueOnce({ ok: true, status: 200, headers: new Headers(), json: () => body })
+      .mockResolvedValueOnce(json({ csrf_token: 'preauth' }))
+      .mockResolvedValueOnce(json({}, 200, { 'X-CSRF-Token': 'new-login' }))
+    vi.stubGlobal('fetch', fetchMock)
+    const client = new ApiClient()
+    const old = client.request('/api/v1/products').catch(error => error)
+    await Promise.resolve()
+    await client.request('/api/v1/auth/login', { method: 'POST' })
+    finish([{ name: 'Previous account data' }])
+    expect(await old).toMatchObject({ code: 'session_changed' })
+  })
+  it('ignores an old 401 after a new login without clearing the new session', async () => {
+    let finish: (response: Response) => void = () => undefined
+    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve }))
+      .mockResolvedValueOnce(json({ csrf_token: 'preauth' }))
+      .mockResolvedValueOnce(json({}, 200, { 'X-CSRF-Token': 'new-login' }))
+      .mockResolvedValueOnce(json({}))
+    vi.stubGlobal('fetch', fetchMock)
+    const client = new ApiClient(), unauthorized = vi.fn()
+    client.subscribeUnauthorized(unauthorized)
+    const old = client.request('/api/v1/products').catch(error => error)
+    await client.request('/api/v1/auth/login', { method: 'POST' })
+    finish(json({}, 401))
+    expect(await old).toMatchObject({ code: 'session_changed' })
+    expect(unauthorized).not.toHaveBeenCalled()
+    await client.request('/api/v1/customers', { method: 'POST' })
+    expect(fetchMock.mock.calls[3]?.[1].headers['X-CSRF-Token']).toBe('new-login')
+  })
+
+  it('does not send a queued write when the session changes during CSRF preparation', async () => {
+    let finish: (response: Response) => void = () => undefined
+    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve }))
+    vi.stubGlobal('fetch', fetchMock)
+    const client = new ApiClient()
+    const write = client.request('/api/v1/customers', { method: 'POST' }).catch(error => error)
+    client.clearCsrf()
+    finish(json({ csrf_token: 'old-csrf' }))
+    expect(await write).toMatchObject({ code: 'session_changed' })
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
   it('preserves response envelopes, nulls and decimal text with same-origin credentials', async () => {
     const body = { results: [{ unit_price: '199.50', stock: null }], next: null }
     const fetchMock = vi.fn().mockResolvedValue(json(body))
