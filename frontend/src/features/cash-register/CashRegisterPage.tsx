@@ -1,3 +1,4 @@
+import { EmployeeSelect } from '../employees/EmployeeSelect'
 import { useCallback, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
@@ -37,7 +38,7 @@ function CashForm({ userId, linkedEmployee, supervisor, shift, onSaved }: { user
       <SelectField label="Operación de caja" value={action} disabled={command.locked} onChange={event => { setAction(event.target.value); setAmount(''); setReason('') }}>
         {shift ? <><option value="close">Cerrar turno</option>{supervisor && <><option value="deposit">Ingreso de efectivo</option><option value="withdrawal">Retiro de efectivo</option></>}</> : <option value="open">Abrir turno</option>}
       </SelectField>
-      {!shift && <TextField label="ID de empleado responsable" inputMode="numeric" value={employee} disabled={command.locked || linkedEmployee !== null} onChange={event => setEmployee(event.target.value)} />}
+      {!shift && <EmployeeSelect label="Empleado responsable" value={employee} disabled={command.locked || linkedEmployee !== null} onChange={setEmployee} />}
       <TextField label={action === 'open' ? 'Efectivo inicial contado (NIO)' : action === 'close' ? 'Efectivo final contado (NIO)' : 'Importe de efectivo (NIO)'} inputMode="decimal" value={amount} disabled={command.locked} onChange={event => setAmount(event.target.value)} />
       {shift && <TextField label="Motivo / observaciones" maxLength={300} value={reason} disabled={command.locked} onChange={event => setReason(event.target.value)} />}
       {action === 'close' && <p>El servidor concilia el conteo con el efectivo esperado. Si existe diferencia, un administrador o encargado debe cerrar con motivo. El cierre es definitivo.</p>}

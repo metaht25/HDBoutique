@@ -10,6 +10,7 @@ async function backend(page: Page, settings: { lostResponse?: boolean; role?: st
     const req = route.request(), url = new URL(req.url()), path = url.pathname
     requested.push(path)
     if (path === '/api/v1/auth/me') return route.fulfill({ json: { user_id: 1, username: 'synthetic', role: settings.role ?? 'Manager', employee_id: 102, is_active: true } })
+    if (path === '/api/v1/employee-options') return route.fulfill({ json: [{ employee_id: 102, first_names: 'Empleado', last_names: 'Prueba' }] })
     if (path === '/api/v1/auth/csrf') return route.fulfill({ json: { csrf_token: 'csrf-test' } })
     if (path === '/api/v1/cash/shifts') return route.fulfill({ json: [shift] })
     const report = reportingResponse(url, settings.role !== 'Cashier')

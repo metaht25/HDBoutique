@@ -22,6 +22,7 @@ async function syntheticApi(page: Page, options: {
           message: status === 401 ? 'Authentication required' : 'Servicio de sesión no disponible' },
       } })
     }
+    if (path === '/api/v1/employee-options') return route.fulfill({ json: [{ employee_id: 102, first_names: 'Empleado', last_names: 'Prueba' }] })
     if (path === '/api/v1/auth/csrf') return route.fulfill({ json: { csrf_token: 'synthetic-csrf-token' } })
     if (path === '/api/v1/auth/logout') return route.fulfill({ status: 204 })
     const report = reportingResponse(new URL(route.request().url()))

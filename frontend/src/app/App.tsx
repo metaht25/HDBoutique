@@ -7,6 +7,7 @@ import { PageBoundary } from './PageBoundary'
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'))
 const ProductsPage = lazy(() => import('../features/products/ProductsPage'))
 const CustomersPage = lazy(() => import('../features/customers/CustomersPage'))
+const EmployeesPage = lazy(() => import('../features/employees/EmployeesPage'))
 const SalesPage = lazy(() => import('../features/sales/SalesPage'))
 const PurchasesPage = lazy(() => import('../features/purchases/PurchasesPage'))
 const SuppliersPage = lazy(() => import('../features/suppliers/SuppliersPage'))
@@ -26,6 +27,7 @@ export function App() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="customers" element={<CustomersPage />} />
+        <Route path="employees" element={<EmployeesPage />} />
         <Route path="sales" element={<SalesPage />} />
         <Route path="purchases" element={<PurchasesPage />} />
         <Route path="suppliers" element={<SuppliersPage />} />

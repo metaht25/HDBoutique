@@ -1,3 +1,4 @@
+import { EmployeeSelect } from '../employees/EmployeeSelect'
 import { useCallback, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
@@ -30,7 +31,7 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
   const [pending, setPending] = useState<PendingIntent | null>(restored.intent)
   const [party, setParty] = useState(String(restored.intent?.body[sales ? 'customer_id' : 'supplier_id'] ?? ''))
   const [date, setDate] = useState(restored.intent?.body[sales ? 'sale_date' : 'purchase_date'] ?? options.today)
-  const [employee, setEmployee] = useState(String(linkedEmployee ?? restored.intent?.body.employee_id ?? ''))
+  const [employee, setEmployee] = useState(String(linkedEmployee ?? restored.intent?.body.employee_id ?? (kind === 'sales' ? options.shifts[0]?.employee_id : '') ?? ''))
   const [shipping, setShipping] = useState(restored.intent?.body.shipping_cost ?? '0.00')
   const [shiftId, setShiftId] = useState(String(restored.intent?.body.payment?.shift_id ?? options.shifts[0]?.shift_id ?? ''))
   const [method, setMethod] = useState(restored.intent?.body.payment?.method ?? 'cash')
@@ -98,7 +99,7 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
         <SelectField label={sales ? 'Cliente' : 'Proveedor'} value={party} disabled={locked} onChange={event => { setParty(event.target.value); setLines([]); setSelected('') }}>
           <option value="">Selecciona</option>{options.parties.map(row => <option key={row.id} value={row.id}>{row.name} (#{row.id})</option>)}
         </SelectField>
-        <TextField label="ID de empleado existente" inputMode="numeric" value={employee} disabled={locked || linkedEmployee !== null} onChange={event => setEmployee(event.target.value)} />
+        <EmployeeSelect label="Empleado responsable" value={employee} disabled={locked || linkedEmployee !== null} onChange={setEmployee} />
         {!sales && <TextField label="Costo de envío (NIO)" inputMode="decimal" value={shipping} disabled={locked} onChange={event => setShipping(event.target.value)} />}
         {sales && <>
           <SelectField label="Turno de caja" value={shiftId} disabled={locked} onChange={event => { setShiftId(event.target.value); if (linkedEmployee === null) setEmployee(String(options.shifts.find(row => String(row.shift_id) === event.target.value)?.employee_id ?? '')) }}>
@@ -171,7 +172,7 @@ function TransactionsWorkspace({ kind }: { kind: TransactionKind }) {
       <TableContainer label="Detalle de operación"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio histórico NIO</th><th>Subtotal NIO</th></tr></thead>
         <tbody>{selected.items.map(line => <tr key={line.line_id}><td>{line.product_id === null ? `Proveedor-producto #${line.supplier_product_id}` : `Producto #${line.product_id}`}</td><td>{line.quantity}</td><td>{reportMoney(line.unit_price)}</td><td>{reportMoney(line.subtotal)}</td></tr>)}</tbody>
       </table></TableContainer>
-      {!sales && selected.status === 'registered' && <><TextField label="ID de empleado para recepción" inputMode="numeric" disabled={receiving || account.employee_id !== null} value={account.employee_id ?? employee} onChange={event => setEmployee(event.target.value)} />
+      {!sales && selected.status === 'registered' && <><EmployeeSelect label="Empleado para recepción" disabled={receiving || account.employee_id !== null} value={account.employee_id ?? employee} onChange={setEmployee} />
         <button disabled={receiving} type="button" onClick={() => void receive()}>{receiving ? 'Recibiendo…' : 'Confirmar recepción completa'}</button></>}
       {!sales && selected.status === null && <p>Compra histórica: requiere conciliación; no se infiere recepción ni coste faltante.</p>}
       {sales && (selected.status === 'confirmed' || selected.status === 'voided') && selected.payment && account.role !== 'Cashier' && <VoidSaleForm key={`${account.user_id}:${selected.id}`} userId={account.user_id} sale={selected} shifts={options?.data?.shifts ?? []}
