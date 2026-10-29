@@ -12,7 +12,12 @@ class InventoryService:
         self.repository = InventoryRepository(session)
 
     def list_movements(
-        self, offset: int, limit: int, product_id: int | None, purchase_id: int | None
+        self,
+        offset: int,
+        limit: int,
+        product_id: int | None,
+        purchase_id: int | None,
+        sale_id: int | None = None,
     ) -> list[MovementRead]:
         with self.session.begin():
             return [
@@ -22,5 +27,6 @@ class InventoryService:
                     limit,
                     product_id,
                     purchase_id,
+                    sale_id,
                 )
             ]

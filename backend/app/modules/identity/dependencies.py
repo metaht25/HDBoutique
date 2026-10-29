@@ -94,3 +94,12 @@ def purchasing_identity(principal: CurrentIdentity) -> Principal:
 
 
 PurchasingIdentity = Annotated[Principal, Depends(purchasing_identity)]
+
+
+def sales_identity(principal: CurrentIdentity) -> Principal:
+    if principal.role not in {"Administrator", "Manager", "Cashier"}:
+        raise ApplicationError(403, "permission_denied", "Permission denied")
+    return principal
+
+
+SalesIdentity = Annotated[Principal, Depends(sales_identity)]

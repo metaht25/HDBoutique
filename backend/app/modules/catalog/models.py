@@ -1,4 +1,4 @@
-"""Catalog storage; both legacy stock values remain uninterpreted."""
+"""Catalog storage with available stock and a separate preserved legacy count."""
 
 from decimal import Decimal
 
@@ -33,7 +33,7 @@ class Product(Base):
         ForeignKey("sizes.size_id", ondelete="RESTRICT"), index=True
     )
     name: Mapped[str | None] = mapped_column(String(40))
-    # B01 pendiente: no confundir estos campos con disponible/reservado/minimo.
+    # B01: cantidadstock se conserva; solo legacy_stock es disponible.
     legacy_stock_quantity: Mapped[int | None]
     legacy_stock: Mapped[int | None]
     unit_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))

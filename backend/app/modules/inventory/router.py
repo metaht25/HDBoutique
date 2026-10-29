@@ -1,4 +1,4 @@
-"""Inventory receipt history restricted to purchasing roles."""
+"""Inventory history restricted to Administrator and Manager."""
 
 from typing import Annotated
 
@@ -25,7 +25,8 @@ def list_movements(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     product_id: Annotated[int | None, Query(gt=0)] = None,
     purchase_id: Annotated[int | None, Query(gt=0)] = None,
+    sale_id: Annotated[int | None, Query(gt=0)] = None,
 ) -> list[MovementRead]:
     return InventoryService(session).list_movements(
-        offset, limit, product_id, purchase_id
+        offset, limit, product_id, purchase_id, sale_id
     )

@@ -1,4 +1,4 @@
-"""Inventory persistence; all writes share the purchase receipt transaction."""
+"""Inventory persistence; writes share their purchase or sale transaction."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.modules.catalog.models import Product
 from app.modules.inventory.models import InventoryMovement
 from app.modules.purchases.models import PurchaseItem
+from app.modules.sales.models import SaleItem
 
 
 class InventoryRepository:
@@ -28,7 +29,12 @@ class InventoryRepository:
         self.session.flush()
 
     def list_movements(
-        self, offset: int, limit: int, product_id: int | None, purchase_id: int | None
+        self,
+        offset: int,
+        limit: int,
+        product_id: int | None,
+        purchase_id: int | None,
+        sale_id: int | None = None,
     ) -> list[InventoryMovement]:
         statement = select(InventoryMovement)
         if product_id is not None:
@@ -37,6 +43,8 @@ class InventoryRepository:
             statement = statement.join(PurchaseItem).where(
                 PurchaseItem.purchase_id == purchase_id
             )
+        if sale_id is not None:
+            statement = statement.join(SaleItem).where(SaleItem.sale_id == sale_id)
         return list(
             self.session.scalars(
                 statement.order_by(
