@@ -1,27 +1,29 @@
-.reportes-page {
+.scope { min-width: 0; }
+
+.scope :global(.reportes-page) {
   max-width: 1180px;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.reportes-header {
+.scope :global(.reportes-header) {
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
 
-.reportes-header h2 {
+.scope :global(.reportes-header h2) {
   margin-bottom: 8px;
   color: #111827;
 }
 
-.reportes-header p {
+.scope :global(.reportes-header p) {
   margin-bottom: 0;
   color: #6b7280;
 }
 
-.reportes-filtros {
+.scope :global(.reportes-filtros) {
   display: grid;
   grid-template-columns: 1.3fr 1fr 1fr auto;
   gap: 12px;
@@ -32,20 +34,20 @@
   background-color: #f8fafc;
 }
 
-.reportes-filtros label {
+.scope :global(.reportes-filtros label) {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.reportes-filtros span {
+.scope :global(.reportes-filtros span) {
   color: #374151;
   font-size: 13px;
   font-weight: 700;
 }
 
-.reportes-filtros select,
-.reportes-filtros input {
+.scope :global(.reportes-filtros select),
+.scope :global(.reportes-filtros input) {
   width: 100%;
   min-height: 40px;
   padding: 9px 11px;
@@ -56,14 +58,14 @@
   font-size: 14px;
 }
 
-.reportes-filtros select:focus,
-.reportes-filtros input:focus {
+.scope :global(.reportes-filtros select:focus),
+.scope :global(.reportes-filtros input:focus) {
   border-color: #2563eb;
   outline: none;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-.reportes-boton-secundario {
+.scope :global(.reportes-boton-secundario) {
   min-height: 40px;
   padding: 9px 13px;
   border: 1px solid #d1d5db;
@@ -74,17 +76,17 @@
   cursor: pointer;
 }
 
-.reportes-boton-secundario:hover {
+.scope :global(.reportes-boton-secundario:hover) {
   background-color: #f3f4f6;
 }
 
-.reportes-kpis {
+.scope :global(.reportes-kpis) {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
-.reportes-kpi {
+.scope :global(.reportes-kpi) {
   min-height: 86px;
   padding: 14px;
   border: 1px solid #e5e7eb;
@@ -96,63 +98,63 @@
   gap: 7px;
 }
 
-.reportes-kpi span {
+.scope :global(.reportes-kpi span) {
   color: #6b7280;
   font-size: 13px;
 }
 
-.reportes-kpi strong {
+.scope :global(.reportes-kpi strong) {
   color: #111827;
   font-size: 22px;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
-.reportes-kpi.principal strong {
+.scope :global(.reportes-kpi.principal strong) {
   color: #047857;
 }
 
-.reportes-analisis {
+.scope :global(.reportes-analisis) {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
 
-.reportes-insight,
-.reportes-panel {
+.scope :global(.reportes-insight),
+.scope :global(.reportes-panel) {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-.reportes-insight {
+.scope :global(.reportes-insight) {
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.reportes-insight span {
+.scope :global(.reportes-insight span) {
   color: #6b7280;
   font-size: 13px;
   font-weight: 700;
 }
 
-.reportes-insight strong {
+.scope :global(.reportes-insight strong) {
   color: #111827;
   font-size: 26px;
   line-height: 1.15;
 }
 
-.reportes-insight p {
+.scope :global(.reportes-insight p) {
   color: #4b5563;
   font-size: 14px;
   line-height: 1.45;
 }
 
-.reportes-chart-slot {
+.scope :global(.reportes-chart-slot) {
   min-height: 120px;
   border: 1px dashed #cbd5e1;
   border-radius: 8px;
@@ -164,16 +166,16 @@
   justify-content: center;
 }
 
-.reportes-chart-slot span {
+.scope :global(.reportes-chart-slot span) {
   color: #64748b;
   font-size: 13px;
 }
 
-.reportes-panel {
+.scope :global(.reportes-panel) {
   overflow: hidden;
 }
 
-.reportes-panel-header {
+.scope :global(.reportes-panel-header) {
   min-height: 68px;
   padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
@@ -183,45 +185,45 @@
   gap: 12px;
 }
 
-.reportes-panel-header h3 {
+.scope :global(.reportes-panel-header h3) {
   color: #111827;
   font-size: 18px;
 }
 
-.reportes-panel-header span {
+.scope :global(.reportes-panel-header span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.reportes-table-wrap {
+.scope :global(.reportes-table-wrap) {
   width: 100%;
   overflow-x: auto;
 }
 
-.reportes-panel table {
+.scope :global(.reportes-panel table) {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-.reportes-panel thead {
+.scope :global(.reportes-panel thead) {
   background-color: #f9fafb;
 }
 
-.reportes-panel th,
-.reportes-panel td {
+.scope :global(.reportes-panel th),
+.scope :global(.reportes-panel td) {
   padding: 9px 12px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
   vertical-align: middle;
 }
 
-.reportes-panel th {
+.scope :global(.reportes-panel th) {
   color: #374151;
   font-size: 13px;
 }
 
-.reportes-panel td {
+.scope :global(.reportes-panel td) {
   color: #111827;
   font-size: 14px;
   overflow: hidden;
@@ -229,19 +231,19 @@
   white-space: nowrap;
 }
 
-.reportes-panel tbody tr:last-child td {
+.scope :global(.reportes-panel tbody tr:last-child td) {
   border-bottom: none;
 }
 
-.reportes-panel tbody tr:hover {
+.scope :global(.reportes-panel tbody tr:hover) {
   background-color: #f9fafb;
 }
 
-.reportes-texto-fuerte {
+.scope :global(.reportes-texto-fuerte) {
   font-weight: 700;
 }
 
-.reportes-badge {
+.scope :global(.reportes-badge) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -252,65 +254,65 @@
   font-weight: 700;
 }
 
-.reportes-badge.warning {
+.scope :global(.reportes-badge.warning) {
   background-color: #fef3c7;
   color: #92400e;
 }
 
-.reportes-clientes-resumen {
+.scope :global(.reportes-clientes-resumen) {
   padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
   background-color: #f8fafc;
 }
 
-.reportes-clientes-resumen div {
+.scope :global(.reportes-clientes-resumen div) {
   display: inline-flex;
   align-items: baseline;
   gap: 12px;
 }
 
-.reportes-clientes-resumen span {
+.scope :global(.reportes-clientes-resumen span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.reportes-clientes-resumen strong {
+.scope :global(.reportes-clientes-resumen strong) {
   color: #111827;
   font-size: 24px;
 }
 
-.reportes-estado {
+.scope :global(.reportes-estado) {
   padding: 22px;
   color: #6b7280;
   text-align: center;
 }
 
-.error {
+.scope :global(.error) {
   color: #b91c1c;
   font-weight: bold;
 }
 
 @media (max-width: 1180px) {
-  .reportes-filtros {
+  .scope :global(.reportes-filtros) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .reportes-kpis {
+  .scope :global(.reportes-kpis) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .reportes-analisis {
+  .scope :global(.reportes-analisis) {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
-  .reportes-filtros,
-  .reportes-kpis {
+  .scope :global(.reportes-filtros),
+  .scope :global(.reportes-kpis) {
     grid-template-columns: 1fr;
   }
 
-  .reportes-panel-header {
+  .scope :global(.reportes-panel-header) {
     align-items: flex-start;
     flex-direction: column;
   }

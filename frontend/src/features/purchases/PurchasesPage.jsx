@@ -1,3 +1,6 @@
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
 import {
   obtenerCompras,
@@ -6,8 +9,8 @@ import {
   obtenerProductosCompras,
   obtenerProductosProveedoresCompras,
   obtenerProveedoresCompras,
-} from '../services/comprasService'
-import './Compras.css'
+} from './legacyApi.js'
+import styles from './PurchasesPage.module.css'
 
 function obtenerLista(data) {
   if (Array.isArray(data)) {
@@ -167,8 +170,8 @@ function Compras() {
         setProductosProveedores(obtenerLista(productosProveedoresData))
         setProductos(obtenerLista(productosData))
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar las compras')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar las compras'))
       } finally {
         setCargando(false)
       }
@@ -215,7 +218,7 @@ function Compras() {
   if (cargando) {
     return (
       <div className="compras-page">
-        <div className="compras-estado">Cargando compras...</div>
+        <LoadingState>Cargando compras...</LoadingState>
       </div>
     )
   }
@@ -223,7 +226,7 @@ function Compras() {
   if (error) {
     return (
       <div className="compras-page">
-        <div className="compras-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -280,7 +283,7 @@ function Compras() {
               : 'No se encontraron compras con esa busqueda.'}
           </div>
         ) : (
-          <table>
+          <TableContainer><table>
             <thead>
               <tr>
                 <th>ID compra</th>
@@ -328,7 +331,7 @@ function Compras() {
                 )
               })}
             </tbody>
-          </table>
+          </table></TableContainer>
         )}
       </div>
 
@@ -351,7 +354,7 @@ function Compras() {
             <div className="compras-estado">No hay detalles registrados para esta compra.</div>
           ) : (
             <div className="detalle-compra-table-container">
-              <table>
+              <TableContainer><table>
                 <thead>
                   <tr>
                     <th>ID detalle</th>
@@ -375,7 +378,7 @@ function Compras() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></TableContainer>
             </div>
           )}
         </section>
@@ -384,4 +387,6 @@ function Compras() {
   )
 }
 
-export default Compras
+export default function PurchasesPage() {
+  return <div className={styles.scope}><Compras /></div>
+}

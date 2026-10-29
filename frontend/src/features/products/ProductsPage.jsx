@@ -1,3 +1,7 @@
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { TextField } from '../../shared/ui/TextField'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
 import {
   actualizarProducto,
@@ -5,8 +9,8 @@ import {
   obtenerCategorias,
   obtenerProductos,
   obtenerTallas,
-} from '../services/productosService'
-import './Productos.css'
+} from './legacyApi.js'
+import styles from './ProductsPage.module.css'
 
 const STOCK_BAJO_LIMITE = 10
 const PRODUCTO_INICIAL = {
@@ -164,8 +168,8 @@ function Productos() {
         setProductos(obtenerListaProductos(data))
         setError('')
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar los productos')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar los productos'))
       } finally {
         setCargando(false)
       }
@@ -185,8 +189,8 @@ function Productos() {
         setCategorias(obtenerListaProductos(categoriasData))
         setTallas(obtenerListaProductos(tallasData))
       } catch (error) {
-        console.error(error)
-        setErrorFormulario('No se pudieron cargar las categorias o tallas')
+
+        setErrorFormulario(getErrorMessage(error, 'No se pudieron cargar las categorias o tallas'))
       }
     }
 
@@ -301,12 +305,10 @@ function Productos() {
       )
       await refrescarProductos()
     } catch (error) {
-      console.error(error)
-      setErrorFormulario(
-        productoEditandoId !== null
+
+      setErrorFormulario(getErrorMessage(error, productoEditandoId !== null
           ? 'No se pudo actualizar el producto'
-          : 'No se pudo guardar el producto',
-      )
+          : 'No se pudo guardar el producto'))
     } finally {
       setGuardando(false)
     }
@@ -345,7 +347,7 @@ function Productos() {
   if (cargando) {
     return (
       <div className="productos-page">
-        <div className="productos-estado">Cargando productos...</div>
+        <LoadingState>Cargando productos...</LoadingState>
       </div>
     )
   }
@@ -353,7 +355,7 @@ function Productos() {
   if (error) {
     return (
       <div className="productos-page">
-        <div className="productos-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -382,19 +384,15 @@ function Productos() {
         </div>
 
         <div className="producto-form-grid">
-          <label>
-            <span>Nombre</span>
-            <input
+          <TextField
+              label="Nombre"
+              error={erroresFormulario.nombre}
               className={erroresFormulario.nombre ? 'input-error' : ''}
               name="nombre"
               type="text"
               value={nuevoProducto.nombre}
               onChange={actualizarNuevoProducto}
-            />
-            {erroresFormulario.nombre && (
-              <small className="field-error">{erroresFormulario.nombre}</small>
-            )}
-          </label>
+          />
 
           <label>
             <span>Cantidad stock</span>
@@ -589,7 +587,7 @@ function Productos() {
               : 'No se encontraron productos con esos filtros.'}
           </div>
         ) : (
-          <table>
+          <TableContainer><table>
             <thead>
               <tr>
                 <th>ID</th>
@@ -661,11 +659,13 @@ function Productos() {
                 )
               })}
             </tbody>
-          </table>
+          </table></TableContainer>
         )}
       </div>
     </div>
   )
 }
 
-export default Productos
+export default function ProductsPage() {
+  return <div className={styles.scope}><Productos /></div>
+}

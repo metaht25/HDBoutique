@@ -1,3 +1,6 @@
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { ApiError, getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
 import {
   crearDetalleVenta,
@@ -7,8 +10,8 @@ import {
   obtenerEmpleadosVentas,
   obtenerProductosVentas,
   obtenerVentas,
-} from '../services/ventasService'
-import './Ventas.css'
+} from './legacyApi.js'
+import styles from './SalesPage.module.css'
 
 function obtenerLista(data) {
   if (Array.isArray(data)) {
@@ -178,8 +181,8 @@ function Ventas() {
         setDetallesVentas(obtenerLista(detallesVentasData))
         setProductos(obtenerLista(productosData))
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar las ventas')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar las ventas'))
       } finally {
         setCargando(false)
       }
@@ -390,7 +393,7 @@ function Ventas() {
       const idVentaCreada = obtenerIdVentaCreada(ventaCreada)
 
       if (!idVentaCreada) {
-        throw new Error('La venta se creo, pero no se recibio el ID de venta.')
+        throw new ApiError(502, 'invalid_response', 'La venta se creo, pero no se recibio el ID de venta.')
       }
 
       for (const producto of productosVenta) {
@@ -414,9 +417,9 @@ function Ventas() {
       setMostrarFormulario(false)
       setVentaSeleccionadaId(idVentaCreada)
     } catch (error) {
-      console.error(error)
+
       setErroresFormulario([
-        error.message || 'No se pudo guardar la venta. Revise los datos e intente nuevamente.',
+        getErrorMessage(error, 'No se pudo guardar la venta. Revise los datos e intente nuevamente.'),
       ])
     } finally {
       setGuardandoVenta(false)
@@ -426,7 +429,7 @@ function Ventas() {
   if (cargando) {
     return (
       <div className="ventas-page">
-        <div className="ventas-estado">Cargando ventas...</div>
+        <LoadingState>Cargando ventas...</LoadingState>
       </div>
     )
   }
@@ -434,7 +437,7 @@ function Ventas() {
   if (error) {
     return (
       <div className="ventas-page">
-        <div className="ventas-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -597,7 +600,7 @@ function Ventas() {
               {productosVenta.length === 0 ? (
                 <div className="ventas-estado">Agregue productos para calcular el total.</div>
               ) : (
-                <table>
+                <TableContainer><table>
                   <thead>
                     <tr>
                       <th>Producto</th>
@@ -627,7 +630,7 @@ function Ventas() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></TableContainer>
               )}
             </div>
 
@@ -682,7 +685,7 @@ function Ventas() {
               : 'No se encontraron ventas con esos filtros.'}
           </div>
         ) : (
-          <table>
+          <TableContainer><table>
             <thead>
               <tr>
                 <th>ID venta</th>
@@ -718,7 +721,7 @@ function Ventas() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></TableContainer>
         )}
       </div>
 
@@ -741,7 +744,7 @@ function Ventas() {
             <div className="ventas-estado">No hay detalles registrados para esta venta.</div>
           ) : (
             <div className="detalle-venta-table-container">
-              <table>
+              <TableContainer><table>
                 <thead>
                   <tr>
                     <th>Producto</th>
@@ -769,7 +772,7 @@ function Ventas() {
                     )
                   })}
                 </tbody>
-              </table>
+              </table></TableContainer>
             </div>
           )}
         </section>
@@ -778,4 +781,6 @@ function Ventas() {
   )
 }
 
-export default Ventas
+export default function SalesPage() {
+  return <div className={styles.scope}><Ventas /></div>
+}

@@ -68,6 +68,8 @@ for (const [request, path] of readCases) {
     const responseBody = [exampleFor(path)]
     const fetchMock = context.mock.method(globalThis, 'fetch', async () => ({
       ok: true,
+      status: 200,
+      headers: new Headers(),
       json: async () => responseBody,
     }))
 
@@ -87,6 +89,8 @@ for (const [request, path, method] of writeCases) {
     assert.ok(ignoredId)
     const fetchMock = context.mock.method(globalThis, 'fetch', async () => ({
       ok: true,
+      status: 200,
+      headers: new Headers(),
       json: async () => responseBody,
     }))
 
@@ -104,11 +108,12 @@ for (const [request, path, method] of writeCases) {
   })
 }
 
-test('existing services reject unsuccessful HTTP responses before reading JSON', async (context) => {
+test('services read backend errors and reject unsuccessful HTTP responses', async (context) => {
   let jsonCalls = 0
   context.mock.method(globalThis, 'fetch', async () => ({
     ok: false,
     status: 400,
+    headers: new Headers(),
     json: async () => {
       jsonCalls += 1
       return { detail: 'Synthetic rejection' }
@@ -125,7 +130,7 @@ test('existing services reject unsuccessful HTTP responses before reading JSON',
       Error,
     )
   }
-  assert.equal(jsonCalls, 0)
+  assert.equal(jsonCalls, readCases.length + writeCases.length)
 })
 
 test('network failures are propagated to callers', async (context) => {
@@ -150,7 +155,7 @@ test('paginated envelopes are passed through without unwrapping results', async 
     previous: null,
     results: [exampleFor('/api/productos/productos/')],
   }
-  context.mock.method(globalThis, 'fetch', async () => ({ ok: true, json: async () => page }))
+  context.mock.method(globalThis, 'fetch', async () => ({ ok: true, status: 200, headers: new Headers(), json: async () => page }))
   assert.deepEqual(await products.obtenerProductos(), page)
 })
 

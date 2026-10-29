@@ -1,33 +1,35 @@
-.dashboard {
+.scope { min-width: 0; }
+
+.scope :global(.dashboard) {
   max-width: 1180px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.dashboard-header {
+.scope :global(.dashboard-header) {
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
 
-.dashboard h2 {
+.scope :global(.dashboard h2) {
   margin-bottom: 8px;
   color: #111827;
 }
 
-.dashboard p {
+.scope :global(.dashboard p) {
   margin-bottom: 0;
   color: #6b7280;
 }
 
-.dashboard-cards {
+.scope :global(.dashboard-cards) {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 14px;
 }
 
-.dashboard-card {
+.scope :global(.dashboard-card) {
   background-color: white;
   border: 1px solid #e5e7eb;
   padding: 16px;
@@ -39,29 +41,29 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-.dashboard-card span {
+.scope :global(.dashboard-card span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.dashboard-card strong {
+.scope :global(.dashboard-card strong) {
   color: #111827;
   font-size: 24px;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
-.dashboard-card.alerta strong {
+.scope :global(.dashboard-card.alerta strong) {
   color: #b45309;
 }
 
-.dashboard-secondary-cards {
+.scope :global(.dashboard-secondary-cards) {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
-.dashboard-secondary-card {
+.scope :global(.dashboard-secondary-card) {
   background-color: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -73,24 +75,24 @@
   padding: 14px 16px;
 }
 
-.dashboard-secondary-card span {
+.scope :global(.dashboard-secondary-card span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.dashboard-secondary-card strong {
+.scope :global(.dashboard-secondary-card strong) {
   color: #111827;
   font-size: 22px;
 }
 
-.dashboard-tables {
+.scope :global(.dashboard-tables) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
   gap: 14px;
 }
 
-.dashboard-panel {
+.scope :global(.dashboard-panel) {
   background-color: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -98,7 +100,7 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-.dashboard-panel-header {
+.scope :global(.dashboard-panel-header) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,40 +110,40 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.dashboard-panel-header h3 {
+.scope :global(.dashboard-panel-header h3) {
   color: #111827;
   font-size: 17px;
 }
 
-.dashboard-panel-header span {
+.scope :global(.dashboard-panel-header span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.dashboard-panel table {
+.scope :global(.dashboard-panel table) {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-.dashboard-panel thead {
+.scope :global(.dashboard-panel thead) {
   background-color: #f9fafb;
 }
 
-.dashboard-panel th,
-.dashboard-panel td {
+.scope :global(.dashboard-panel th),
+.scope :global(.dashboard-panel td) {
   padding: 10px 14px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
   vertical-align: middle;
 }
 
-.dashboard-panel th {
+.scope :global(.dashboard-panel th) {
   color: #374151;
   font-size: 14px;
 }
 
-.dashboard-panel td {
+.scope :global(.dashboard-panel td) {
   color: #111827;
   font-size: 14px;
   overflow: hidden;
@@ -149,19 +151,19 @@
   white-space: nowrap;
 }
 
-.dashboard-panel tbody tr:last-child td {
+.scope :global(.dashboard-panel tbody tr:last-child td) {
   border-bottom: none;
 }
 
-.dashboard-panel tbody tr:hover {
+.scope :global(.dashboard-panel tbody tr:hover) {
   background-color: #f9fafb;
 }
 
-.dashboard-producto {
+.scope :global(.dashboard-producto) {
   font-weight: 600;
 }
 
-.dashboard-badge {
+.scope :global(.dashboard-badge) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -172,48 +174,48 @@
   font-weight: 700;
 }
 
-.dashboard-badge.warning {
+.scope :global(.dashboard-badge.warning) {
   background-color: #fef3c7;
   color: #92400e;
 }
 
-.dashboard-estado {
+.scope :global(.dashboard-estado) {
   padding: 22px;
   color: #6b7280;
   text-align: center;
 }
 
-.error {
+.scope :global(.error) {
   color: #b91c1c;
   font-weight: bold;
 }
 
 @media (max-width: 1180px) {
-  .dashboard-cards {
+  .scope :global(.dashboard-cards) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (max-width: 1000px) {
-  .dashboard-tables {
+  .scope :global(.dashboard-tables) {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-secondary-cards {
+  .scope :global(.dashboard-secondary-cards) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 640px) {
-  .dashboard-cards {
+  .scope :global(.dashboard-cards) {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-secondary-cards {
+  .scope :global(.dashboard-secondary-cards) {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-panel-header {
+  .scope :global(.dashboard-panel-header) {
     align-items: flex-start;
     flex-direction: column;
   }

@@ -1,3 +1,6 @@
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
 import {
   actualizarCliente,
@@ -7,8 +10,8 @@ import {
   obtenerClientes,
   obtenerMunicipios,
   obtenerTiposClientes,
-} from '../services/clientesService'
-import './Clientes.css'
+} from './legacyApi.js'
+import styles from './CustomersPage.module.css'
 
 const CLIENTE_INICIAL = {
   nombres: '',
@@ -238,8 +241,8 @@ function Clientes() {
         setDepartamentos(obtenerLista(departamentosData))
         setMunicipios(obtenerLista(municipiosData))
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar los clientes')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar los clientes'))
       } finally {
         setCargando(false)
       }
@@ -382,8 +385,8 @@ function Clientes() {
             id_municipio: Number(direccionFormulario.id_municipio),
           })
         } catch (error) {
-          console.error(error)
-          setErrorFormulario('No se pudo crear la direccion del cliente.')
+
+          setErrorFormulario(getErrorMessage(error, 'No se pudo crear la direccion del cliente.'))
           return
         }
 
@@ -400,8 +403,9 @@ function Clientes() {
             id_direccion: Number(idDireccion),
           })
         } catch (error) {
-          console.error(error)
-          setErrorFormulario('La direccion fue creada, pero no se pudo crear el cliente.')
+
+          setErrorFormulario('La direccion fue creada, pero no se pudo crear el cliente. '
+            + getErrorMessage(error, ''))
           return
         }
       }
@@ -417,12 +421,10 @@ function Clientes() {
       )
       await refrescarClientes()
     } catch (error) {
-      console.error(error)
-      setErrorFormulario(
-        esEdicion
+
+      setErrorFormulario(getErrorMessage(error, esEdicion
           ? 'No se pudo actualizar el cliente'
-          : 'No se pudo guardar el cliente',
-      )
+          : 'No se pudo guardar el cliente'))
     } finally {
       setGuardando(false)
     }
@@ -456,7 +458,7 @@ function Clientes() {
   if (cargando) {
     return (
       <div className="clientes-page">
-        <div className="clientes-estado">Cargando clientes...</div>
+        <LoadingState>Cargando clientes...</LoadingState>
       </div>
     )
   }
@@ -464,7 +466,7 @@ function Clientes() {
   if (error) {
     return (
       <div className="clientes-page">
-        <div className="clientes-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -720,7 +722,7 @@ function Clientes() {
               : 'No se encontraron clientes con esa busqueda.'}
           </div>
         ) : (
-          <table>
+          <TableContainer><table>
             <thead>
               <tr>
                 <th>ID</th>
@@ -784,11 +786,13 @@ function Clientes() {
                 )
               })}
             </tbody>
-          </table>
+          </table></TableContainer>
         )}
       </div>
     </div>
   )
 }
 
-export default Clientes
+export default function CustomersPage() {
+  return <div className={styles.scope}><Clientes /></div>
+}

@@ -1,6 +1,10 @@
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { Pagination } from '../../shared/ui/Pagination'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
-import { obtenerProveedores } from '../services/proveedoresService'
-import './Proveedores.css'
+import { obtenerProveedores } from './legacyApi.js'
+import styles from './SuppliersPage.module.css'
 
 function obtenerLista(data) {
   if (Array.isArray(data)) {
@@ -47,6 +51,7 @@ function Proveedores() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     async function cargarProveedores() {
@@ -55,8 +60,8 @@ function Proveedores() {
 
         setProveedores(obtenerLista(proveedoresData))
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar los proveedores')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar los proveedores'))
       } finally {
         setCargando(false)
       }
@@ -82,10 +87,14 @@ function Proveedores() {
     return terminoBusqueda ? datosBusqueda.includes(terminoBusqueda) : true
   })
 
+  const pageCount = Math.max(1, Math.ceil(proveedoresFiltrados.length / 20))
+  const currentPage = Math.min(page, pageCount)
+  const visibleSuppliers = proveedoresFiltrados.slice((currentPage - 1) * 20, currentPage * 20)
+
   if (cargando) {
     return (
       <div className="proveedores-page">
-        <div className="proveedores-estado">Cargando proveedores...</div>
+        <LoadingState>Cargando proveedores...</LoadingState>
       </div>
     )
   }
@@ -93,7 +102,7 @@ function Proveedores() {
   if (error) {
     return (
       <div className="proveedores-page">
-        <div className="proveedores-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -132,7 +141,7 @@ function Proveedores() {
             type="search"
             placeholder="Empresa, contacto o telefono"
             value={busqueda}
-            onChange={(event) => setBusqueda(event.target.value)}
+            onChange={(event) => { setBusqueda(event.target.value); setPage(1) }}
           />
         </label>
       </div>
@@ -145,7 +154,7 @@ function Proveedores() {
               : 'No se encontraron proveedores con esa busqueda.'}
           </div>
         ) : (
-          <table>
+          <TableContainer><table>
             <thead>
               <tr>
                 <th>ID proveedor</th>
@@ -158,7 +167,7 @@ function Proveedores() {
             </thead>
 
             <tbody>
-              {proveedoresFiltrados.map((proveedor) => (
+              {visibleSuppliers.map((proveedor) => (
                 <tr key={obtenerIdProveedor(proveedor)}>
                   <td>{obtenerIdProveedor(proveedor)}</td>
                   <td className="proveedor-empresa">{obtenerNombreEmpresa(proveedor)}</td>
@@ -169,11 +178,14 @@ function Proveedores() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></TableContainer>
         )}
       </div>
+      {pageCount > 1 && <Pagination page={currentPage} pageCount={pageCount} onPageChange={setPage} />}
     </div>
   )
 }
 
-export default Proveedores
+export default function SuppliersPage() {
+  return <div className={styles.scope}><Proveedores /></div>
+}

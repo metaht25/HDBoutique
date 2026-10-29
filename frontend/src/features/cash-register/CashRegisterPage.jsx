@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './Caja.css'
+import styles from './CashRegisterPage.module.css'
 
 const CAJA_INICIAL = {
   montoInicial: '',
@@ -206,4 +206,6 @@ function Caja() {
   )
 }
 
-export default Caja
+export default function CashRegisterPage() {
+  return <div className={styles.scope}><Caja /></div>
+}

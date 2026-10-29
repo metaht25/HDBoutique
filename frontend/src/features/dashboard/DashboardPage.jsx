@@ -1,3 +1,7 @@
+import { Card } from '../../shared/ui/Card'
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
 import {
   obtenerClientesDashboard,
@@ -5,8 +9,8 @@ import {
   obtenerProductosDashboard,
   obtenerProveedoresDashboard,
   obtenerVentasDashboard,
-} from '../services/dashboardService'
-import './Dashboard.css'
+} from './legacyApi.js'
+import styles from './DashboardPage.module.css'
 
 const STOCK_BAJO_LIMITE = 10
 
@@ -78,8 +82,8 @@ function Dashboard() {
         setCompras(obtenerLista(comprasData))
         setProveedores(obtenerLista(proveedoresData))
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar los datos del dashboard')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar los datos del dashboard'))
       } finally {
         setCargando(false)
       }
@@ -104,7 +108,7 @@ function Dashboard() {
   if (cargando) {
     return (
       <div className="dashboard">
-        <div className="dashboard-estado">Cargando dashboard...</div>
+        <LoadingState>Cargando dashboard...</LoadingState>
       </div>
     )
   }
@@ -112,7 +116,7 @@ function Dashboard() {
   if (error) {
     return (
       <div className="dashboard">
-        <div className="dashboard-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -127,35 +131,17 @@ function Dashboard() {
       </div>
 
       <div className="dashboard-cards">
-        <div className="dashboard-card">
-          <span>Total productos</span>
-          <strong>{productos.length}</strong>
-        </div>
+        <Card label="Total productos">{productos.length}</Card>
 
-        <div className="dashboard-card">
-          <span>Total clientes</span>
-          <strong>{clientes.length}</strong>
-        </div>
+        <Card label="Total clientes">{clientes.length}</Card>
 
-        <div className="dashboard-card">
-          <span>Total ventas</span>
-          <strong>{ventas.length}</strong>
-        </div>
+        <Card label="Total ventas">{ventas.length}</Card>
 
-        <div className="dashboard-card">
-          <span>Total proveedores</span>
-          <strong>{proveedores.length}</strong>
-        </div>
+        <Card label="Total proveedores">{proveedores.length}</Card>
 
-        <div className="dashboard-card">
-          <span>Total vendido</span>
-          <strong>{formatearMoneda(totalVendido)}</strong>
-        </div>
+        <Card label="Total vendido">{formatearMoneda(totalVendido)}</Card>
 
-        <div className="dashboard-card alerta">
-          <span>Productos bajo stock</span>
-          <strong>{productosBajoStock.length}</strong>
-        </div>
+        <Card label="Productos bajo stock" attention>{productosBajoStock.length}</Card>
       </div>
 
       <div className="dashboard-secondary-cards">
@@ -175,7 +161,7 @@ function Dashboard() {
           {ultimasVentas.length === 0 ? (
             <div className="dashboard-estado">No hay ventas registradas.</div>
           ) : (
-            <table>
+            <TableContainer><table>
               <thead>
                 <tr>
                   <th>ID venta</th>
@@ -193,7 +179,7 @@ function Dashboard() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></TableContainer>
           )}
         </section>
 
@@ -206,7 +192,7 @@ function Dashboard() {
           {productosBajoStockTabla.length === 0 ? (
             <div className="dashboard-estado">No hay productos bajo stock.</div>
           ) : (
-            <table>
+            <TableContainer><table>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -228,7 +214,7 @@ function Dashboard() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></TableContainer>
           )}
         </section>
       </div>
@@ -237,4 +223,6 @@ function Dashboard() {
   )
 }
 
-export default Dashboard
+export default function DashboardPage() {
+  return <div className={styles.scope}><Dashboard /></div>
+}

@@ -1,8 +1,10 @@
-.clientes-page {
+.scope { min-width: 0; }
+
+.scope :global(.clientes-page) {
   max-width: 1180px;
 }
 
-.clientes-header {
+.scope :global(.clientes-header) {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -10,17 +12,17 @@
   margin-bottom: 18px;
 }
 
-.clientes-page h2 {
+.scope :global(.clientes-page h2) {
   margin-bottom: 8px;
   color: #111827;
 }
 
-.clientes-page p {
+.scope :global(.clientes-page p) {
   margin-bottom: 0;
   color: #6b7280;
 }
 
-.nuevo-cliente-button {
+.scope :global(.nuevo-cliente-button) {
   min-height: 42px;
   border: none;
   border-radius: 8px;
@@ -32,11 +34,11 @@
   padding: 0 16px;
 }
 
-.nuevo-cliente-button:hover {
+.scope :global(.nuevo-cliente-button:hover) {
   background-color: #111827;
 }
 
-.cliente-form {
+.scope :global(.cliente-form) {
   background-color: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -45,45 +47,45 @@
   padding: 18px;
 }
 
-.cliente-form.editando {
+.scope :global(.cliente-form.editando) {
   border-color: #2563eb;
 }
 
-.cliente-form-header {
+.scope :global(.cliente-form-header) {
   margin-bottom: 16px;
 }
 
-.cliente-form-header h3 {
+.scope :global(.cliente-form-header h3) {
   color: #111827;
   font-size: 18px;
   margin-bottom: 6px;
 }
 
-.cliente-form-header span {
+.scope :global(.cliente-form-header span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.cliente-form-grid {
+.scope :global(.cliente-form-grid) {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
-.cliente-form label {
+.scope :global(.cliente-form label) {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.cliente-form label span {
+.scope :global(.cliente-form label span) {
   color: #374151;
   font-size: 14px;
   font-weight: 600;
 }
 
-.cliente-form input,
-.cliente-form select {
+.scope :global(.cliente-form input),
+.scope :global(.cliente-form select) {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -94,52 +96,52 @@
   outline: none;
 }
 
-.cliente-form input:focus,
-.cliente-form select:focus {
+.scope :global(.cliente-form input:focus),
+.scope :global(.cliente-form select:focus) {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-.cliente-form input.input-error,
-.cliente-form select.input-error {
+.scope :global(.cliente-form input.input-error),
+.scope :global(.cliente-form select.input-error) {
   border-color: #dc2626;
 }
 
-.cliente-form input.input-error:focus,
-.cliente-form select.input-error:focus {
+.scope :global(.cliente-form input.input-error:focus),
+.scope :global(.cliente-form select.input-error:focus) {
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
 }
 
-.field-error {
+.scope :global(.field-error) {
   color: #b91c1c;
   font-size: 13px;
   line-height: 1.35;
 }
 
-.direccion-section {
+.scope :global(.direccion-section) {
   border-top: 1px solid #e5e7eb;
   margin-top: 18px;
   padding-top: 18px;
 }
 
-.direccion-section-header {
+.scope :global(.direccion-section-header) {
   margin-bottom: 16px;
 }
 
-.direccion-section-header h4 {
+.scope :global(.direccion-section-header h4) {
   color: #111827;
   font-size: 16px;
   margin-bottom: 6px;
 }
 
-.direccion-section-header span,
-.direccion-pendiente {
+.scope :global(.direccion-section-header span),
+.scope :global(.direccion-pendiente) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.direccion-pendiente {
+.scope :global(.direccion-pendiente) {
   align-self: end;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
@@ -147,11 +149,11 @@
   padding: 11px 12px;
 }
 
-.direccion-exacta-field {
+.scope :global(.direccion-exacta-field) {
   grid-column: span 1;
 }
 
-.cliente-form-actions {
+.scope :global(.cliente-form-actions) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -159,7 +161,7 @@
   margin-top: 16px;
 }
 
-.cliente-form-actions button {
+.scope :global(.cliente-form-actions button) {
   min-height: 42px;
   border: none;
   border-radius: 8px;
@@ -171,46 +173,46 @@
   padding: 0 16px;
 }
 
-.cliente-form-actions button:disabled {
+.scope :global(.cliente-form-actions button:disabled) {
   background-color: #9ca3af;
   cursor: not-allowed;
 }
 
-.cliente-form-actions .button-secundario {
+.scope :global(.cliente-form-actions .button-secundario) {
   background-color: #f3f4f6;
   color: #374151;
 }
 
-.cliente-form-actions .button-secundario:hover {
+.scope :global(.cliente-form-actions .button-secundario:hover) {
   background-color: #e5e7eb;
 }
 
-.cliente-form-feedback {
+.scope :global(.cliente-form-feedback) {
   margin-bottom: 18px;
 }
 
-.form-message {
+.scope :global(.form-message) {
   display: inline-flex;
   font-size: 14px;
   font-weight: 700;
 }
 
-.form-message.success {
+.scope :global(.form-message.success) {
   color: #166534;
 }
 
-.form-message.error {
+.scope :global(.form-message.error) {
   color: #b91c1c;
 }
 
-.clientes-resumen {
+.scope :global(.clientes-resumen) {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   margin-bottom: 22px;
 }
 
-.resumen-card {
+.scope :global(.resumen-card) {
   background-color: white;
   border: 1px solid #e5e7eb;
   padding: 18px;
@@ -221,36 +223,36 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-.resumen-card span {
+.scope :global(.resumen-card span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.resumen-card strong {
+.scope :global(.resumen-card strong) {
   color: #111827;
   font-size: 28px;
 }
 
-.clientes-toolbar {
+.scope :global(.clientes-toolbar) {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 18px;
 }
 
-.buscador-clientes {
+.scope :global(.buscador-clientes) {
   width: min(100%, 360px);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.buscador-clientes span {
+.scope :global(.buscador-clientes span) {
   color: #374151;
   font-size: 14px;
   font-weight: 600;
 }
 
-.buscador-clientes input {
+.scope :global(.buscador-clientes input) {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -260,12 +262,12 @@
   outline: none;
 }
 
-.buscador-clientes input:focus {
+.scope :global(.buscador-clientes input:focus) {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-.clientes-table-container {
+.scope :global(.clientes-table-container) {
   background-color: white;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
@@ -273,79 +275,79 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-.clientes-table-container table {
+.scope :global(.clientes-table-container table) {
   width: 100%;
   border-collapse: collapse;
   min-width: 1060px;
 }
 
-.clientes-table-container thead {
+.scope :global(.clientes-table-container thead) {
   background-color: #f9fafb;
 }
 
-.clientes-table-container th,
-.clientes-table-container td {
+.scope :global(.clientes-table-container th),
+.scope :global(.clientes-table-container td) {
   padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.clientes-table-container th {
+.scope :global(.clientes-table-container th) {
   font-size: 14px;
   color: #374151;
 }
 
-.clientes-table-container td {
+.scope :global(.clientes-table-container td) {
   color: #111827;
 }
 
-.clientes-table-container tbody tr:last-child td {
+.scope :global(.clientes-table-container tbody tr:last-child td) {
   border-bottom: none;
 }
 
-.clientes-table-container tbody tr:hover {
+.scope :global(.clientes-table-container tbody tr:hover) {
   background-color: #f9fafb;
 }
 
-.clientes-table-container tbody tr.cliente-inactivo {
+.scope :global(.clientes-table-container tbody tr.cliente-inactivo) {
   background-color: #f9fafb;
   opacity: 0.72;
 }
 
-.clientes-table-container tbody tr.cliente-inactivo td {
+.scope :global(.clientes-table-container tbody tr.cliente-inactivo td) {
   color: #9ca3af;
 }
 
-.cliente-inactivo .cliente-nombre {
+.scope :global(.cliente-inactivo .cliente-nombre) {
   text-decoration: line-through;
 }
 
-.cliente-nombre {
+.scope :global(.cliente-nombre) {
   font-weight: 600;
 }
 
-.badge.neutral {
+.scope :global(.badge.neutral) {
   background-color: #e5e7eb;
   color: #374151;
 }
 
-.badge.success {
+.scope :global(.badge.success) {
   background-color: #dcfce7;
   color: #166534;
 }
 
-.badge.inactive {
+.scope :global(.badge.inactive) {
   background-color: #e5e7eb;
   color: #4b5563;
 }
 
-.acciones-cliente {
+.scope :global(.acciones-cliente) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.acciones-cliente button {
+.scope :global(.acciones-cliente button) {
   min-height: 34px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -357,67 +359,67 @@
   padding: 0 10px;
 }
 
-.acciones-cliente button:hover {
+.scope :global(.acciones-cliente button:hover) {
   background-color: #f9fafb;
 }
 
-.acciones-cliente button.danger {
+.scope :global(.acciones-cliente button.danger) {
   border-color: #fecaca;
   color: #b91c1c;
 }
 
-.acciones-cliente button.danger:hover {
+.scope :global(.acciones-cliente button.danger:hover) {
   background-color: #fef2f2;
 }
 
-.acciones-cliente button.success {
+.scope :global(.acciones-cliente button.success) {
   border-color: #bbf7d0;
   color: #166534;
 }
 
-.acciones-cliente button.success:hover {
+.scope :global(.acciones-cliente button.success:hover) {
   background-color: #f0fdf4;
 }
 
-.clientes-estado {
+.scope :global(.clientes-estado) {
   padding: 24px;
   color: #6b7280;
   text-align: center;
 }
 
-.error {
+.scope :global(.error) {
   color: #b91c1c;
   font-weight: bold;
 }
 
 @media (max-width: 900px) {
-  .clientes-header {
+  .scope :global(.clientes-header) {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .nuevo-cliente-button {
+  .scope :global(.nuevo-cliente-button) {
     width: 100%;
   }
 
-  .cliente-form-grid {
+  .scope :global(.cliente-form-grid) {
     grid-template-columns: 1fr;
   }
 
-  .cliente-form-actions {
+  .scope :global(.cliente-form-actions) {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .clientes-resumen {
+  .scope :global(.clientes-resumen) {
     grid-template-columns: 1fr;
   }
 
-  .clientes-toolbar {
+  .scope :global(.clientes-toolbar) {
     justify-content: stretch;
   }
 
-  .buscador-clientes {
+  .scope :global(.buscador-clientes) {
     width: 100%;
   }
 }

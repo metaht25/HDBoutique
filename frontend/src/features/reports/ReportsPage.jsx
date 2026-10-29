@@ -1,3 +1,6 @@
+import { TableContainer } from '../../shared/ui/TableContainer'
+import { LoadingState, Message } from '../../shared/ui/Feedback'
+import { getErrorMessage } from '../../shared/api/errors'
 import { useEffect, useState } from 'react'
 import {
   obtenerClientesReportes,
@@ -6,8 +9,8 @@ import {
   obtenerProveedoresReportes,
   obtenerTiposClientesReportes,
   obtenerVentasReportes,
-} from '../services/reportesService'
-import './Reportes.css'
+} from './legacyApi.js'
+import styles from './ReportsPage.module.css'
 
 const STOCK_BAJO_LIMITE = 10
 
@@ -187,8 +190,8 @@ function Reportes() {
         setCompras(obtenerLista(comprasData))
         setProveedores(obtenerLista(proveedoresData))
       } catch (error) {
-        console.error(error)
-        setError('No se pudieron cargar los reportes')
+
+        setError(getErrorMessage(error, 'No se pudieron cargar los reportes'))
       } finally {
         setCargando(false)
       }
@@ -221,7 +224,7 @@ function Reportes() {
   if (cargando) {
     return (
       <div className="reportes-page">
-        <div className="reportes-estado">Cargando reportes...</div>
+        <LoadingState>Cargando reportes...</LoadingState>
       </div>
     )
   }
@@ -229,7 +232,7 @@ function Reportes() {
   if (error) {
     return (
       <div className="reportes-page">
-        <div className="reportes-estado error">{error}</div>
+        <Message>{error}</Message>
       </div>
     )
   }
@@ -350,7 +353,7 @@ function Reportes() {
                 <div className="reportes-estado">No hay ventas en el rango seleccionado.</div>
               ) : (
                 <div className="reportes-table-wrap">
-                  <table>
+                  <TableContainer><table>
                     <thead>
                       <tr>
                         <th>ID venta</th>
@@ -370,7 +373,7 @@ function Reportes() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></TableContainer>
                 </div>
               )}
             </>
@@ -389,7 +392,7 @@ function Reportes() {
                 <div className="reportes-estado">No hay compras en el rango seleccionado.</div>
               ) : (
                 <div className="reportes-table-wrap">
-                  <table>
+                  <TableContainer><table>
                     <thead>
                       <tr>
                         <th>ID compra</th>
@@ -409,7 +412,7 @@ function Reportes() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></TableContainer>
                 </div>
               )}
             </>
@@ -428,7 +431,7 @@ function Reportes() {
                 <div className="reportes-estado">No hay productos bajo stock.</div>
               ) : (
                 <div className="reportes-table-wrap">
-                  <table>
+                  <TableContainer><table>
                     <thead>
                       <tr>
                         <th>ID producto</th>
@@ -454,7 +457,7 @@ function Reportes() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></TableContainer>
                 </div>
               )}
             </>
@@ -480,7 +483,7 @@ function Reportes() {
                 <div className="reportes-estado">No hay clientes registrados.</div>
               ) : (
                 <div className="reportes-table-wrap">
-                  <table>
+                  <TableContainer><table>
                     <thead>
                       <tr>
                         <th>Tipo de cliente</th>
@@ -504,7 +507,7 @@ function Reportes() {
                         )
                       })}
                     </tbody>
-                  </table>
+                  </table></TableContainer>
                 </div>
               )}
             </>
@@ -515,4 +518,6 @@ function Reportes() {
   )
 }
 
-export default Reportes
+export default function ReportsPage() {
+  return <div className={styles.scope}><Reportes /></div>
+}

@@ -1,25 +1,27 @@
-.productos-page {
+.scope { min-width: 0; }
+
+.scope :global(.productos-page) {
   max-width: 1180px;
 }
 
-.productos-header {
+.scope :global(.productos-header) {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
 }
 
-.productos-page h2 {
+.scope :global(.productos-page h2) {
   margin-bottom: 8px;
   color: #111827;
 }
 
-.productos-page p {
+.scope :global(.productos-page p) {
   margin-bottom: 0;
   color: #6b7280;
 }
 
-.producto-form {
+.scope :global(.producto-form) {
   background-color: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -28,45 +30,45 @@
   padding: 18px;
 }
 
-.producto-form.editando {
+.scope :global(.producto-form.editando) {
   border-color: #2563eb;
 }
 
-.producto-form-header {
+.scope :global(.producto-form-header) {
   margin-bottom: 16px;
 }
 
-.producto-form-header h3 {
+.scope :global(.producto-form-header h3) {
   color: #111827;
   font-size: 18px;
   margin-bottom: 6px;
 }
 
-.producto-form-header span {
+.scope :global(.producto-form-header span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.producto-form-grid {
+.scope :global(.producto-form-grid) {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
-.producto-form label {
+.scope :global(.producto-form label) {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.producto-form label span {
+.scope :global(.producto-form label span) {
   color: #374151;
   font-size: 14px;
   font-weight: 600;
 }
 
-.producto-form input,
-.producto-form select {
+.scope :global(.producto-form input),
+.scope :global(.producto-form select) {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -77,30 +79,30 @@
   outline: none;
 }
 
-.producto-form input:focus,
-.producto-form select:focus {
+.scope :global(.producto-form input:focus),
+.scope :global(.producto-form select:focus) {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-.producto-form input.input-error,
-.producto-form select.input-error {
+.scope :global(.producto-form input.input-error),
+.scope :global(.producto-form select.input-error) {
   border-color: #dc2626;
 }
 
-.producto-form input.input-error:focus,
-.producto-form select.input-error:focus {
+.scope :global(.producto-form input.input-error:focus),
+.scope :global(.producto-form select.input-error:focus) {
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
 }
 
-.field-error {
+.scope :global(.field-error) {
   color: #b91c1c;
   font-size: 13px;
   line-height: 1.35;
 }
 
-.producto-form-actions {
+.scope :global(.producto-form-actions) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,7 +110,7 @@
   margin-top: 16px;
 }
 
-.producto-form-actions button {
+.scope :global(.producto-form-actions button) {
   min-height: 42px;
   border: none;
   border-radius: 8px;
@@ -120,35 +122,35 @@
   padding: 0 16px;
 }
 
-.producto-form-actions button:disabled {
+.scope :global(.producto-form-actions button:disabled) {
   background-color: #9ca3af;
   cursor: not-allowed;
 }
 
-.producto-form-actions .button-secundario {
+.scope :global(.producto-form-actions .button-secundario) {
   background-color: #f3f4f6;
   color: #374151;
 }
 
-.producto-form-actions .button-secundario:hover {
+.scope :global(.producto-form-actions .button-secundario:hover) {
   background-color: #e5e7eb;
 }
 
-.form-message {
+.scope :global(.form-message) {
   display: inline-flex;
   font-size: 14px;
   font-weight: 700;
 }
 
-.form-message.success {
+.scope :global(.form-message.success) {
   color: #166534;
 }
 
-.form-message.error {
+.scope :global(.form-message.error) {
   color: #b91c1c;
 }
 
-.productos-toolbar {
+.scope :global(.productos-toolbar) {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -156,20 +158,20 @@
   margin-bottom: 18px;
 }
 
-.buscador-productos {
+.scope :global(.buscador-productos) {
   width: min(100%, 340px);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.buscador-productos span {
+.scope :global(.buscador-productos span) {
   color: #374151;
   font-size: 14px;
   font-weight: 600;
 }
 
-.buscador-productos input {
+.scope :global(.buscador-productos input) {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -179,12 +181,12 @@
   outline: none;
 }
 
-.buscador-productos input:focus {
+.scope :global(.buscador-productos input:focus) {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-.filtro-productos {
+.scope :global(.filtro-productos) {
   display: inline-flex;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -192,7 +194,7 @@
   background-color: white;
 }
 
-.filtro-productos button {
+.scope :global(.filtro-productos button) {
   min-height: 42px;
   border: none;
   border-right: 1px solid #d1d5db;
@@ -204,27 +206,27 @@
   padding: 0 14px;
 }
 
-.filtro-productos button:last-child {
+.scope :global(.filtro-productos button:last-child) {
   border-right: none;
 }
 
-.filtro-productos button:hover {
+.scope :global(.filtro-productos button:hover) {
   background-color: #f9fafb;
 }
 
-.filtro-productos button.activo {
+.scope :global(.filtro-productos button.activo) {
   background-color: #1f2937;
   color: white;
 }
 
-.productos-resumen {
+.scope :global(.productos-resumen) {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   margin-bottom: 22px;
 }
 
-.resumen-card {
+.scope :global(.resumen-card) {
   background-color: white;
   border: 1px solid #e5e7eb;
   padding: 18px;
@@ -235,21 +237,21 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-.resumen-card span {
+.scope :global(.resumen-card span) {
   color: #6b7280;
   font-size: 14px;
 }
 
-.resumen-card strong {
+.scope :global(.resumen-card strong) {
   color: #111827;
   font-size: 28px;
 }
 
-.resumen-card.alerta strong {
+.scope :global(.resumen-card.alerta strong) {
   color: #b45309;
 }
 
-.table-container {
+.scope :global(.table-container) {
   background-color: white;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
@@ -257,58 +259,58 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
-table {
+.scope :global(table) {
   width: 100%;
   border-collapse: collapse;
   min-width: 880px;
 }
 
-thead {
+.scope :global(thead) {
   background-color: #f9fafb;
 }
 
-th,
-td {
+.scope :global(th),
+.scope :global(td) {
   padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
 
-th {
+.scope :global(th) {
   font-size: 14px;
   color: #374151;
 }
 
-td {
+.scope :global(td) {
   color: #111827;
 }
 
-tbody tr:last-child td {
+.scope :global(tbody tr:last-child td) {
   border-bottom: none;
 }
 
-tbody tr:hover {
+.scope :global(tbody tr:hover) {
   background-color: #f9fafb;
 }
 
-tbody tr.producto-inactivo {
+.scope :global(tbody tr.producto-inactivo) {
   background-color: #f9fafb;
   opacity: 0.72;
 }
 
-tbody tr.producto-inactivo td {
+.scope :global(tbody tr.producto-inactivo td) {
   color: #9ca3af;
 }
 
-.producto-inactivo .producto-nombre {
+.scope :global(.producto-inactivo .producto-nombre) {
   text-decoration: line-through;
 }
 
-.producto-nombre {
+.scope :global(.producto-nombre) {
   font-weight: 600;
 }
 
-.badge {
+.scope :global(.badge) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -320,33 +322,33 @@ tbody tr.producto-inactivo td {
   white-space: nowrap;
 }
 
-.badge.success {
+.scope :global(.badge.success) {
   background-color: #dcfce7;
   color: #166534;
 }
 
-.badge.warning {
+.scope :global(.badge.warning) {
   background-color: #fef3c7;
   color: #92400e;
 }
 
-.badge.danger {
+.scope :global(.badge.danger) {
   background-color: #fee2e2;
   color: #991b1b;
 }
 
-.badge.inactive {
+.scope :global(.badge.inactive) {
   background-color: #e5e7eb;
   color: #4b5563;
 }
 
-.acciones-producto {
+.scope :global(.acciones-producto) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.acciones-producto button {
+.scope :global(.acciones-producto button) {
   min-height: 34px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -358,75 +360,75 @@ tbody tr.producto-inactivo td {
   padding: 0 10px;
 }
 
-.acciones-producto button:hover {
+.scope :global(.acciones-producto button:hover) {
   background-color: #f9fafb;
 }
 
-.acciones-producto button.danger {
+.scope :global(.acciones-producto button.danger) {
   border-color: #fecaca;
   color: #b91c1c;
 }
 
-.acciones-producto button.danger:hover {
+.scope :global(.acciones-producto button.danger:hover) {
   background-color: #fef2f2;
 }
 
-.acciones-producto button.success {
+.scope :global(.acciones-producto button.success) {
   border-color: #bbf7d0;
   color: #166534;
 }
 
-.acciones-producto button.success:hover {
+.scope :global(.acciones-producto button.success:hover) {
   background-color: #f0fdf4;
 }
 
-.acciones-producto button:disabled {
+.scope :global(.acciones-producto button:disabled) {
   border-color: #e5e7eb;
   color: #9ca3af;
   cursor: not-allowed;
 }
 
-.productos-estado {
+.scope :global(.productos-estado) {
   padding: 24px;
   color: #6b7280;
   text-align: center;
 }
 
-.error {
+.scope :global(.error) {
   color: #b91c1c;
   font-weight: bold;
 }
 
 @media (max-width: 900px) {
-  .producto-form-grid {
+  .scope :global(.producto-form-grid) {
     grid-template-columns: 1fr;
   }
 
-  .producto-form-actions {
+  .scope :global(.producto-form-actions) {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .productos-toolbar {
+  .scope :global(.productos-toolbar) {
     align-items: stretch;
     flex-direction: column;
     justify-content: stretch;
   }
 
-  .buscador-productos {
+  .scope :global(.buscador-productos) {
     width: 100%;
   }
 
-  .filtro-productos {
+  .scope :global(.filtro-productos) {
     width: 100%;
   }
 
-  .filtro-productos button {
+  .scope :global(.filtro-productos button) {
     flex: 1;
     padding: 0 10px;
   }
 
-  .productos-resumen {
+  .scope :global(.productos-resumen) {
     grid-template-columns: 1fr;
   }
 }
