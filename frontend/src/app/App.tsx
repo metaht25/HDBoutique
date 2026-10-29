@@ -4,14 +4,14 @@ import { MainLayout } from '../layouts/MainLayout'
 import { LoadingState } from '../shared/ui/Feedback'
 import { PageBoundary } from './PageBoundary'
 
-const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage.jsx'))
+const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'))
 const ProductsPage = lazy(() => import('../features/products/ProductsPage'))
 const CustomersPage = lazy(() => import('../features/customers/CustomersPage'))
 const SalesPage = lazy(() => import('../features/sales/SalesPage.jsx'))
 const PurchasesPage = lazy(() => import('../features/purchases/PurchasesPage.jsx'))
 const SuppliersPage = lazy(() => import('../features/suppliers/SuppliersPage.jsx'))
 const CashRegisterPage = lazy(() => import('../features/cash-register/CashRegisterPage.jsx'))
-const ReportsPage = lazy(() => import('../features/reports/ReportsPage.jsx'))
+const ReportsPage = lazy(() => import('../features/reports/ReportsPage'))
 
 export function App() {
   const location = useLocation()

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import contracts from '../../../backend/tests/characterization/fixtures/legacy_contracts.json' with { type: 'json' }
+import { reportingResponse } from '../fixtures/reporting'
 
 const account = { user_id: 101, username: 'synthetic-manager', role: 'Manager', is_active: true, employee_id: 102 }
 const routes = [
@@ -23,6 +24,8 @@ async function syntheticApi(page: Page, options: {
     }
     if (path === '/api/v1/auth/csrf') return route.fulfill({ json: { csrf_token: 'synthetic-csrf-token' } })
     if (path === '/api/v1/auth/logout') return route.fulfill({ status: 204 })
+    const report = reportingResponse(new URL(route.request().url()))
+    if (report) return route.fulfill({ json: report })
     if (options.productError && path === '/api/v1/products') return route.fulfill({
       status: 503, json: { error: { code: 'database_unavailable', message: 'Productos no disponibles temporalmente' } },
     })
@@ -65,11 +68,13 @@ for (const [path, label] of routes) {
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(label)
     expect(exceptions).toEqual([])
-    if (path === '/products' || path === '/dashboard' || path === '/customers') {
+    if (path === '/products' || path === '/dashboard' || path === '/customers' || path === '/reports') {
       await expect(page.getByText('Cargando pantalla…')).toHaveCount(0)
       if (path === '/products') await expect(page.getByRole('button', { name: 'Guardar producto' })).toBeVisible()
       else if (path === '/customers') await expect(page.getByRole('button', { name: 'Guardar cliente' })).toBeVisible()
+      else if (path === '/reports') await expect(page.getByRole('heading', { name: 'Reportes', exact: true, level: 2 })).toBeVisible()
       else await expect(page.getByRole('heading', { name: 'Resumen general' })).toBeVisible()
+      await expect(page.locator('main table').first()).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath('screen.png'), fullPage: true })
     }
   })
