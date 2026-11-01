@@ -18,6 +18,7 @@ class PurchaseLineCreate(InputModel):
 
 
 class PurchaseCreate(InputModel):
+    description: Annotated[str | None, Field(max_length=500)] = None
     supplier_id: PositiveId
     employee_id: PositiveId | None = None
     purchase_date: date
@@ -60,6 +61,7 @@ class PurchaseLineRead(BaseModel):
 
 
 class PurchaseRead(BaseModel):
+    description: str | None = None
     purchase_id: int
     supplier_id: int
     employee_id: int

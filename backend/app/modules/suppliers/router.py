@@ -6,7 +6,10 @@ from fastapi import APIRouter, Depends, Query, Response
 
 from app.api.dependencies import DatabaseSession
 from app.api.schemas import ErrorResponse
-from app.modules.identity.dependencies import authorize_business_request
+from app.modules.identity.dependencies import (
+    CurrentIdentity,
+    authorize_business_request,
+)
 from app.modules.suppliers.schemas import (
     SupplierCreate,
     SupplierOfferingCreate,
@@ -48,23 +51,31 @@ def get_supplier(record_id: int, session: DatabaseSession) -> object:
 
 
 @router.post("/suppliers", response_model=SupplierRead, status_code=201)
-def create_supplier(payload: SupplierCreate, session: DatabaseSession) -> object:
-    return SuppliersService(session).save_supplier(payload)
+def create_supplier(
+    payload: SupplierCreate, session: DatabaseSession, actor: CurrentIdentity
+) -> object:
+    return SuppliersService(session).save_supplier(payload, actor_id=actor.user_id)
 
 
 @router.put("/suppliers/{record_id}", response_model=SupplierRead)
 def replace_supplier(
-    record_id: int, payload: SupplierCreate, session: DatabaseSession
+    record_id: int,
+    payload: SupplierCreate,
+    session: DatabaseSession,
+    actor: CurrentIdentity,
 ) -> object:
     complete = SupplierCreate(**payload.model_dump())
-    return SuppliersService(session).save_supplier(complete, record_id)
+    return SuppliersService(session).save_supplier(complete, record_id, actor.user_id)
 
 
 @router.patch("/suppliers/{record_id}", response_model=SupplierRead)
 def update_supplier(
-    record_id: int, payload: SupplierPatch, session: DatabaseSession
+    record_id: int,
+    payload: SupplierPatch,
+    session: DatabaseSession,
+    actor: CurrentIdentity,
 ) -> object:
-    return SuppliersService(session).save_supplier(payload, record_id)
+    return SuppliersService(session).save_supplier(payload, record_id, actor.user_id)
 
 
 @router.delete("/suppliers/{record_id}", status_code=204)

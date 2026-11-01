@@ -10,6 +10,7 @@ from app.core.config import Settings
 from app.core.errors import install_error_handlers
 from app.infrastructure.database.connection import build_engine
 from app.infrastructure.database.session import create_session_factory
+from app.modules.boutique.router import router as boutique_router
 from app.modules.cash.router import router as cash_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
@@ -17,6 +18,7 @@ from app.modules.identity.router import router as identity_router
 from app.modules.inventory.router import router as inventory_router
 from app.modules.locations.router import router as locations_router
 from app.modules.purchases.router import router as purchases_router
+from app.modules.reporting.boutique_router import router as screen_reports_router
 from app.modules.reporting.router import router as reporting_router
 from app.modules.sales.router import router as sales_router
 from app.modules.staff.router import router as staff_router
@@ -67,6 +69,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if config.business_api_enabled:
         application.include_router(identity_router)
         for router in (
+            boutique_router,
             locations_router,
             catalog_router,
             customers_router,
@@ -77,6 +80,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             cash_router,
             inventory_router,
             reporting_router,
+            screen_reports_router,
         ):
             application.include_router(router)
     return application

@@ -2,7 +2,15 @@
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Identity, String
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Index,
+    String,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import Base
@@ -11,21 +19,33 @@ from app.infrastructure.database.base import Base
 class InventoryMovement(Base):
     __tablename__ = "inventory_movements"
     __table_args__ = (
+        Index(
+            "uq_inventory_initial_product",
+            "product_id",
+            unique=True,
+            postgresql_where=text("movement_type = 'initial_stock'"),
+        ),
         CheckConstraint(
             "(movement_type = 'purchase_receipt' AND purchase_item_id IS NOT NULL "
             "AND sale_item_id IS NULL AND return_item_id IS NULL) OR "
             "(movement_type = 'sale_issue' AND sale_item_id IS NOT NULL "
             "AND purchase_item_id IS NULL AND return_item_id IS NULL) OR "
             "(movement_type = 'sale_return' AND return_item_id IS NOT NULL "
-            "AND sale_item_id IS NULL AND purchase_item_id IS NULL)",
+            "AND sale_item_id IS NULL AND purchase_item_id IS NULL) OR "
+            "(movement_type = 'initial_stock' AND purchase_item_id IS NULL "
+            "AND sale_item_id IS NULL "
+            "AND return_item_id IS NULL AND stock_before = 0)",
             name="movement_source",
         ),
         CheckConstraint(
-            "quantity > 0 AND stock_before >= 0 AND stock_after >= 0",
+            "((movement_type = 'initial_stock' AND quantity >= 0) OR "
+            "(movement_type <> 'initial_stock' AND quantity > 0 AND "
+            "employee_id IS NOT NULL)) "
+            "AND stock_before >= 0 AND stock_after >= 0",
             name="valid_quantities",
         ),
         CheckConstraint(
-            "(movement_type IN ('purchase_receipt', 'sale_return') "
+            "(movement_type IN ('purchase_receipt', 'sale_return', 'initial_stock') "
             "AND stock_after = stock_before + quantity) OR "
             "(movement_type = 'sale_issue' AND stock_after = stock_before - quantity)",
             name="stock_delta",
@@ -60,7 +80,7 @@ class InventoryMovement(Base):
         ForeignKey("user_accounts.user_id", ondelete="RESTRICT"),
         index=True,
     )
-    employee_id: Mapped[int] = mapped_column(
+    employee_id: Mapped[int | None] = mapped_column(
         ForeignKey("employees.employee_id", ondelete="RESTRICT"),
         index=True,
     )

@@ -17,7 +17,7 @@ def profile(tables: Tables) -> dict[str, object]:
     for item in MAPPINGS:
         rows = tables[item.target]
         columns: dict[str, object] = {}
-        for column in item.table.c:
+        for column in item.columns:
             values = [row[column.name] for row in rows if row[column.name] is not None]
             summary: Row = {"nulls": len(rows) - len(values)}
             if isinstance(column.type, (Integer, Numeric)):
@@ -93,7 +93,7 @@ def reconcile(expected: Tables, actual: Tables) -> dict[str, object]:
             column.name: sum(
                 before[key][column.name] != after[key][column.name] for key in common
             )
-            for column in item.table.c
+            for column in item.columns
         }
         matched = (
             before == after

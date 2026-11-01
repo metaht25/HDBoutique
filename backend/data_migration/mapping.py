@@ -2,13 +2,13 @@
 
 from dataclasses import dataclass
 
-from sqlalchemy import Table
+from sqlalchemy import Column, Table
 
 from app.infrastructure.database import models  # noqa: F401
 from app.infrastructure.database.base import Base
 
 MAPPING_VERSION = "compatibility-1"
-SCHEMA_REVISION = "0005_cash_checkout"
+SCHEMA_REVISION = "0006_boutique_experience"
 
 
 @dataclass(frozen=True)
@@ -20,6 +20,10 @@ class TableMapping:
     @property
     def table(self) -> Table:
         return Base.metadata.tables[self.target]
+
+    @property
+    def columns(self) -> list[Column[object]]:
+        return [self.table.c[target] for _, target in self.fields]
 
     @property
     def primary_key(self) -> str:

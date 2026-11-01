@@ -64,13 +64,29 @@ class CashShift(Base):
 class SalePayment(Base):
     __tablename__ = "sale_payments"
     __table_args__ = (
+        CheckConstraint(
+            "(cash_amount IS NULL AND transfer_amount IS NULL AND method IN "
+            "('cash', 'transfer')) OR "
+            "(cash_amount IS NOT NULL AND transfer_amount IS NOT NULL AND "
+            "cash_amount >= 0 "
+            "AND transfer_amount >= 0 AND cash_amount + transfer_amount = amount AND "
+            "((method = 'cash' AND transfer_amount = 0) OR (method = "
+            "'transfer' AND cash_amount = 0) OR "
+            "(method = 'mixed' AND cash_amount > 0 AND transfer_amount > 0)))",
+            name="payment_components",
+        ),
         CheckConstraint("amount > 0", name="positive_amount"),
         CheckConstraint(
             "(method = 'cash' AND received_amount >= amount "
             "AND change_amount = received_amount - amount AND reference IS NULL) OR "
             "(method = 'transfer' AND received_amount = amount "
             "AND change_amount = 0 AND reference IS NOT NULL AND "
-            "length(reference) > 0)",
+            "length(reference) > 0) OR "
+            "(method = 'mixed' AND cash_amount > 0 AND transfer_amount > 0 "
+            "AND cash_amount + transfer_amount = amount AND received_amount "
+            ">= cash_amount "
+            "AND change_amount = received_amount - cash_amount "
+            "AND reference IS NOT NULL AND length(reference) > 0)",
             name="full_payment",
         ),
     )
@@ -83,6 +99,8 @@ class SalePayment(Base):
     )
     method: Mapped[str] = mapped_column(String(16))
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    cash_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    transfer_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     received_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     change_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     reference: Mapped[str | None] = mapped_column(String(100))
@@ -116,7 +134,19 @@ class SaleVoid(Base):
     __tablename__ = "sale_voids"
     __table_args__ = (
         CheckConstraint(
-            "amount > 0 AND method IN ('cash', 'transfer')", name="valid_refund"
+            "(cash_amount IS NULL AND transfer_amount IS NULL AND method IN "
+            "('cash', 'transfer')) OR "
+            "(cash_amount IS NOT NULL AND transfer_amount IS NOT NULL AND "
+            "cash_amount >= 0 "
+            "AND transfer_amount >= 0 AND cash_amount + transfer_amount = amount AND "
+            "((method = 'cash' AND transfer_amount = 0) OR (method = "
+            "'transfer' AND cash_amount = 0) OR "
+            "(method = 'mixed' AND cash_amount > 0 AND transfer_amount > 0)))",
+            name="payment_components",
+        ),
+        CheckConstraint(
+            "amount > 0 AND method IN ('cash', 'transfer', 'mixed')",
+            name="valid_refund",
         ),
     )
     void_id: Mapped[int] = mapped_column(Identity(), primary_key=True)
@@ -129,6 +159,8 @@ class SaleVoid(Base):
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     method: Mapped[str] = mapped_column(String(16))
     reference: Mapped[str | None] = mapped_column(String(100))
+    cash_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    transfer_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     reason: Mapped[str] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     performed_by_user_id: Mapped[int] = mapped_column(

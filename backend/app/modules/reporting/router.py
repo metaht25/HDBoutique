@@ -47,14 +47,14 @@ Period = Annotated[DateRange, Depends(date_range)]
 @router.get(
     "/dashboard", response_model=DashboardRead, response_model_exclude_none=True
 )
-def dashboard(session: DatabaseSession, actor: SalesIdentity) -> DashboardRead:
+def dashboard(session: DatabaseSession, actor: PurchasingIdentity) -> DashboardRead:
     return ReportingService(session).dashboard(actor.role != "Cashier")
 
 
 @router.get("/reports/sales", response_model=SalesReport)
 def sales(
     session: DatabaseSession,
-    actor: SalesIdentity,
+    actor: PurchasingIdentity,
     period: Period,
     offset: Offset = 0,
     limit: Limit = 20,
@@ -87,7 +87,7 @@ def inventory(
 @router.get("/reports/customers", response_model=CustomersReport)
 def customers(
     session: DatabaseSession,
-    actor: SalesIdentity,
+    actor: PurchasingIdentity,
     offset: Offset = 0,
     limit: Limit = 20,
 ) -> CustomersReport:

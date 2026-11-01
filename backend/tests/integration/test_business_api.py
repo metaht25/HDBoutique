@@ -94,7 +94,7 @@ def records(
         category_id=category["category_id"],
         size_id=size["size_id"],
         name="Synthetic product",
-        unit_price="199.50",
+        cost="173.48",
     )
     assert product["legacy_stock"] == 0
     assert product["legacy_stock_quantity"] is None
@@ -155,9 +155,11 @@ def test_resource_workflow(
     assert client.get(path, params={"offset": 0, "limit": 1}).json() == [original]
     assert client.get(path, params={"offset": 100}).json() == []
     payload = {field: value for field, value in original.items() if field != key}
+    for field in ("is_active", "created_at", "created_date", "technical_key"):
+        payload.pop(field, None)
     if route == "products":
-        payload.pop("legacy_stock_quantity")
-        payload.pop("legacy_stock")
+        for field in ("legacy_stock_quantity", "legacy_stock", "unit_price"):
+            payload.pop(field)
     assert client.put(detail, json=payload).json() == original
     assert client.patch(detail, json={}).json() == original
     if "name" in payload:
@@ -167,23 +169,31 @@ def test_resource_workflow(
     duplicate = client.post(path, json=payload)
     assert duplicate.status_code == 201
     duplicate_path = path + "/" + str(duplicate.json()[key])
-    assert client.delete(duplicate_path).status_code == 204
-    assert client.get(duplicate_path).status_code == 404
-    assert client.patch(duplicate_path, json={}).status_code == 404
-    assert client.put(duplicate_path, json=payload).status_code == 404
-    assert client.delete(duplicate_path).status_code == 404
+    preserved = route in {"products", "customers", "suppliers"}
+    if preserved:
+        assert client.delete(duplicate_path).status_code == 409
+        assert client.patch(duplicate_path, json={"is_active": False}).status_code == 200
+        assert client.get(duplicate_path).json()["is_active"] is False
+    else:
+        assert client.delete(duplicate_path).status_code == 204
+        assert client.get(duplicate_path).status_code == 404
+        assert client.patch(duplicate_path, json={}).status_code == 404
+        assert client.put(duplicate_path, json=payload).status_code == 404
+        assert client.delete(duplicate_path).status_code == 404
     assert client.post(path, json={**payload, "unexpected": "value"}).status_code == 422
     for field in payload:
         if field.endswith("_id"):
             invalid = {**payload, field: 2147483647}
             assert client.post(path, json=invalid).status_code == 422
-            assert client.patch(detail, json={field: None}).status_code == 422
+            optional_reference = (route == "customers" and field in {"address_id", "customer_type_id"}) or (route == "products" and field == "supplier_id")
+            if not optional_reference:
+                assert client.patch(detail, json={field: None}).status_code == 422
             assert client.patch(detail, json={field: 2147483647}).status_code == 422
     assert client.get(detail).status_code == 200
     table = route.replace("-", "_")
     assert (
         database_connection.execute(text(f"SELECT count(*) FROM {table}")).scalar_one()
-        == 1
+        == (2 if preserved else 1)
     )
 
 
@@ -207,7 +217,7 @@ def test_referenced_delete_rolls_back(
     detail = "/api/v1/" + route + "/" + str(records[route][key])
     response = business_client.delete(detail)
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "integrity_conflict"
+    assert response.json()["error"]["code"] in {"integrity_conflict", "history_preserved"}
     assert business_client.get(detail).json() == records[route]
 
 
@@ -285,10 +295,11 @@ def test_http_validation_and_put_reset(
             "size_id": product["size_id"],
         },
     )
-    assert response.status_code == 200
-    assert response.json()["unit_price"] is None
-    assert response.json()["legacy_stock"] == 3
-    assert response.json()["name"] is None
+    assert response.status_code == 422
+    preserved = client.get(path).json()
+    assert preserved["unit_price"] == "199.50"
+    assert preserved["legacy_stock"] == 3
+    assert preserved["name"] == product["name"]
     customer_path = "/api/v1/customers/" + str(records["customers"]["customer_id"])
     assert (
         client.patch(customer_path, json={"phone_number": "0" * 11}).status_code == 422

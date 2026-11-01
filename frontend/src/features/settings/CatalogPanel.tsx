@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useSearchParams } from 'react-router'
 import { getErrorMessage } from '../../shared/api/errors'
 import { exactMoney, inputId, serverFields } from '../../shared/forms/fields'
 import type { FieldErrors } from '../../shared/forms/fields'
@@ -69,8 +68,7 @@ function CatalogForm({ kind, row, choices, onSaved, onCancel }: {
 }
 
 export function CatalogPanel({ kind }: { kind: Catalog }) {
-  const [params, setParams] = useSearchParams(), [revision, setRevision] = useState(0), [editing, setEditing] = useState<CatalogRow | null>(null), [notice, setNotice] = useState('')
-  const page = inputId(params.get('page') ?? '1') ?? 1
+  const [page, setPage] = useState(1), [revision, setRevision] = useState(0), [editing, setEditing] = useState<CatalogRow | null>(null), [notice, setNotice] = useState('')
   const load = useCallback((signal: AbortSignal) => listCatalog(kind, page, signal), [kind, page])
   const loadChoices = useCallback((signal: AbortSignal) => catalogChoices(kind, signal), [kind])
   const result = useResource(`${kind}:${page}:${revision}`, load), choices = useResource(`${kind}:choices:${revision}`, loadChoices)

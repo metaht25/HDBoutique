@@ -1,8 +1,9 @@
 """Catalog storage with available stock and a separate preserved legacy count."""
 
+from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Identity, Numeric, String
+from sqlalchemy import Boolean, Date, ForeignKey, Identity, Numeric, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import Base
@@ -33,6 +34,13 @@ class Product(Base):
         ForeignKey("sizes.size_id", ondelete="RESTRICT"), index=True
     )
     name: Mapped[str | None] = mapped_column(String(40))
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    cost: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    supplier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("suppliers.supplier_id", ondelete="RESTRICT"), index=True
+    )
+    created_date: Mapped[date | None] = mapped_column(Date)
+    description: Mapped[str | None] = mapped_column(String(500))
     # B01: cantidadstock se conserva; solo legacy_stock es disponible.
     legacy_stock_quantity: Mapped[int | None]
     legacy_stock: Mapped[int | None]

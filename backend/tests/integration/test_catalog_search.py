@@ -22,7 +22,7 @@ def test_product_search_is_literal_case_insensitive_and_paginated(
                 "category_id": category["category_id"],
                 "size_id": size["size_id"],
                 "name": name,
-                "unit_price": "199.50",
+                "cost": "173.48",
             },
         )
         assert response.status_code == 201

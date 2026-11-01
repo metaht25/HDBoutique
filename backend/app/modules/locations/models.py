@@ -30,4 +30,7 @@ class Address(Base):
     department_id: Mapped[int] = mapped_column(
         ForeignKey("departments.department_id", ondelete="RESTRICT"), index=True
     )
+    municipality_id: Mapped[int | None] = mapped_column(
+        ForeignKey("municipalities.municipality_id", ondelete="RESTRICT"), index=True
+    )
     address_line: Mapped[str | None] = mapped_column(String(100))

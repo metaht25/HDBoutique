@@ -8,8 +8,8 @@ from app.infrastructure.database.base import Base
 
 def test_complete_registry_has_named_constraints_and_indexed_foreign_keys() -> None:
     configure_mappers()
-    assert len(Base.metadata.tables) == 30
-    assert len(Base.registry.mappers) == 30
+    assert len(Base.metadata.tables) == 32
+    assert len(Base.registry.mappers) == 32
     for table in Base.metadata.sorted_tables:
         assert table.primary_key.name == f"pk_{table.name}"
         for foreign_key in table.foreign_key_constraints:
@@ -27,6 +27,6 @@ def test_stock_fields_remain_distinct_nullable_and_without_invented_defaults() -
         assert columns[name].nullable
         assert columns[name].default is None
         assert columns[name].server_default is None
-    assert "municipality_id" not in models.Address.__table__.c
+    assert models.Address.__table__.c.municipality_id.nullable
     assert "principal" not in models.CustomerPayment.__table__.c
     assert "balance" not in models.CustomerPayment.__table__.c

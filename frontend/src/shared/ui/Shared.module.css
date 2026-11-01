@@ -1,18 +1,18 @@
-.loading { padding: 20px; color: #374151; }
+.loading { padding: 20px; color: var(--text); }
 .message { padding: 14px 18px; border-radius: 8px; overflow-wrap: anywhere; }
 .error { background: #fff1f2; color: #9f1239; border: 1px solid #fda4af; }
 .info { background: #eff6ff; color: #1e40af; border: 1px solid #93c5fd; }
 .success { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
-.card { background: white; padding: 22px; border-radius: 12px; border: 1px solid #e5e7eb; display: grid; gap: 10px; }
-.card span { color: #4b5563; font-size: 14px; }
-.card strong { font-size: 28px; color: #111827; }
+.card { background: white; padding: 22px; border-radius: 12px; border: 1px solid var(--border); display: grid; gap: 10px; }
+.card span { color: var(--muted); font-size: 14px; }
+.card strong { font-size: 28px; color: var(--text); }
 .attention { border-left: 4px solid #d97706; }
 .tableScroll { max-width: 100%; overflow-x: auto; }
 .tableScroll table { width: 100%; border-collapse: collapse; }
 .field { display: grid; gap: 8px; min-width: 0; }
-.field label { font-size: 14px; font-weight: 600; color: #374151; }
-.field input { width: 100%; border: 1px solid #9ca3af; border-radius: 6px; padding: 10px; font: inherit; }
-.field select { width: 100%; border: 1px solid #9ca3af; border-radius: 6px; padding: 10px; font: inherit; }
+.field label { font-size: 14px; font-weight: 600; color: var(--text); }
+.field input { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 10px; font: inherit; }
+.field select { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 10px; font: inherit; }
 .field input[aria-invalid='true'] { border-color: #be123c; }
 .fieldError { color: #9f1239; }
 .pagination { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 16px; }

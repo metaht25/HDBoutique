@@ -9,12 +9,12 @@ export interface Shift {
   closing_reason: string | null; closed_at: string | null; closed_by_user_id: number | null;
   movements: { movement_id: number; kind: 'deposit' | 'withdrawal'; amount: string; reason: string; performed_by_user_id: number; created_at: string }[];
 }
-export interface PaymentInput { shift_id: number; method: 'cash' | 'transfer'; received_amount?: string; reference?: string; transfer_confirmed?: boolean }
-export interface Payment { shift_id: number; method: 'cash' | 'transfer'; amount: string; received_amount: string; change_amount: string; reference: string | null }
+export interface PaymentInput { shift_id: number; method: 'cash' | 'transfer' | 'mixed'; received_amount?: string; transfer_amount?: string; reference?: string; transfer_confirmed?: boolean }
+export interface Payment { shift_id: number; method: 'cash' | 'transfer' | 'mixed'; amount: string; cash_amount?: string | null; transfer_amount?: string | null; received_amount: string; change_amount: string; reference: string | null }
 export function parsePayment(value: unknown): Payment {
   const row = record(value)
-  if (row.method !== 'cash' && row.method !== 'transfer') return invalidResponse()
-  return { shift_id: positiveId(row.shift_id), method: row.method, amount: money(row.amount), received_amount: money(row.received_amount),
+  if (row.method !== 'cash' && row.method !== 'transfer' && row.method !== 'mixed') return invalidResponse()
+  return { shift_id: positiveId(row.shift_id), method: row.method, amount: money(row.amount), cash_amount: row.cash_amount == null ? null : money(row.cash_amount), transfer_amount: row.transfer_amount == null ? null : money(row.transfer_amount), received_amount: money(row.received_amount),
     change_amount: money(row.change_amount), reference: row.reference === null ? null : requiredText(row.reference) }
 }
 export function parseShift(value: unknown): Shift {

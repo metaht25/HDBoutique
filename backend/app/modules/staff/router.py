@@ -57,7 +57,7 @@ def get_employee(
 def create_employee(
     payload: EmployeeCreate, session: DatabaseSession, actor: PurchasingIdentity
 ) -> object:
-    return StaffService(session).save_employee(payload)
+    return StaffService(session).save_employee(payload, actor_id=actor.user_id)
 
 
 @router.patch("/employees/{record_id}", response_model=EmployeeRead)
@@ -67,4 +67,4 @@ def update_employee(
     session: DatabaseSession,
     actor: PurchasingIdentity,
 ) -> object:
-    return StaffService(session).save_employee(payload, record_id)
+    return StaffService(session).save_employee(payload, record_id, actor.user_id)

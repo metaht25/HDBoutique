@@ -1,5 +1,6 @@
 """locations use cases with explicit service-owned transactions."""
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -102,6 +103,23 @@ class LocationsService:
                     )
                 for field, value in values.items():
                     setattr(record, field, value)
+                if (
+                    record_id is not None
+                    and "department_id" in values
+                    and self.session.scalar(
+                        select(Address.address_id)
+                        .where(
+                            Address.municipality_id == record_id,
+                            Address.department_id != record.department_id,
+                        )
+                        .limit(1)
+                    )
+                ):
+                    raise ApplicationError(
+                        409,
+                        "municipality_in_use",
+                        "El municipio tiene domicilios en su departamento actual.",
+                    )
                 self.repository.add_municipality(record)
             return record
         except IntegrityError as error:
@@ -151,6 +169,19 @@ class LocationsService:
                     )
                 for field, value in values.items():
                     setattr(record, field, value)
+                if record.municipality_id is not None:
+                    municipality = self.session.get(
+                        Municipality, record.municipality_id
+                    )
+                    if (
+                        municipality is None
+                        or municipality.department_id != record.department_id
+                    ):
+                        raise ApplicationError(
+                            422,
+                            "invalid_municipality",
+                            "El municipio no pertenece al departamento.",
+                        )
                 self.repository.add_address(record)
             return record
         except IntegrityError as error:

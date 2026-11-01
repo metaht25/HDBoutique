@@ -34,10 +34,12 @@ class SaleRepository:
         return self.session.get(UserAccount, user_id)
 
     def employee_exists(self, employee_id: int) -> bool:
-        return self.session.get(Employee, employee_id) is not None
+        record = self.session.get(Employee, employee_id)
+        return record is not None and record.is_active
 
     def customer_exists(self, customer_id: int) -> bool:
-        return self.session.get(Customer, customer_id) is not None
+        record = self.session.get(Customer, customer_id)
+        return record is not None and record.is_active
 
     def add_sale(self, record: Sale) -> None:
         self.session.add(record)
@@ -66,9 +68,16 @@ class SaleRepository:
             )
         )
 
-    def list_sales(self, offset: int, limit: int) -> list[Sale]:
+    def list_sales(
+        self, offset: int, limit: int, user_id: int | None = None
+    ) -> list[Sale]:
+        query = select(Sale)
+        if user_id is not None:
+            query = query.join(SaleWorkflow).where(
+                SaleWorkflow.created_by_user_id == user_id
+            )
         return list(
             self.session.scalars(
-                select(Sale).order_by(Sale.sale_id).offset(offset).limit(limit)
+                query.order_by(Sale.sale_id.desc()).offset(offset).limit(limit)
             )
         )

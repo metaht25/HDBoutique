@@ -39,27 +39,38 @@ class SizeRead(OutputModel):
 class ProductCreate(InputModel):
     category_id: Annotated[int, Field(gt=0, strict=True)]
     size_id: Annotated[int, Field(gt=0, strict=True)]
-    name: Annotated[str | None, Field(max_length=40, strict=True)] = None
-    unit_price: Annotated[Decimal | None, Field(max_digits=10, decimal_places=2)] = None
+    name: Annotated[str, Field(max_length=40, min_length=1)]
+    cost: Annotated[Decimal, Field(gt=0, le=Decimal("86956521.73"), decimal_places=2)]
+    initial_stock: Annotated[int, Field(ge=0, le=2147483647, strict=True)] = 0
+    supplier_id: Annotated[int | None, Field(gt=0, strict=True)] = None
+    description: Annotated[str | None, Field(max_length=500)] = None
 
 
 class ProductPatch(PatchModel):
-    required_fields = frozenset(["category_id", "size_id"])
+    required_fields = frozenset(["category_id", "size_id", "name", "cost", "is_active"])
     category_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     size_id: Annotated[int | None, Field(gt=0, strict=True)] = None
-    name: Annotated[str | None, Field(max_length=40, strict=True)] = None
-    unit_price: Annotated[Decimal | None, Field(max_digits=10, decimal_places=2)] = None
+    name: Annotated[str | None, Field(max_length=40, min_length=1)] = None
+    cost: Annotated[
+        Decimal | None, Field(gt=0, le=Decimal("86956521.73"), decimal_places=2)
+    ] = None
+    supplier_id: Annotated[int | None, Field(gt=0, strict=True)] = None
+    description: Annotated[str | None, Field(max_length=500)] = None
+    is_active: Annotated[bool | None, Field(strict=True)] = None
 
 
 class ProductRead(OutputModel):
     product_id: int
-    category_id: Annotated[int, Field(gt=0, strict=True)]
-    size_id: Annotated[int, Field(gt=0, strict=True)]
-    name: Annotated[str | None, Field(max_length=40, strict=True)]
-    legacy_stock_quantity: Annotated[
-        int | None, Field(ge=-2147483648, le=2147483647, strict=True)
-    ]
-    legacy_stock: Annotated[
-        int | None, Field(ge=-2147483648, le=2147483647, strict=True)
-    ]
-    unit_price: Annotated[Decimal | None, Field(max_digits=10, decimal_places=2)]
+    category_id: int
+    size_id: int
+    name: str | None
+    legacy_stock_quantity: int | None
+    legacy_stock: int | None
+    unit_price: Decimal | None
+    is_active: bool
+    description: str | None
+
+
+class ProductOwnerRead(ProductRead):
+    cost: Decimal | None
+    supplier_id: int | None

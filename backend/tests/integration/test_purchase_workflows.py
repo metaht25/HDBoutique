@@ -372,7 +372,7 @@ def test_invalid_existing_stock_rolls_back_every_line(
     )
 
 
-@pytest.mark.parametrize("role", ["Administrator", "Manager", "Cashier"])
+@pytest.mark.parametrize("role", ["Administrator", "Cashier"])
 def test_purchasing_permissions_and_employee_selection(
     purchase_app: FastAPI, purchase_graph: dict[str, int], role: str
 ) -> None:

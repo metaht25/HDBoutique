@@ -20,6 +20,7 @@ from app.modules.identity.schemas import (
     AccountRead,
     CsrfResponse,
     LoginInput,
+    PasswordChange,
 )
 from app.modules.identity.service import IdentityService, Principal
 
@@ -132,3 +133,15 @@ def update_user(
     principal: AdministratorIdentity,
 ) -> object:
     return IdentityService(session).update_user(user_id, payload)
+
+
+@router.post("/auth/password", status_code=204)
+def change_password(
+    payload: PasswordChange, session: DatabaseSession, principal: CurrentIdentity
+) -> Response:
+    IdentityService(session).change_password(
+        principal,
+        payload.current_password.get_secret_value(),
+        payload.new_password.get_secret_value(),
+    )
+    return Response(status_code=204)

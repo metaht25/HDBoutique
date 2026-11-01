@@ -1,0 +1,70 @@
+.page { display: grid; gap: 22px; min-width: 0; }
+.intro, .heading, .actions { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.intro p { margin: 0; color: var(--muted); }
+.heading { margin-bottom: 20px; }
+.heading h2 { margin: 0; font-size: 19px; }
+.panel { min-width: 0; background: white; border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: 0 3px 12px var(--shadow); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 18px; }
+.stat { display: flex; flex-direction: column; gap: 12px; background: white; border: 1px solid var(--border); border-radius: 16px; padding: 23px; box-shadow: 0 3px 12px var(--shadow); }
+.stat > span { color: var(--muted); font-size: 14px; }
+.stat strong { font-size: clamp(24px, 2.1vw, 30px); overflow-wrap: anywhere; }
+.stat small { color: var(--muted); }
+.stat i { width: 60px; height: 4px; background: var(--border); border-radius: 3px; margin-top: auto; }
+.columns { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: 20px; }
+.equalColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.filters, .formGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 16px; align-items: end; }
+.formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form { display: grid; gap: 20px; }
+.form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 18px; }
+.form legend { font-weight: 700; padding: 0 0 15px; }
+.full { grid-column: 1 / -1; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.tabs button { flex: 1; }
+.table { width: 100%; overflow-x: auto; border-radius: 8px; }
+.table table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.table th, .table td { padding: 17px 12px; text-align: left; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+.table th { font-weight: 700; color: var(--muted); white-space: nowrap; }
+.table td { min-width: 90px; max-width: 260px; overflow-wrap: anywhere; }
+.table td:first-child { font-weight: 600; }
+.table tr:last-child td { border-bottom: 0; }
+.table button { font-size: 13px; padding: 8px 12px; }
+.table .actions { gap: 6px; justify-content: start; }
+.badge { display: inline-block; padding: 6px 9px; border-radius: 7px; font-size: 12px; font-weight: 700; white-space: nowrap; background: #fff3d7; color: #7a5300; }
+.badge[data-tone=good] { background: #e8f6ec; color: #28603c; }
+.badge[data-tone=bad] { background: #ffebed; color: #a32c40; }
+.empty { color: var(--muted); text-align: center; padding: 30px 12px; }
+.pager { display: flex; gap: 12px; align-items: center; justify-content: end; flex-wrap: wrap; margin-top: 20px; font-size: 13px; }
+.pager span { margin-right: auto; color: var(--muted); }
+.modal { border: 1px solid var(--border); border-radius: 18px; padding: 0; width: min(680px, calc(100% - 24px)); max-height: calc(100dvh - 32px); color: var(--text); background: white; overflow-y: auto; box-shadow: 0 20px 80px #27121d40; }
+.modal::backdrop { background: #23142073; }
+.wide { width: min(1080px, calc(100% - 24px)); }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--soft); border-bottom: 1px solid var(--border); padding: 18px 24px; }
+.modalHeader h2 { margin: 0; font-size: 22px; }
+.modalHeader button { font-size: 22px; padding: 3px 12px; }
+.modalBody { padding: 24px; }
+.hint { color: var(--muted); font-size: 13px; margin: 4px 0; }
+.summary { display: grid; gap: 12px; padding: 18px; background: var(--soft); border: 1px solid var(--border-soft); border-radius: 12px; }
+.summary p { display: flex; justify-content: space-between; gap: 14px; margin: 0; }
+.total { font-size: 23px; font-weight: 800; color: var(--accent); border-top: 1px solid var(--border); padding-top: 14px; }
+.quantity { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.quantity button { padding: 6px 10px; }
+.productGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 12px; margin: 18px 0; }
+.productCard { border: 1px solid var(--border); padding: 16px; border-radius: 12px; display: grid; gap: 10px; }
+.productCard p, .productCard h3 { margin: 0; font-size: 15px; }
+.shift { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border: 1px solid var(--border); border-radius: 12px; background: white; }
+.shift small { display: block; color: var(--muted); margin-top: 5px; }
+.bar { height: 10px; background: var(--soft); border-radius: 6px; overflow: hidden; margin: 10px 0 18px; }
+.bar span { display: block; background: var(--accent); height: 100%; border-radius: inherit; }
+.ticket { width: 80mm; max-width: 100%; margin: 0 auto; padding: 4mm; background: white; color: black; font: 12px/1.5 Arial, sans-serif; border: 1px solid #ddd; overflow-wrap: anywhere; }
+.ticket h3, .ticket header { text-align: center; }
+.ticket h3 { margin: 4px 0; }
+.ticket img { max-width: 100%; max-height: 22mm; object-fit: contain; }
+.ticket p { margin: 5px 0; }
+.ticket hr { border: 0; border-top: 1px dashed #777; margin: 12px 0; }
+.ticketTotal { font-size: 19px; font-weight: bold; }
+.ticketLine { display: flex; justify-content: space-between; gap: 10px; }
+.recent { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.recent li { border-bottom: 1px solid var(--border-soft); padding-bottom: 14px; }
+.recent small { display: block; color: var(--muted); margin-top: 4px; }
+@media (max-width: 1100px) { .columns { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .equalColumns, .formGrid { grid-template-columns: 1fr; } .panel { padding: 16px; } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .stat { padding: 16px; } .stat strong { font-size: 23px; } .modalBody { padding: 18px; } .modalHeader { padding: 16px 18px; } .filters { grid-template-columns: 1fr; } .intro { align-items: start; } }

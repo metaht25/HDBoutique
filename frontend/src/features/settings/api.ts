@@ -6,6 +6,7 @@ import { money } from '../reports/api'
 
 export const catalogs = {
   departments: { label: 'Departamentos', id: 'department_id', field: 'name', fieldLabel: 'Nombre', max: 40, required: true },
+  municipalities: { label: 'Municipios', id: 'municipality_id', field: 'name', fieldLabel: 'Nombre', max: 40, required: true },
   addresses: { label: 'Direcciones', id: 'address_id', field: 'address_line', fieldLabel: 'Detalle de dirección', max: 100, required: false },
   categories: { label: 'Categorías', id: 'category_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: false },
   sizes: { label: 'Tallas', id: 'size_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: true },
@@ -20,7 +21,7 @@ export function parseCatalog(kind: Catalog, value: unknown): CatalogRow {
   const row = record(value), config = catalogs[kind]
   return { id: positiveId(row[config.id]), text: config.field === null ? null : kind === 'supplier-products' ? money(row.purchase_price)
     : config.required ? requiredText(row[config.field]) : nullableText(row[config.field]),
-    ...(kind === 'addresses' ? { department_id: positiveId(row.department_id) } : {}),
+    ...((kind === 'addresses' || kind === 'municipalities') ? { department_id: positiveId(row.department_id) } : {}),
     ...(kind === 'supplier-products' ? { product_id: positiveId(row.product_id) } : {}),
     ...(kind === 'supplier-offerings' ? { supplier_id: positiveId(row.supplier_id), supplier_product_id: positiveId(row.supplier_product_id) } : {}),
   }
@@ -31,7 +32,7 @@ export async function listCatalog(kind: Catalog, page: number, signal: AbortSign
 export async function catalogChoices(kind: Catalog, signal: AbortSignal): Promise<Record<string, Choice[]>> {
   const load = (resource: string, parse: (value: unknown) => Choice) => allOptions(offset => apiClient.request(`/api/v1/${resource}?offset=${offset}&limit=100`, { signal })
     .then(body => parseList(body, parse)), row => row.id)
-  if (kind === 'addresses') return { department_id: await load('departments', value => {
+  if ((kind === 'addresses' || kind === 'municipalities')) return { department_id: await load('departments', value => {
     const row = record(value); return { id: positiveId(row.department_id), label: requiredText(row.name) }
   }) }
   if (kind === 'supplier-products') return { product_id: await load('products', value => {

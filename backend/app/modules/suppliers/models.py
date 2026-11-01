@@ -1,8 +1,9 @@
 """Preserve supplier associations without assuming pair uniqueness."""
 
+from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Identity, Numeric, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Identity, Numeric, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import Base
@@ -10,6 +11,9 @@ from app.infrastructure.database.base import Base
 
 class Supplier(Base):
     __tablename__ = "suppliers"
+
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     supplier_id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     address_id: Mapped[int] = mapped_column(

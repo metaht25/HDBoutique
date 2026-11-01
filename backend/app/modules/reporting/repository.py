@@ -15,7 +15,7 @@ from app.modules.sales.models import Sale
 from app.modules.sales.workflow_models import SaleWorkflow
 from app.modules.suppliers.models import Supplier
 
-LOW_STOCK_THRESHOLD = 10
+LOW_STOCK_THRESHOLD = 5
 
 
 def stock_status() -> Any:

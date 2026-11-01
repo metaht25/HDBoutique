@@ -29,12 +29,12 @@ def list_sales(
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> list[SaleRead]:
-    return SaleService(session).list_sales(offset, limit)
+    return SaleService(session).list_sales(offset, limit, actor)
 
 
 @router.get("/{sale_id}", response_model=SaleRead)
 def get_sale(sale_id: int, session: DatabaseSession, actor: SalesIdentity) -> SaleRead:
-    return SaleService(session).get_sale(sale_id)
+    return SaleService(session).get_sale(sale_id, actor)
 
 
 @router.post("", response_model=SaleRead, status_code=201)

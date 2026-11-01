@@ -68,9 +68,9 @@ class CustomersRepository:
     def validate_customer_references(self, values: dict[str, object]) -> bool:
         return all(
             (
-                "address_id" not in values
+                values.get("address_id") is None
                 or self.session.get(Address, values["address_id"]) is not None,
-                "customer_type_id" not in values
+                values.get("customer_type_id") is None
                 or self.session.get(CustomerType, values["customer_type_id"])
                 is not None,
             )

@@ -6,6 +6,7 @@ export interface RequestOptions {
   signal?: AbortSignal
   idempotencyKey?: string
   fallback?: string
+  responseType?: 'json' | 'blob'
 }
 
 type UnauthorizedListener = () => void
@@ -80,6 +81,11 @@ export class ApiClient {
     }
     if (response.status === 204) return undefined as T
     const responseRevision = this.sessionRevision
+    if (response.ok && options.responseType === 'blob') {
+      const blob = await response.blob()
+      if (responseRevision !== this.sessionRevision) throw this.sessionChanged()
+      return blob as T
+    }
     let body: unknown
     try { body = await response.json() } catch {
       if (response.ok) throw new ApiError(502, 'invalid_response', 'Respuesta del servidor no válida.')

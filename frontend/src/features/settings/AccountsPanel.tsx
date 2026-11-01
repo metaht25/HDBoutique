@@ -17,9 +17,9 @@ import { useSession } from '../session/sessionContext'
 import { listAccounts, saveAccount } from './api'
 import styles from '../../shared/ui/Management.module.css'
 
-const roleLabels: Record<Role, string> = { Administrator: 'Administración', Manager: 'Gerencia', Cashier: 'Caja' }
+const roleLabels: Record<Role, string> = { Administrator: 'Dueña', Cashier: 'Colaborador' }
 function accountError(error: unknown): string {
-  if (error instanceof ApiError && error.code === 'last_administrator') return 'Debe conservarse al menos una cuenta Administrator activa.'
+  if (error instanceof ApiError && error.code === 'last_administrator') return 'Debe conservarse al menos una cuenta Dueña activa.'
   if (error instanceof ApiError && error.code === 'account_conflict') return 'El usuario o empleado ya está asignado a otra cuenta.'
   return getErrorMessage(error, 'No se pudo guardar la cuenta.')
 }

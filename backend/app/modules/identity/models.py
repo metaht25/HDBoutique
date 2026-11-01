@@ -2,7 +2,15 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Identity, String
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Identity,
+    String,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import Base
@@ -22,6 +30,9 @@ class UserAccount(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20))
     is_active: Mapped[bool] = mapped_column(Boolean)
+    must_change_password: Mapped[bool] = mapped_column(
+        Boolean, server_default=text("false")
+    )
     employee_id: Mapped[int | None] = mapped_column(
         ForeignKey("employees.employee_id", ondelete="RESTRICT"),
         unique=True,

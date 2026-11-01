@@ -24,7 +24,7 @@ from app.modules.staff.models import Employee
 from tests.identity_helpers import SYNTHETIC_PASSWORD, TEST_ORIGIN, login
 
 pytestmark = pytest.mark.postgres
-ROLES = ("Administrator", "Manager", "Cashier")
+ROLES = ("Administrator", "Cashier")
 RESOURCES = (
     "departments",
     "municipalities",
@@ -97,7 +97,7 @@ def test_login_rotation_logout_and_cookie_flags(
     assert response.status_code == 200
     authenticated = client.cookies[COOKIE_NAME]
     assert authenticated != preauth
-    assert "password" not in response.text
+    assert "password_hash" not in response.text and SYNTHETIC_PASSWORD not in response.text
     assert response.json()["employee_id"] is None
     assert response.headers["cache-control"] == "no-store"
     client.headers["X-CSRF-Token"] = response.headers["X-CSRF-Token"]
@@ -124,12 +124,11 @@ def test_role_matrix_all_business_operations(
 ) -> None:
     client = identity_client
     login(client, role.lower())
-    cashier_read = {"categories", "sizes", "products", "customer-types", "customers"}
+    cashier_read = {"categories", "sizes", "products", "customer-types", "customers", "departments", "municipalities"}
     for resource in RESOURCES:
         for method in ("GET", "POST", "PUT", "PATCH", "DELETE"):
             allowed = (
                 role == "Administrator"
-                or (role == "Manager" and method != "DELETE")
                 or (
                     role == "Cashier"
                     and (
@@ -266,7 +265,7 @@ def test_expiry_is_server_enforced(
     identity_client: TestClient, elapsed: timedelta
 ) -> None:
     client = identity_client
-    login(client, "manager")
+    login(client, "cashier")
     with patch(
         "app.modules.identity.service.utc_now", return_value=utc_now() + elapsed
     ):
@@ -281,47 +280,47 @@ def test_user_changes_revoke_sessions_and_guard_last_administrator(
     login(client, "administrator")
     users = {user["username"]: user for user in client.get("/api/v1/users").json()}
     admin_id = users["administrator"]["user_id"]
-    manager_id = users["manager"]["user_id"]
+    cashier_id = users["cashier"]["user_id"]
     for payload in ({"is_active": False}, {"role": "Cashier"}):
         assert (
             client.patch(f"/api/v1/users/{admin_id}", json=payload).status_code == 409
         )
     with TestClient(
         identity_app, base_url=TEST_ORIGIN, headers={"Origin": TEST_ORIGIN}
-    ) as manager:
-        login(manager, "manager")
-        response = client.patch(f"/api/v1/users/{manager_id}", json={"role": "Cashier"})
+    ) as cashier:
+        login(cashier, "cashier")
+        response = client.patch(f"/api/v1/users/{cashier_id}", json={"role": "Administrator"})
         assert response.status_code == 200
-        assert manager.get("/api/v1/auth/me").status_code == 401
-        login(manager, "manager")
-        assert manager.get("/api/v1/suppliers").status_code == 403
+        assert cashier.get("/api/v1/auth/me").status_code == 401
+        login(cashier, "cashier")
+        assert cashier.get("/api/v1/suppliers").status_code == 200
         response = client.patch(
-            f"/api/v1/users/{manager_id}",
+            f"/api/v1/users/{cashier_id}",
             json={
                 "password": "Replacement-password-42!",
                 "is_active": False,
             },
         )
         assert response.status_code == 200
-        assert manager.get("/api/v1/products").status_code == 401
+        assert cashier.get("/api/v1/products").status_code == 401
         assert (
             client.patch(
-                f"/api/v1/users/{manager_id}", json={"is_active": True}
+                f"/api/v1/users/{cashier_id}", json={"is_active": True}
             ).status_code
             == 200
         )
-        response = manager.get("/api/v1/auth/csrf")
+        response = cashier.get("/api/v1/auth/csrf")
         csrf = response.json()["csrf_token"]
-        bad = manager.post(
+        bad = cashier.post(
             "/api/v1/auth/login",
             json={
-                "username": "manager",
+                "username": "cashier",
                 "password": SYNTHETIC_PASSWORD,
             },
             headers={"X-CSRF-Token": csrf},
         )
         assert bad.status_code == 401
-        login(manager, "manager", "Replacement-password-42!")
+        login(cashier, "cashier", "Replacement-password-42!")
 
 
 def test_account_validation_uniqueness_and_employee_link(

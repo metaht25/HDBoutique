@@ -1,6 +1,6 @@
 /** New API contracts preserve decimal money as text and unknown external data. */
 export type DecimalMoney = string
-export type Role = 'Administrator' | 'Manager' | 'Cashier'
+export type Role = 'Administrator' | 'Cashier'
 
 export interface Account {
   user_id: number
@@ -8,6 +8,8 @@ export interface Account {
   role: Role
   is_active: boolean
   employee_id: number | null
+  must_change_password?: boolean
+  display_name?: string | null
 }
 
 export interface ValidationField {
@@ -24,7 +26,7 @@ export function isAccount(value: unknown): value is Account {
   const account = value as Record<string, unknown>
   return Number.isInteger(account.user_id) && Number(account.user_id) > 0
     && typeof account.username === 'string' && typeof account.is_active === 'boolean'
-    && ['Administrator', 'Manager', 'Cashier'].includes(String(account.role))
+    && ['Administrator', 'Cashier'].includes(String(account.role))
     && (account.employee_id === null
       || (Number.isInteger(account.employee_id) && Number(account.employee_id) > 0))
 }

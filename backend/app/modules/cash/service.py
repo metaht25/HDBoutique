@@ -50,11 +50,7 @@ class CashService:
 
     def _actor(self, actor: Principal, *, supervisor: bool = False) -> UserAccount:
         account = self.session.get(UserAccount, actor.user_id)
-        roles = (
-            {"Administrator", "Manager"}
-            if supervisor
-            else {"Administrator", "Manager", "Cashier"}
-        )
+        roles = {"Administrator"} if supervisor else {"Administrator", "Cashier"}
         if account is None or not account.is_active or account.role not in roles:
             raise ApplicationError(403, "permission_denied", "Permission denied")
         return account
@@ -200,10 +196,10 @@ class CashService:
                     raise ApplicationError(
                         422, "employee_mismatch", "Use the account employee"
                     )
-                if (
-                    employee_id is None
-                    or self.session.get(Employee, employee_id) is None
-                ):
+                employee = (
+                    self.session.get(Employee, employee_id) if employee_id else None
+                )
+                if employee is None or not employee.is_active:
                     raise ApplicationError(
                         422, "employee_required", "An existing employee is required"
                     )
@@ -286,9 +282,24 @@ class CashService:
     ) -> None:
         # Called only inside the sale transaction after locking its shift.
         received = payload.received_amount
-        if received < total or (payload.method == "transfer" and received != total):
+        transfer = (
+            payload.transfer_amount
+            if payload.method == "mixed"
+            else total
+            if payload.method == "transfer"
+            else Decimal("0.00")
+        )
+        assert transfer is not None
+        applied_cash = total - transfer
+        if (
+            (payload.method == "mixed" and not Decimal("0.00") < transfer < total)
+            or (payload.method == "transfer" and received != total)
+            or (payload.method != "transfer" and received < applied_cash)
+        ):
             raise ApplicationError(
-                422, "payment_incomplete", "Full immediate payment is required"
+                422,
+                "payment_incomplete",
+                "El pago debe cubrir el total exacto; revisa efectivo y transferencia.",
             )
         self.repository.add(
             SalePayment(
@@ -296,8 +307,12 @@ class CashService:
                 shift_id=payload.shift_id,
                 method=payload.method,
                 amount=total,
+                cash_amount=applied_cash,
+                transfer_amount=transfer,
                 received_amount=received,
-                change_amount=received - total,
+                change_amount=received - applied_cash
+                if payload.method != "transfer"
+                else Decimal("0.00"),
                 reference=payload.reference,
                 created_at=datetime.now(UTC),
                 performed_by_user_id=actor.user_id,
@@ -316,6 +331,8 @@ class CashService:
             reason=record.reason,
             method=record.method,
             amount=record.amount,
+            cash_amount=record.cash_amount,
+            transfer_amount=record.transfer_amount,
             reference=record.reference,
             created_at=record.created_at,
             performed_by_user_id=record.performed_by_user_id,
@@ -356,16 +373,23 @@ class CashService:
                     "payment_reconciliation_required",
                     "Historical sale requires payment reconciliation",
                 )
-            if (payment.method == "transfer") != (payload.reference is not None):
+            if (payment.method in {"transfer", "mixed"}) != (
+                payload.reference is not None
+            ):
                 raise ApplicationError(
                     422,
                     "invalid_refund_reference",
                     "Provide a reference only for a transfer refund",
                 )
-            if (
-                payment.method == "cash"
-                and self.repository.expected(shift) < sale.total
-            ):
+            cash_refund = (
+                payment.cash_amount
+                if payment.cash_amount is not None
+                else payment.amount
+                if payment.method == "cash"
+                else Decimal("0.00")
+            )
+            transfer_refund = payment.amount - cash_refund
+            if self.repository.expected(shift) < cash_refund:
                 raise conflict(
                     "insufficient_cash", "Insufficient cash for the full refund"
                 )
@@ -398,6 +422,8 @@ class CashService:
                 sale_id=sale_id,
                 shift_id=shift.shift_id,
                 amount=sale.total,
+                cash_amount=cash_refund,
+                transfer_amount=transfer_refund,
                 method=payment.method,
                 reference=payload.reference,
                 reason=payload.reason,

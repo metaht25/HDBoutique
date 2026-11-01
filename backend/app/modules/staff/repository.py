@@ -58,6 +58,9 @@ class StaffRepository:
         return [
             dict(row)
             for row in self.session.execute(
-                statement.order_by(Employee.employee_id).offset(offset).limit(limit)
+                statement.where(Employee.is_active.is_(True))
+                .order_by(Employee.employee_id)
+                .offset(offset)
+                .limit(limit)
             ).mappings()
         ]

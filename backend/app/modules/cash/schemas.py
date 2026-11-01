@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, Field, PlainSerializer, model_validator
+from pydantic import BaseModel, Field, PlainSerializer, field_validator, model_validator
 
 from app.api.schemas import InputModel, OutputModel
 
@@ -35,7 +35,8 @@ class MovementCreate(InputModel):
 
 class PaymentCreate(InputModel):
     shift_id: PositiveId
-    method: Literal["cash", "transfer"]
+    method: Literal["cash", "transfer", "mixed"]
+    transfer_amount: Money | None = None
     received_amount: Money
     reference: Reference | None = None
     transfer_confirmed: Annotated[bool, Field(strict=True)] = False
@@ -43,11 +44,28 @@ class PaymentCreate(InputModel):
     @model_validator(mode="after")
     def validate_method(self) -> Self:
         if self.method == "cash":
-            if self.reference is not None or self.transfer_confirmed:
+            if (
+                self.reference is not None
+                or self.transfer_confirmed
+                or self.transfer_amount is not None
+            ):
                 raise ValueError("Cash requires received amount only")
         elif not self.reference or not self.transfer_confirmed:
             raise ValueError("Confirm the transfer manually and provide its reference")
+        if self.method == "mixed" and (
+            self.transfer_amount is None or self.transfer_amount <= 0
+        ):
+            raise ValueError("El pago mixto requiere un monto transferido positivo")
+        if self.method == "transfer" and self.transfer_amount is not None:
+            raise ValueError("Indica el monto exacto en received_amount")
         return self
+
+    @field_validator("received_amount", "transfer_amount", mode="before")
+    @classmethod
+    def exact_money(cls, value: object) -> object:
+        if isinstance(value, (float, bool)):
+            raise ValueError("Envía los importes como texto decimal")
+        return value
 
 
 class ReturnItemCreate(InputModel):
@@ -70,6 +88,8 @@ class VoidCreate(InputModel):
 
 
 class PaymentRead(OutputModel):
+    cash_amount: CashMoney | None = None
+    transfer_amount: CashMoney | None = None
     payment_id: int
     shift_id: int
     method: str
@@ -85,6 +105,8 @@ class ReturnItemRead(OutputModel):
 
 
 class VoidRead(OutputModel):
+    cash_amount: CashMoney | None = None
+    transfer_amount: CashMoney | None = None
     void_id: int
     shift_id: int
     reason: str

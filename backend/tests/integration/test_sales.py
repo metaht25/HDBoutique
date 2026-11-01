@@ -97,7 +97,7 @@ def test_complete_sale_history_and_retry(sales_context, database_connection) -> 
     ]
     assert (
         client.patch(
-            "/api/v1/products/" + str(graph["product1"]), json={"unit_price": "500.00"}
+            "/api/v1/products/" + str(graph["product1"]), json={"cost": "434.78"}
         ).status_code
         == 200
     )
@@ -213,7 +213,7 @@ def test_failure_after_writes_rolls_back_and_key_can_retry(
     assert register(client, graph).status_code == 201
 
 
-@pytest.mark.parametrize("role", ["Administrator", "Manager", "Cashier"])
+@pytest.mark.parametrize("role", ["Administrator", "Cashier"])
 def test_roles_and_employee_attribution(sales_context, role) -> None:
     _, graph, _, _, app = sales_context
     with TestClient(

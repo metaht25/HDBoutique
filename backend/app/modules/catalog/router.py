@@ -11,6 +11,7 @@ from app.modules.catalog.schemas import (
     CategoryPatch,
     CategoryRead,
     ProductCreate,
+    ProductOwnerRead,
     ProductPatch,
     ProductRead,
     SizeCreate,
@@ -18,7 +19,10 @@ from app.modules.catalog.schemas import (
     SizeRead,
 )
 from app.modules.catalog.service import CatalogService
-from app.modules.identity.dependencies import authorize_business_request
+from app.modules.identity.dependencies import (
+    CurrentIdentity,
+    authorize_business_request,
+)
 
 router = APIRouter(
     prefix="/api/v1",
@@ -108,39 +112,56 @@ def delete_size(record_id: int, session: DatabaseSession) -> Response:
     return Response(status_code=204)
 
 
-@router.get("/products", response_model=list[ProductRead])
+@router.get("/products", response_model=list[ProductOwnerRead | ProductRead])
 def list_product(
     session: DatabaseSession,
+    actor: CurrentIdentity,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     q: Annotated[str | None, Query(max_length=100)] = None,
 ) -> object:
-    return CatalogService(session).list_product(offset, limit, q.strip() if q else None)
+    rows = CatalogService(session).list_product(offset, limit, q.strip() if q else None)
+    schema = ProductOwnerRead if actor.role == "Administrator" else ProductRead
+    return [schema.model_validate(row) for row in rows]
 
 
-@router.get("/products/{record_id}", response_model=ProductRead)
-def get_product(record_id: int, session: DatabaseSession) -> object:
-    return CatalogService(session).get_product(record_id)
+@router.get("/products/{record_id}", response_model=ProductOwnerRead | ProductRead)
+def get_product(
+    record_id: int, session: DatabaseSession, actor: CurrentIdentity
+) -> object:
+    row = CatalogService(session).get_product(record_id)
+    schema = ProductOwnerRead if actor.role == "Administrator" else ProductRead
+    return schema.model_validate(row)
 
 
-@router.post("/products", response_model=ProductRead, status_code=201)
-def create_product(payload: ProductCreate, session: DatabaseSession) -> object:
-    return CatalogService(session).save_product(payload)
+@router.post(
+    "/products", response_model=ProductOwnerRead | ProductRead, status_code=201
+)
+def create_product(
+    payload: ProductCreate, session: DatabaseSession, actor: CurrentIdentity
+) -> object:
+    return CatalogService(session).save_product(payload, actor=actor)
 
 
-@router.put("/products/{record_id}", response_model=ProductRead)
+@router.put("/products/{record_id}", response_model=ProductOwnerRead | ProductRead)
 def replace_product(
-    record_id: int, payload: ProductCreate, session: DatabaseSession
+    record_id: int,
+    payload: ProductCreate,
+    session: DatabaseSession,
+    actor: CurrentIdentity,
 ) -> object:
     complete = ProductCreate(**payload.model_dump())
-    return CatalogService(session).save_product(complete, record_id)
+    return CatalogService(session).save_product(complete, record_id, actor)
 
 
-@router.patch("/products/{record_id}", response_model=ProductRead)
+@router.patch("/products/{record_id}", response_model=ProductOwnerRead | ProductRead)
 def update_product(
-    record_id: int, payload: ProductPatch, session: DatabaseSession
+    record_id: int,
+    payload: ProductPatch,
+    session: DatabaseSession,
+    actor: CurrentIdentity,
 ) -> object:
-    return CatalogService(session).save_product(payload, record_id)
+    return CatalogService(session).save_product(payload, record_id, actor)
 
 
 @router.delete("/products/{record_id}", status_code=204)

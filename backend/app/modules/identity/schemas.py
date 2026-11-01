@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 from app.api.schemas import OutputModel, PatchModel
 
-Role = Literal["Administrator", "Manager", "Cashier"]
+Role = Literal["Administrator", "Cashier"]
 Password = Annotated[SecretStr, Field(min_length=12, max_length=128)]
 
 
@@ -43,12 +43,20 @@ class AccountPatch(PatchModel):
 
 
 class AccountRead(OutputModel):
+    must_change_password: bool = False
+    display_name: str | None = None
     user_id: int
     username: str
-    role: Role
+    role: str
     is_active: bool
     employee_id: int | None
 
 
 class CsrfResponse(BaseModel):
     csrf_token: str
+
+
+class PasswordChange(BaseModel):
+    model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
+    current_password: Annotated[SecretStr, Field(min_length=1, max_length=128)]
+    new_password: Password

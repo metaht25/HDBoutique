@@ -15,7 +15,10 @@ from app.modules.customers.schemas import (
     CustomerTypeRead,
 )
 from app.modules.customers.service import CustomersService
-from app.modules.identity.dependencies import authorize_business_request
+from app.modules.identity.dependencies import (
+    CurrentIdentity,
+    authorize_business_request,
+)
 
 router = APIRouter(
     prefix="/api/v1",
@@ -87,23 +90,31 @@ def get_customer(record_id: int, session: DatabaseSession) -> object:
 
 
 @router.post("/customers", response_model=CustomerRead, status_code=201)
-def create_customer(payload: CustomerCreate, session: DatabaseSession) -> object:
-    return CustomersService(session).save_customer(payload)
+def create_customer(
+    payload: CustomerCreate, session: DatabaseSession, actor: CurrentIdentity
+) -> object:
+    return CustomersService(session).save_customer(payload, actor_id=actor.user_id)
 
 
 @router.put("/customers/{record_id}", response_model=CustomerRead)
 def replace_customer(
-    record_id: int, payload: CustomerCreate, session: DatabaseSession
+    record_id: int,
+    payload: CustomerCreate,
+    session: DatabaseSession,
+    actor: CurrentIdentity,
 ) -> object:
     complete = CustomerCreate(**payload.model_dump())
-    return CustomersService(session).save_customer(complete, record_id)
+    return CustomersService(session).save_customer(complete, record_id, actor.user_id)
 
 
 @router.patch("/customers/{record_id}", response_model=CustomerRead)
 def update_customer(
-    record_id: int, payload: CustomerPatch, session: DatabaseSession
+    record_id: int,
+    payload: CustomerPatch,
+    session: DatabaseSession,
+    actor: CurrentIdentity,
 ) -> object:
-    return CustomersService(session).save_customer(payload, record_id)
+    return CustomersService(session).save_customer(payload, record_id, actor.user_id)
 
 
 @router.delete("/customers/{record_id}", status_code=204)

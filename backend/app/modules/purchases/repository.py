@@ -34,10 +34,12 @@ class PurchaseRepository:
         return self.session.get(UserAccount, user_id)
 
     def employee_exists(self, employee_id: int) -> bool:
-        return self.session.get(Employee, employee_id) is not None
+        record = self.session.get(Employee, employee_id)
+        return record is not None and record.is_active
 
     def supplier_exists(self, supplier_id: int) -> bool:
-        return self.session.get(Supplier, supplier_id) is not None
+        record = self.session.get(Supplier, supplier_id)
+        return record is not None and record.is_active
 
     def offered_product(
         self, supplier_id: int, supplier_product_id: int

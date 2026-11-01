@@ -1,5 +1,6 @@
 """Explicit registry loaded by Alembic and persistence tests, without I/O."""
 
+from app.modules.boutique.models import BoutiqueProfile, ManagementEvent
 from app.modules.cash.models import (
     CashMovement,
     CashRequest,
@@ -21,6 +22,8 @@ from app.modules.staff.models import Employee
 from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
 __all__ = [
+    "BoutiqueProfile",
+    "ManagementEvent",
     "CashMovement",
     "CashRequest",
     "CashShift",

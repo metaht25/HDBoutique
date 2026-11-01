@@ -4,6 +4,7 @@ import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from hashlib import sha256
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -13,13 +14,19 @@ from app.core.errors import ApplicationError
 from app.modules.cash.models import SalePayment
 from app.modules.cash.schemas import PaymentRead
 from app.modules.cash.service import CashService
+from app.modules.catalog.models import Size
+from app.modules.customers.models import Customer
+from app.modules.customers.service import general_customer
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
+from app.modules.locations.composition import address_text
+from app.modules.locations.models import Address
 from app.modules.sales.models import Sale, SaleItem
 from app.modules.sales.repository import SaleRepository
 from app.modules.sales.schemas import SaleCreate, SaleLineRead, SaleRead
 from app.modules.sales.workflow_models import SaleWorkflow
+from app.modules.staff.models import Employee
 
 MAX_TOTAL = Decimal("99999999.99")
 
@@ -38,12 +45,21 @@ class SaleService:
         self.repository = SaleRepository(session)
         self.inventory = InventoryRepository(session)
 
+    def _seller_name(self, employee_id: int) -> str:
+        employee = self.session.get(Employee, employee_id)
+        assert employee is not None
+        return f"{employee.first_names} {employee.last_names}"
+
+    def _size_name(self, size_id: int) -> str | None:
+        size = self.session.get(Size, size_id)
+        return size.name if size else None
+
     def _employee(self, actor: Principal, requested: int | None) -> int:
         account = self.repository.account(actor.user_id)
         if (
             account is None
             or not account.is_active
-            or account.role not in {"Administrator", "Manager", "Cashier"}
+            or account.role not in {"Administrator", "Cashier"}
         ):
             raise ApplicationError(403, "permission_denied", "Permission denied")
         if account.employee_id is not None and requested not in (
@@ -75,6 +91,13 @@ class SaleService:
             employee_id=sale.employee_id,
             sale_date=sale.sale_date,
             total=sale.total,
+            customer_kind=sale.customer_kind,
+            customer_name=sale.customer_name,
+            customer_phone=sale.customer_phone,
+            customer_address=sale.customer_address,
+            seller_name=sale.seller_name,
+            delivery_cost=sale.delivery_cost,
+            notes=sale.notes,
             status="voided" if annulment else "confirmed" if workflow else None,
             payment=PaymentRead.model_validate(payment) if payment else None,
             annulment=annulment,
@@ -84,6 +107,8 @@ class SaleService:
                 SaleLineRead(
                     sale_item_id=item.sale_item_id,
                     product_id=item.product_id,
+                    product_name=item.product_name,
+                    size_name=item.size_name,
                     quantity=item.quantity,
                     unit_price=item.unit_price,
                     subtotal=item.unit_price * item.quantity,
@@ -92,15 +117,25 @@ class SaleService:
             ],
         )
 
-    def get_sale(self, sale_id: int) -> SaleRead:
+    def get_sale(self, sale_id: int, actor: Principal | None = None) -> SaleRead:
         with self.session.begin():
+            if actor and actor.role == "Cashier":
+                workflow = self.repository.workflow(sale_id)
+                if workflow is None or workflow.created_by_user_id != actor.user_id:
+                    raise ApplicationError(404, "not_found", "Recibo no encontrado.")
             return self._detail(sale_id)
 
-    def list_sales(self, offset: int, limit: int) -> list[SaleRead]:
+    def list_sales(
+        self, offset: int, limit: int, actor: Principal | None = None
+    ) -> list[SaleRead]:
         with self.session.begin():
             return [
                 self._detail(sale.sale_id)
-                for sale in self.repository.list_sales(offset, limit)
+                for sale in self.repository.list_sales(
+                    offset,
+                    limit,
+                    actor.user_id if actor and actor.role == "Cashier" else None,
+                )
             ]
 
     def register(self, payload: SaleCreate, actor: Principal, key: str) -> SaleRead:
@@ -123,19 +158,65 @@ class SaleService:
                 cash.lock_shift(
                     payload.payment.shift_id, actor, employee_id=employee_id
                 )
-                if not self.repository.customer_exists(payload.customer_id):
+                customer = (
+                    general_customer(self.session)
+                    if payload.customer_kind == "general"
+                    else self.session.get(Customer, payload.customer_id)
+                    if payload.customer_id
+                    else None
+                )
+                if customer is None or not customer.is_active:
                     raise ApplicationError(
-                        422, "invalid_reference", "Customer not found"
+                        422, "invalid_reference", "Selecciona un cliente activo."
+                    )
+                if payload.customer_kind != "general" and customer.technical_key:
+                    raise ApplicationError(
+                        422,
+                        "invalid_customer_type",
+                        "Usa Cliente general para ventas sin datos personales.",
+                    )
+                if (
+                    payload.customer_kind == "general"
+                    and payload.customer_id is not None
+                ):
+                    raise ApplicationError(
+                        422,
+                        "invalid_customer_type",
+                        "Cliente general no requiere seleccionar una persona.",
+                    )
+                if payload.customer_kind == "delivery":
+                    address = (
+                        self.session.get(Address, customer.address_id)
+                        if customer.address_id
+                        else None
+                    )
+                    if (
+                        not customer.phone_number
+                        or address is None
+                        or not address.municipality_id
+                        or not address.address_line
+                    ):
+                        raise ApplicationError(
+                            422,
+                            "delivery_details_required",
+                            "Completa teléfono, departamento, municipio "
+                            "y dirección para delivery.",
+                        )
+                elif payload.delivery_cost != 0:
+                    raise ApplicationError(
+                        422,
+                        "invalid_delivery",
+                        "El costo de delivery solo corresponde a Cliente delivery.",
                     )
                 # El mismo orden de bloqueo que recepciones evita actualizaciones
                 # perdidas y ciclos entre operaciones con productos compartidos.
                 products = self.inventory.lock_products(
                     {line.product_id for line in payload.items}
                 )
-                total = Decimal("0.00")
+                total = payload.delivery_cost
                 for line in payload.items:
                     product = products.get(line.product_id)
-                    if product is None:
+                    if product is None or not product.is_active:
                         raise ApplicationError(
                             422, "invalid_reference", "Product not found"
                         )
@@ -160,9 +241,22 @@ class SaleService:
                         422, "total_overflow", "Sale total exceeds the supported range"
                     )
                 sale = Sale(
-                    customer_id=payload.customer_id,
+                    customer_id=customer.customer_id,
+                    customer_kind=payload.customer_kind,
+                    customer_name="Cliente general"
+                    if payload.customer_kind == "general"
+                    else f"{customer.first_names} {customer.last_names}",
+                    customer_phone=customer.phone_number
+                    if payload.customer_kind == "delivery"
+                    else None,
+                    customer_address=address_text(self.session, customer.address_id)
+                    if payload.customer_kind == "delivery"
+                    else None,
+                    delivery_cost=payload.delivery_cost,
+                    notes=payload.notes,
+                    seller_name=self._seller_name(employee_id),
                     employee_id=employee_id,
-                    sale_date=payload.sale_date,
+                    sale_date=datetime.now(ZoneInfo("America/Managua")).date(),
                     total=total,
                 )
                 self.repository.add_sale(sale)
@@ -176,6 +270,8 @@ class SaleService:
                         product_id=line.product_id,
                         quantity=line.quantity,
                         unit_price=product.unit_price,
+                        product_name=product.name,
+                        size_name=self._size_name(product.size_id),
                     )
                     self.repository.add_line(item)
                     before = product.legacy_stock

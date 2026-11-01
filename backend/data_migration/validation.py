@@ -82,7 +82,7 @@ def transform(source: Tables, *, source_names: bool = True) -> tuple[Tables, lis
             fields = (
                 item.fields
                 if source_names
-                else tuple((c.name, c.name) for c in item.table.c)
+                else tuple((c.name, c.name) for c in item.columns)
             )
             if set(row) != {name for name, _ in fields}:
                 rejected.append(
@@ -126,10 +126,13 @@ def structural_issues(tables: Tables) -> list[Row]:
     for item in MAPPINGS:
         for position, row in enumerate(tables[item.target], 1):
             for foreign_key in item.table.foreign_keys:
-                if (
-                    row[foreign_key.parent.name]
-                    not in identities[foreign_key.column.table.name]
-                ):
+                # Offline legacy bundles contain only their mapped columns.
+                if foreign_key.parent.name not in row:
+                    continue
+                value = row[foreign_key.parent.name]
+                if value is None and foreign_key.parent.nullable:
+                    continue
+                if value not in identities[foreign_key.column.table.name]:
                     issues.append(
                         {
                             "table": item.target,

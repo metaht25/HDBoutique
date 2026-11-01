@@ -6,10 +6,12 @@ from typing import Annotated
 from pydantic import Field
 
 from app.api.schemas import InputModel, OutputModel, PatchModel
+from app.modules.locations.composition import InlineAddress
 
 
 class SupplierCreate(InputModel):
-    address_id: Annotated[int, Field(gt=0, strict=True)]
+    address: InlineAddress | None = None
+    address_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     company_name: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
     contact_first_names: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
     contact_last_names: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
@@ -18,6 +20,8 @@ class SupplierCreate(InputModel):
 
 
 class SupplierPatch(PatchModel):
+    address: InlineAddress | None = None
+    is_active: Annotated[bool | None, Field(strict=True)] = None
     required_fields = frozenset(
         [
             "address_id",
@@ -44,6 +48,7 @@ class SupplierPatch(PatchModel):
 
 
 class SupplierRead(OutputModel):
+    is_active: bool
     supplier_id: int
     address_id: Annotated[int, Field(gt=0, strict=True)]
     company_name: Annotated[str, Field(max_length=50, min_length=1, strict=True)]

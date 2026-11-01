@@ -3,7 +3,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Date, ForeignKey, Identity, Numeric
+from sqlalchemy import Date, ForeignKey, Identity, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.database.base import Base
@@ -22,6 +22,7 @@ class Purchase(Base):
     purchase_date: Mapped[date] = mapped_column(Date)
     review_date: Mapped[date | None] = mapped_column(Date)
     refill_date: Mapped[date | None] = mapped_column(Date)
+    description: Mapped[str | None] = mapped_column(String(500))
     shipping_cost: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
 
 

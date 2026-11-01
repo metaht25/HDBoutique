@@ -39,17 +39,20 @@ class MunicipalityRead(OutputModel):
 
 
 class AddressCreate(InputModel):
+    municipality_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     department_id: Annotated[int, Field(gt=0, strict=True)]
     address_line: Annotated[str | None, Field(max_length=100, strict=True)] = None
 
 
 class AddressPatch(PatchModel):
+    municipality_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     required_fields = frozenset(["department_id"])
     department_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     address_line: Annotated[str | None, Field(max_length=100, strict=True)] = None
 
 
 class AddressRead(OutputModel):
+    municipality_id: int | None = None
     address_id: int
     department_id: Annotated[int, Field(gt=0, strict=True)]
     address_line: Annotated[str | None, Field(max_length=100, strict=True)]

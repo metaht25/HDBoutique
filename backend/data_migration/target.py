@@ -43,7 +43,7 @@ def target_engine(database: str) -> Engine:
 def read_target(connection: Connection) -> Tables:
     return {
         item.target: [
-            dict(row) for row in connection.execute(select(item.table)).mappings()
+            dict(row) for row in connection.execute(select(*item.columns)).mappings()
         ]
         for item in MAPPINGS
     }

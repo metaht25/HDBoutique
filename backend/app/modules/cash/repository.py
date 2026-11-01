@@ -3,7 +3,7 @@
 from decimal import Decimal
 from hashlib import sha256
 
-from sqlalchemy import func, select, text
+from sqlalchemy import case, func, select, text
 from sqlalchemy.orm import Session
 
 from app.modules.cash.models import (
@@ -51,10 +51,19 @@ class CashRepository:
         for model, prefix in ((SalePayment, "collected"), (SaleVoid, "refunded")):
             for method in ("cash", "transfer"):
                 result[f"{method}_{prefix}"] = self.session.scalar(
-                    select(func.coalesce(func.sum(model.amount), 0)).where(
-                        model.shift_id == shift_id,
-                        model.method == method,
-                    )
+                    select(
+                        func.coalesce(
+                            func.sum(
+                                func.coalesce(
+                                    getattr(model, method + "_amount"),
+                                    case(
+                                        (model.method == method, model.amount), else_=0
+                                    ),
+                                )
+                            ),
+                            0,
+                        )
+                    ).where(model.shift_id == shift_id)
                 ) or Decimal("0.00")
         for kind in ("deposit", "withdrawal"):
             result[kind] = self.session.scalar(
