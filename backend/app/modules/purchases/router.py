@@ -1,4 +1,4 @@
-"""Atomic purchases; all routes require Administrator or Manager and write CSRF."""
+"""Atomic purchases; all routes require Administrator and write CSRF."""
 
 from typing import Annotated
 

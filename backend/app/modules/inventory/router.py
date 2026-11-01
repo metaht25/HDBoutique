@@ -1,4 +1,4 @@
-"""Inventory history restricted to Administrator and Manager."""
+"""Inventory history restricted to Administrator."""
 
 from typing import Annotated
 

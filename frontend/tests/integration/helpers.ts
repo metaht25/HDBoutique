@@ -11,12 +11,18 @@ export async function signIn(page: Page, username = 'purchasing-administrator', 
   await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Bienvenida a H&D Boutique')
 }
 export async function command(page: Page, path: string, data: unknown, method = 'POST', key?: string) {
+  // Session restoration rotates CSRF; wait for it before issuing a direct command.
+  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true, includeHidden: true })).toBeAttached()
   const csrf = await page.request.get('/api/v1/auth/csrf')
   const response = await page.request.fetch('/api/v1/' + path, { method, data, headers: { Origin: origin, 'X-CSRF-Token': (await csrf.json()).csrf_token, ...(key ? { 'Idempotency-Key': key } : {}) } })
   await page.reload()
+  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true, includeHidden: true })).toBeAttached()
   return response
 }
 export async function capture(page: Page, info: TestInfo, name: string) {
+  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true, includeHidden: true })).toBeAttached()
+  // Absence of a spinner can precede lazy mounting; require real page content first.
+  await expect(page.locator('main section').first()).toBeAttached()
   await expect(page.getByText('Cargando pantalla…')).toHaveCount(0)
   await expect(page.getByText('Cargando información…')).toHaveCount(0)
   await expect(page.getByRole('alert')).toHaveCount(0)
