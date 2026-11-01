@@ -15,7 +15,12 @@ def synthetic_source() -> Tables:
         row: dict[str, object] = {}
         for legacy, target in item.fields:
             column = item.table.c[target]
-            if column.nullable:
+            originally_required = item.target == "customers" and target in {
+                "address_id",
+                "customer_type_id",
+                "phone_number",
+            }
+            if column.nullable and not originally_required:
                 value: object = None
             elif isinstance(column.type, Integer):
                 value = 101 if target.endswith("_id") else 2

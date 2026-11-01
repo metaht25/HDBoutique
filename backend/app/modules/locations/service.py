@@ -170,9 +170,10 @@ class LocationsService:
                 for field, value in values.items():
                     setattr(record, field, value)
                 if record.municipality_id is not None:
-                    municipality = self.session.get(
-                        Municipality, record.municipality_id
-                    )
+                    with self.session.no_autoflush:
+                        municipality = self.session.get(
+                            Municipality, record.municipality_id
+                        )
                     if (
                         municipality is None
                         or municipality.department_id != record.department_id

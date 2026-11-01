@@ -36,13 +36,14 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 
 ## Estado y documentos de referencia
 
-- Acuerdo posterior al corte: ventas solo y siempre al contado, efectivo o
-  transferencia; sin abonos, credito ni pagos parciales en ninguna version.
+- Acuerdo vigente de reconstrucción: ventas solo y siempre al contado, efectivo,
+  transferencia o mixto completo; sin abonos, crédito ni pagos parciales.
   El usuario autoriza correcciones trazables: anulacion total
   supervisada, motivo, original conservado, devolucion del importe y reposicion
   solo de mercancia efectivamente devuelta. Implementados caja principal/turnos,
   apertura/cierre, movimientos supervisados, pago completo atomico obligatorio
-  con venta y anulacion auditada. Revision 0005_cash_checkout, 30 tablas.
+  con venta y anulación auditada. Head de código 0006_boutique_experience, 32 tablas;
+  estado concreto de migración local y respaldos en docs/cutover.md.
   Historicos sin pago no se marcan como cobrados. Ver B04/B06/B10 y
   docs/cash-register.md. Empleados: docs/employees.md. Configuracion inicial
   completada: docs/initial-setup.md. V1 funcional local, sin datos ficticios ni
@@ -55,7 +56,10 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   publico. Compose base mantiene production/negocio false y HTTPS/Secure al habilitar.
 - Django/DRF, grupo legacy, requirements.txt, drivers SQL Server y adaptadores/
   servicios frontend retirados. Codigo anterior preservado en Git/archivo privado.
-  Diez pantallas TS/FastAPI, incluidas Caja, Empleados y Configuracion.
+  Diez pantallas Dueña y cinco Colaborador TS/FastAPI; navegación exacta en
+  docs/frontend-modules.md. Caja contextual en Dashboard/Nueva venta, reportes
+  en Ventas/Historial, catálogos en Productos/directorios, cuentas en Empleados
+  y perfil boutique en encabezado. Sin Caja/Reportes/Configuración en menú.
 - El usuario confirmo que no existe origen/historicos SQL Server y no utiliza
   /admin/ (B11). Empleados implementado; abonos excluidos; no crear datos ficticios para
   completar referencias. Una venta/compra requiere un empleado existente.
@@ -68,14 +72,21 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   .env.docker, respaldos y volumen. No usar down -v ni restaurar --clean sobre
   desarrollo. Autorizar nuevos destinos/trabajos de datos antes de ejecutarlos.
 - B01/B02/B03/B04/B05/B09/B14 confirmados para sus alcances: stock disponible,
-  cantidadstock legado inmutable; nuevo stock cero, nulos requieren conteo;
+  cantidadstock legado inmutable; cantidad inicial explícita auditada incluso cero,
+  nulos requieren conteo; precio de producto costo × 1.15/ROUND_HALF_UP;
   recepcion completa unica y ventas inmutables; dinero NIO/Decimal/dos decimales,
-  precio/total de servidor y cuenta/empleado auditados. B14: 0 agotado, 1-10 bajo,
-  >10 suficiente; null/negativo aparte. Fecha comercial America/Managua.
-- Cashier consulta catalogo/clientes/ventas, crea/edita clientes y registra ventas;
-  sin compras/proveedores/costes. Administrator/Manager segun la matriz confirmada.
-  Telefono textual hasta 10 y direccion existente ligada a departamento; sin
-  activacion, deuda, municipio inferido, descuentos o devoluciones nuevas.
+  precio/total de servidor y cuenta/empleado auditados. B14: 0 agotado, 1-5 bajo,
+  >5 suficiente; null/negativo aparte. Fecha comercial America/Managua del servidor.
+- Solo Dueña/Administrator y Colaborador/Cashier. Manager retirado, sin creación
+  ni login; cuentas históricas desactivadas/auditadas sin convertir privilegios.
+  Cashier consulta catálogo/clientes y actividad/recibos propios, crea/edita clientes
+  y registra ventas; sin compras/proveedores/costos/personal/reportes globales.
+- Domicilio directo con departamento/municipio coherentes; teléfono textual hasta
+  10. Cliente general técnico único, regular y delivery con costo manual incluido.
+  Activación persistente de productos/clientes/proveedores/empleados. Alta de
+  empleado + cuenta atómica, contraseña temporal y revocación al desactivar.
+  Perfil/logo durable y recibo PDF/impresión de 80 mm. Sin municipio inferido,
+  deuda, descuentos, pérdidas ni recepción parcial.
 - [Reglas](docs/business-rules.md), [autenticacion](docs/authentication.md),
   [frontend](docs/frontend-modules.md), [compras](docs/purchases-inventory.md),
   [ventas](docs/sales.md), [reportes](docs/reporting.md).

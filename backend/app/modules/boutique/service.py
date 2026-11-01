@@ -6,6 +6,7 @@ import warnings
 from io import BytesIO
 
 from PIL import Image, UnidentifiedImageError
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApplicationError
@@ -75,6 +76,7 @@ class BoutiqueService:
     def save(self, payload: ProfileWrite, actor: Principal) -> ProfileRead:
         logo = clean_logo(payload.logo_base64) if payload.logo_base64 else None
         with self.session.begin():
+            self.session.execute(text("SELECT pg_advisory_xact_lock(671443120621)"))
             profile = self.session.get(BoutiqueProfile, 1, with_for_update=True)
             if profile is None:
                 profile = BoutiqueProfile(profile_id=1)

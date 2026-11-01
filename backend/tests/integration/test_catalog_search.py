@@ -15,7 +15,13 @@ def test_product_search_is_literal_case_insensitive_and_paginated(
     category = client.post("/api/v1/categories", json={"name": "Synthetic"}).json()
     size = client.post("/api/v1/sizes", json={"name": "M"}).json()
     identifiers = []
-    for name in ("Summer first", "Other", "SUMMER second", "20%_off", None):
+    for name in (
+        "Summer first",
+        "Other",
+        "SUMMER second",
+        "20%_off",
+        "Synthetic fifth",
+    ):
         response = client.post(
             "/api/v1/products",
             json={

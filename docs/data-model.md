@@ -1,9 +1,33 @@
 # Modelo de datos: referencia, esquema inicial y limites
 
-Actualizacion posterior al corte: 30 modelos, head 0005_cash_checkout. Se agregan
-seis tablas de [caja](cash-register.md) y movimientos sale_return; no se infieren
-pagos historicos ni se modifican revisiones previas. Los hitos siguientes describen
-la evolucion del esquema y no sustituyen el contrato actual de caja.
+## Esquema vigente
+
+32 modelos, head 0006_boutique_experience. La revisión agrega boutique_profiles
+(perfil único y logo PNG binario durable) y management_events (actor, recurso,
+acción, fecha y detalle). El logo forma parte del respaldo PostgreSQL.
+
+Productos, clientes, empleados y proveedores incorporan is_active; los tres
+últimos, created_at nullable. addresses.municipality_id conserva nulos históricos.
+Customers permite domicilio/teléfono/tipo legado nulos, con kind y technical_key
+única para cliente general. Empleados amplía correo a 100; user_accounts incorpora
+must_change_password. Productos guarda costo, proveedor, fecha y descripción.
+Ventas y líneas conservan instantáneas de cliente/vendedor/producto/talla, delivery
+y notas; compras agrega descripción. No se rellenan históricos por suposición.
+
+sale_payments y sale_voids conservan cash_amount y transfer_amount con restricciones
+de suma, método y cambio. Los valores antiguos siguen nulos. inventory_movements
+admite initial_stock incluso cero, autor obligatorio, empleado nullable solo para
+ese movimiento e índice único por producto. legacy_stock_quantity no se modifica.
+
+0006 desactiva Manager, revoca sus sesiones y audita el retiro; no cambia su rol.
+Downgrade rechaza pérdida de datos nuevos/auditoría. Retorno mediante restauración
+separada verificada. [Migración](migration.md), [reglas](business-rules.md).
+
+## Historia del esquema y del origen retirado
+
+El resto de este documento describe las fases 5–10 y el modelo Django retirado;
+las expresiones pendientes y los conteos antiguos corresponden a esos hitos.
+No describen el contrato operativo actual ni un origen SQL Server disponible.
 
 Desde fase 5 existe un esquema PostgreSQL inicial de compatibilidad: 17 modelos
 SQLAlchemy y revision Alembic `0001_compatibility`. La base local de desarrollo

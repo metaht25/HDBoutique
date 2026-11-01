@@ -1,63 +1,34 @@
-# Autenticacion y permisos: fase 8
+# Autenticación y permisos vigentes
 
-Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
-edicion, consulta y selector operativo; Administrator/Manager gestionan,
-Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
-sobre operaciones. [Configuracion inicial](initial-setup.md) completada posteriormente:
-catalogos, ubicaciones, costes/ofertas y cuentas con los permisos existentes.
-Estos contratos actualizan las referencias historicas pendientes que siguen abajo.
-
-Incremento posterior: caja y cobros completos, head 0005_cash_checkout.
-La referencia siguiente a 0004 describe el hito del corte de fase 15.
-
-Actualizacion de fase 15: Django retirado; siete pantallas FastAPI con login.
-El destino local hdboutique esta migrado a 0004_atomic_sales y tiene su primer
-Administrator, creado expresamente tras respaldo/restauracion. No repetir bootstrap.
-Operacion actual: [corte](cutover.md) y [Docker](docker.md). Los detalles de fase 8
-siguientes conservan el contrato de identidad; los hitos antiguos no describen
-el estado de migracion del destino local despues del corte.
-
-B09 confirmado por el usuario el 28 de octubre de 2026. Identidad propia de
-FastAPI, independiente de usuarios Django y de la identidad historica de empleados.
-No se importan contraseñas ni se crean cuentas automaticamente.
-
-Fase 11 agrega [contexto de sesion frontend](frontend-foundation.md): me, CSRF,
-login como API del contexto y logout, identidad del encabezado desde servidor.
-Fase 12 incorpora login reutilizable y acceso autenticado dentro de Productos y
-Clientes, con permisos de esta matriz. Las fases 13/14 completan las siete
-pantallas operativas; [alcance actual](frontend-modules.md). Ya no hay endpoints Django.
+La reconstrucción autorizada sustituye la matriz de fases anteriores: solo Dueña
+(Administrator) y Colaborador (Cashier) pueden iniciar sesión. Manager se conserva
+únicamente como registro histórico retirado. 0006 desactiva esas cuentas, revoca
+sesiones y registra role_retired en management_events sin conversión de privilegios.
+No puede seleccionarse, crearse ni editarse desde los formularios actuales.
 
 ## Permisos aprobados e implementados
 
-| Operacion | Administrator | Manager | Cashier |
-| --- | --- | --- | --- |
-| Consultar ubicaciones | Si | Si | No |
-| Consultar categorias, tallas, productos y tipos de cliente | Si | Si | Si |
-| Consultar clientes | Si | Si | Si |
-| Consultar proveedores, productos de proveedor y ofertas | Si | Si | No |
-| Crear/editar ubicaciones y catalogo | Si | Si | No |
-| Crear/editar clientes | Si | Si | Si |
-| Crear/editar proveedores y sus asociaciones | Si | Si | No |
-| Eliminar registros de los recursos de fase 7 | Si, sujeto a FK RESTRICT | No | No |
-| Consultar/crear/editar cuentas | Si | No | No |
+| Operación | Dueña | Colaborador |
+| --- | --- | --- |
+| Consultar catálogo, precios de venta y stock | Sí | Sí, sin costos/proveedor/valor al costo |
+| Consultar departamentos y municipios | Sí | Sí, para domicilio de clientes |
+| Gestionar catálogos y ubicaciones | Sí | No |
+| Consultar, crear, editar y activar clientes | Sí | Sí |
+| Registrar ventas completas | Sí | Sí |
+| Consultar ventas, recibos y PDF | Todas | Solo propios; ajenos 404 |
+| Dashboard y consultas de actividad | Global | Solo propia y stock permitido |
+| Proveedores, costos, ofertas, compras e inventario auditado | Sí | No |
+| Empleados, cuentas y perfil boutique | Sí | No |
+| Selector operativo de empleados activos | Sí | ID/nombre, sin datos privados |
+| Abrir/consultar/cerrar turnos | Todos | Propios, cierre sin diferencia |
+| Ingresos/retiros, cierre con diferencia y anulación total | Sí | No |
 
-Fase 9 extiende permisos: Administrator y Manager registran/reciben compras y
-consultan inventario; Cashier no tiene acceso. Ver [contrato](purchases-inventory.md).
-Fase 10 extiende B09 expresamente: los tres roles registran y consultan ventas,
-con empleado vinculado o existente explicito y cuenta auditada. Las ventas son
-inmutables para todos; [contrato](sales.md). El historial general de inventario
-conserva permisos de compras. Fase 13 extiende B09 expresamente: dashboard y
-reportes de ventas/catalogo/clientes para los tres roles; compras y datos de
-proveedores/costes solo Administrator/Manager. Cashier no recibe esos campos
-en dashboard ni puede consultar el reporte de compras. [Contrato](reporting.md).
-Caja se incorpora tras el corte: Cashier abre/consulta/opera sus turnos y cierra
-sin diferencia; Administrator/Manager supervisan todos, autorizan movimientos,
-cierres con diferencia y anulaciones totales. [Contrato](cash-register.md).
-Cashier no consulta costes de compra. Para crear clientes usa address_id existente:
-no se amplio su permiso a ubicaciones. Las cuentas se deshabilitan, no se borran.
-Una cuenta puede vincularse a un empleado existente; el vinculo es opcional,
-exclusivo y protegido por FK RESTRICT e indice unico. La gestion de
-empleados se incorpora en [Empleados](employees.md); un cargo no equivale a un rol.
+Las cuentas se deshabilitan, no se borran. Un vínculo cuenta/empleado es opcional,
+exclusivo y protegido por FK RESTRICT. El empleado debe estar activo para operar;
+el cargo no concede permisos. Alta de empleado y cuenta Cashier en una transacción.
+Desactivar empleado revoca sesiones y bloquea el login. La interfaz bloquea rutas
+administrativas antes de montar sus consultas; la API vuelve a autorizar cada llamada.
+[Personal](employees.md), [ventas](sales.md), [caja](cash-register.md).
 
 ## Contrato HTTP
 
@@ -71,11 +42,14 @@ Salud permanece publica. OpenAPI describe cookie de autenticacion y errores.
 | POST /api/v1/auth/login | username y password; cuenta publica en JSON, cookie nueva y cabecera X-CSRF-Token nueva | Cookie previa, Origin y X-CSRF-Token validos |
 | GET /api/v1/auth/me | Cuenta de la sesion | Autenticado |
 | POST /api/v1/auth/logout | 204 y eliminacion de cookie y sesion servidor | Autenticado, Origin y CSRF |
+| POST /api/v1/auth/password | current_password y new_password; 204, revoca sesiones | Autenticado, Origin y CSRF |
 | GET /api/v1/users | Lista publica de cuentas; offset >= 0, limit 1..100, defecto 50 | Administrator |
 | POST /api/v1/users | username, password, role y employee_id opcional; 201 | Administrator, Origin y CSRF |
 | PATCH /api/v1/users/{user_id} | role, is_active, password y employee_id opcionales; 200 | Administrator, Origin y CSRF |
 
-Cuenta publica: user_id, username, role, is_active, employee_id. Nunca devuelve
+Cuenta pública: user_id, username, role, is_active, employee_id, display_name
+y must_change_password. La lista administrativa puede incluir roles retirados
+como historia; no son identidades de sesión válidas. Nunca devuelve
 password ni password_hash. Los usernames se normalizan a minusculas y admiten
 3..64 caracteres ASCII alfanumericos, punto, guion y guion bajo.
 Las nuevas contraseñas tienen 12..128 caracteres; los espacios se conservan.
@@ -125,27 +99,23 @@ Eventos hdb.security registran exito/fallo, CSRF y cambios de cuenta sin
 contraseñas, tokens, usernames, IP ni payloads; los eventos de cuenta usan user_id.
 La configuracion del recolector de logs corresponde al despliegue.
 
-## Preparacion operativa explicita
+## Contraseña temporal
 
-La revision nueva es 0002_identity; la 0001_compatibility aplicada se conserva.
-Hay 17 tablas de negocio y 3 de identidad: user_accounts, web_sessions y
-login_throttles. No se ejecuto la revision contra la base de desarrollo en esta
-entrega: solo contra PostgreSQL aislado de pruebas.
+Toda cuenta nueva, salvo el bootstrap inicial, exige cambiar la contraseña temporal.
+Mientras must_change_password sea true solo se permiten me, logout y password,
+además del token CSRF. Cambiar contraseña comprueba la actual, exige una nueva
+diferente de 12–128 caracteres y revoca sesiones; se vuelve al login. El frontend
+no carga pantallas de negocio antes del cambio. Restablecer desde Empleados o
+Cuentas también obliga reemplazarla. Nunca se devuelve el hash o contraseña.
 
-Configurar el destino autorizado con HDB_DATABASE_* y respaldarlo antes de aplicar:
+## Preparación operativa explícita
 
-```powershell
-cd backend
-uv sync --locked
-uv run --locked python -m alembic upgrade head
-uv run --locked python -m app.modules.identity.cli bootstrap-admin --database NOMBRE_AUTORIZADO --username administrador
-```
-
-El comando exige que --database coincida con HDB_DATABASE_NAME. Lee la contraseña
-dos veces mediante getpass; no usar argumentos, logs o archivos versionados para
-pasarla. Se rechaza un segundo bootstrap si ya hay un Administrator activo.
-Las siguientes cuentas se crean desde /users, autenticado como Administrator.
-La CLI tambien requiere acceso administrativo al entorno y a la base.
+Head de código: 0006_boutique_experience, 32 tablas más alembic_version.
+El primer Administrator de desarrollo ya fue creado expresamente; no repetir
+bootstrap. Las cuentas posteriores se gestionan desde Empleados/Cuentas y accesos.
+La CLI bootstrap-admin queda reservada a una base nueva expresamente autorizada,
+con --database coincidente y contraseña por getpass. No se ejecuta al arrancar.
+[Estado del destino, respaldos y retorno](cutover.md).
 
 Configuracion nueva:
 
@@ -158,7 +128,8 @@ Configuracion nueva:
 Para un ensayo local HTTP puede configurarse Secure=false exclusivamente en
 development/test. En production con negocio habilitado se exige origen HTTPS y
 Secure=true; no se habilitan docs. TLS, proxy, origen y credenciales operativas se
-configuran antes de publicar. No se modificaron .env ni Compose de desarrollo.
+configuran antes de publicar. Desarrollo local habilita negocio exclusivamente en loopback mediante Compose;
+.env.docker privado conserva sus credenciales.
 Ninguna migracion ni bootstrap ocurre al arrancar FastAPI.
 
 Mantenimiento, en el destino explicitamente autorizado:

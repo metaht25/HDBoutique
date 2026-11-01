@@ -4,9 +4,9 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, model_validator
 
-from app.api.schemas import InputModel
+from app.api.schemas import InputModel, require_exact_decimal
 from app.modules.cash.schemas import PaymentCreate, PaymentRead, VoidRead
 
 PositiveId = Annotated[int, Field(gt=0, strict=True)]
@@ -20,9 +20,11 @@ class SaleLineCreate(InputModel):
 class SaleCreate(InputModel):
     customer_id: PositiveId | None = None
     customer_kind: Literal["general", "regular", "delivery"] = "regular"
-    delivery_cost: Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=2)] = (
-        Decimal("0.00")
-    )
+    delivery_cost: Annotated[
+        Decimal,
+        Field(ge=0, max_digits=10, decimal_places=2),
+        BeforeValidator(require_exact_decimal),
+    ] = Decimal("0.00")
     notes: Annotated[str | None, Field(max_length=500)] = None
     employee_id: PositiveId | None = None
     sale_date: date | None = None

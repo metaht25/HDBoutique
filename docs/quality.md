@@ -55,3 +55,16 @@ Operaciones reales solo en destino/ventana expresamente autorizados. Las pruebas
 con escrituras siguen aisladas aunque se haya autorizado un corte local. Humo
 local limitado a login/logout y lecturas; no crear datos sinteticos en desarrollo.
 [Corte y respaldo](cutover.md), [Docker](docker.md), [comandos](development.md).
+
+## Reconstrucción de la boutique
+
+La verificación conectada incluye pagos efectivo/transferencia/mixto, cambio,
+cliente general estable, alta inline regular/delivery, producto costo × 1.15,
+existencia inicial, compra/recepción única y anulación mixta sin mercancía devuelta.
+También turnos visibles, movimientos supervisados, activación/rechazo de operaciones,
+cuenta/contraseña temporal y revocación. Ninguna escritura de prueba usa desarrollo.
+
+Capturas: diez rutas Dueña y cinco Colaborador a 1440×1000 y 390×844, menú móvil,
+modales y sus acciones, ticket/impresión. PDF renderizado con Poppler y ancho
+verificado. La inspección de imágenes es necesaria; un test de overflow no prueba
+fidelidad visual. [Inventario y resultado](visual-reconstruction.md).

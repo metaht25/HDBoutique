@@ -172,7 +172,9 @@ def test_resource_workflow(
     preserved = route in {"products", "customers", "suppliers"}
     if preserved:
         assert client.delete(duplicate_path).status_code == 409
-        assert client.patch(duplicate_path, json={"is_active": False}).status_code == 200
+        assert (
+            client.patch(duplicate_path, json={"is_active": False}).status_code == 200
+        )
         assert client.get(duplicate_path).json()["is_active"] is False
     else:
         assert client.delete(duplicate_path).status_code == 204
@@ -185,16 +187,19 @@ def test_resource_workflow(
         if field.endswith("_id"):
             invalid = {**payload, field: 2147483647}
             assert client.post(path, json=invalid).status_code == 422
-            optional_reference = (route == "customers" and field in {"address_id", "customer_type_id"}) or (route == "products" and field == "supplier_id")
+            optional_reference = (
+                (route == "customers" and field in {"address_id", "customer_type_id"})
+                or (route == "products" and field == "supplier_id")
+                or (route == "addresses" and field == "municipality_id")
+            )
             if not optional_reference:
                 assert client.patch(detail, json={field: None}).status_code == 422
             assert client.patch(detail, json={field: 2147483647}).status_code == 422
     assert client.get(detail).status_code == 200
     table = route.replace("-", "_")
-    assert (
-        database_connection.execute(text(f"SELECT count(*) FROM {table}")).scalar_one()
-        == (2 if preserved else 1)
-    )
+    assert database_connection.execute(
+        text(f"SELECT count(*) FROM {table}")
+    ).scalar_one() == (2 if preserved else 1)
 
 
 @pytest.mark.parametrize(
@@ -217,7 +222,10 @@ def test_referenced_delete_rolls_back(
     detail = "/api/v1/" + route + "/" + str(records[route][key])
     response = business_client.delete(detail)
     assert response.status_code == 409
-    assert response.json()["error"]["code"] in {"integrity_conflict", "history_preserved"}
+    assert response.json()["error"]["code"] in {
+        "integrity_conflict",
+        "history_preserved",
+    }
     assert business_client.get(detail).json() == records[route]
 
 

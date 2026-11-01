@@ -37,3 +37,9 @@ class ErrorDetail(BaseModel):
 
 class ErrorResponse(BaseModel):
     error: ErrorDetail
+
+
+def require_exact_decimal(value: object) -> object:
+    if isinstance(value, (float, bool)):
+        raise ValueError("Send money as decimal text or integer")
+    return value

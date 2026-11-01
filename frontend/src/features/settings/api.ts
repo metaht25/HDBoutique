@@ -55,8 +55,17 @@ export function parseAccount(value: unknown): Account {
   if (!isAccount(value)) return invalidResponse()
   return { user_id: value.user_id, username: value.username, role: value.role, employee_id: value.employee_id, is_active: value.is_active }
 }
-export async function listAccounts(signal: AbortSignal): Promise<Account[]> {
-  return allOptions(offset => apiClient.request(`/api/v1/users?offset=${offset}&limit=100`, { signal }).then(body => parseList(body, parseAccount)), row => row.user_id)
+export type AccountRecord = Omit<Account, 'role'> & { role: Account['role'] | 'Manager' }
+export function parseAccountRecord(value: unknown): AccountRecord {
+  const row = record(value)
+  if (row.role === 'Manager') {
+    const validated = parseAccount({ ...row, role: 'Cashier' })
+    return { ...validated, role: 'Manager' }
+  }
+  return parseAccount(value)
+}
+export async function listAccounts(signal: AbortSignal): Promise<AccountRecord[]> {
+  return allOptions(offset => apiClient.request(`/api/v1/users?offset=${offset}&limit=100`, { signal }).then(body => parseList(body, parseAccountRecord)), row => row.user_id)
 }
 export async function saveAccount(body: Record<string, unknown>, id?: number): Promise<Account> {
   return parseAccount(await apiClient.request(id ? `/api/v1/users/${id}` : '/api/v1/users', { method: id ? 'PATCH' : 'POST', body }))

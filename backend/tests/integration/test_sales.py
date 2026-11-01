@@ -401,7 +401,7 @@ def test_downgrade_refuses_to_drop_sale_movements(
     config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
     config.attributes["connection"] = database_connection
     with (
-        pytest.raises(ProgrammingError, match="Cash history exists"),
+        pytest.raises(ProgrammingError, match="operational data must be preserved"),
         database_connection.begin_nested(),
     ):
         command.downgrade(config, "0003_purchase_receipts")

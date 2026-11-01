@@ -91,3 +91,24 @@ docker compose -p hdboutique-test -f compose.test.yaml --profile integration dow
 Ejecutar sobre proyecto de pruebas nuevo, separado de la suite backend. La semilla
 rechaza bases pobladas. Playwright conectado exige el destino interno canonico;
 no tiene fallback a una base local real. [Docker](docker.md), [contratos frontend](frontend-modules.md).
+
+## Repetir pruebas sobre un tmpfs ya utilizado
+
+La suite backend y stabilization_seed requieren base vacía. Detener web/api del
+proyecto de prueba, comprobar que hdboutique-test-db-1 pertenece a hdboutique-test
+con /var/lib/postgresql/data en tmpfs, detener y retirar solo ese servicio db.
+Nunca aplicar este procedimiento al volumen de desarrollo.
+
+```powershell
+docker compose -p hdboutique-test -f compose.test.yaml --profile integration stop web api
+docker compose -p hdboutique-test -f compose.test.yaml stop db
+docker compose -p hdboutique-test -f compose.test.yaml rm -f db
+docker compose -p hdboutique-test -f compose.test.yaml up -d db
+docker compose -p hdboutique-test -f compose.test.yaml run --rm backend
+```
+
+Repetir la preparación del tmpfs antes del perfil integration. Construir backend,
+web y frontend de prueba con los cambios finales. Para conservar capturas fuera
+de Git, montar una carpeta temporal en /workspace/frontend/test-results del
+servicio browser; ejecutarlo con --no-deps después de comprobar API/web saludables.
+La configuración conectada usa 1440×1000 y recorre también 390×844; no apunta a 8080.

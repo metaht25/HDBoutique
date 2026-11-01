@@ -29,7 +29,7 @@ export function PartyForm({ kind, row, initialKind, onSaved, onClose }: { kind: 
     event.preventDefault(); if (submitting.current) return
     const body: Record<string, unknown> = {}
     const fields = customer ? ['first_names', 'last_names', 'phone_number', 'kind'] : employee ? ['first_names', 'last_names', 'phone_number', 'work_email', 'job_title', 'start_date'] : ['company_name', 'contact_first_names', 'contact_last_names', 'phone_number', 'work_email']
-    fields.forEach(field => { body[field] = values[field]?.trim() || null })
+    fields.forEach(field => { body[field] = field === 'kind' ? values[field] || 'regular' : values[field]?.trim() || null })
     const hasAddress = addressRequired || ['department_id', 'municipality_id', 'address_line'].some(field => !!values[field])
     if (hasAddress) {
       if (!values.department_id || !values.municipality_id || !values.address_line?.trim()) { setError('Completa departamento, municipio y dirección exacta.'); return }
@@ -40,18 +40,18 @@ export function PartyForm({ kind, row, initialKind, onSaved, onClose }: { kind: 
       if (values.temporary_password) body.temporary_password = values.temporary_password
     }
     submitting.current = true; setBusy(true); setError('')
-    try { const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved(saved) }
+    try { const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved({ ...saved, ...(hasAddress ? { department_id: Number(values.department_id), municipality_id: Number(values.municipality_id), address_line: values.address_line } : {}) }) }
     catch (error) { setError(getErrorMessage(error, `No se pudo guardar el ${partyLabels[kind]}.`)) }
     finally { submitting.current = false; setBusy(false); update('temporary_password', '') }
   }
   return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={busy}>
     <div className={styles.formGrid}>
-      {customer && <div className={styles.full}><SelectField label="Tipo de cliente" value={values.kind ?? 'regular'} onChange={e => update('kind', e.target.value)}><option value="regular">Cliente</option><option value="delivery">Cliente delivery</option></SelectField></div>}
+      {customer && <div className={styles.full}><SelectField label="Tipo de cliente" value={values.kind || 'regular'} onChange={e => update('kind', e.target.value)}><option value="regular">Cliente</option><option value="delivery">Cliente delivery</option></SelectField></div>}
       {kind === 'suppliers' && <div className={styles.full}>{input('company_name', 'Empresa', true, 50)}</div>}
       {input(kind === 'suppliers' ? 'contact_first_names' : 'first_names', kind === 'suppliers' ? 'Nombres del contacto' : 'Nombres')}
       {input(kind === 'suppliers' ? 'contact_last_names' : 'last_names', kind === 'suppliers' ? 'Apellidos del contacto' : 'Apellidos')}
       {input('phone_number', 'Teléfono', !customer || delivery, 10, 'tel')}
-      {!customer && input('work_email', 'Correo', false, 100, 'email')}
+      {!customer && input('work_email', 'Correo', false, employee ? 100 : 40, 'email')}
       {employee && <>{input('job_title', 'Cargo', false, 20)}{input('start_date', 'Fecha de ingreso', false, 10, 'date')}
         {!row ? input('username', 'Usuario de acceso', true, 64) : <p>Usuario de acceso: <b>{'username' in row ? row.username ?? 'Sin cuenta vinculada' : ''}</b></p>}
         <TextField label={row ? 'Nueva contraseña temporal (opcional)' : 'Contraseña temporal'} required={!row} type="password" autoComplete="new-password" minLength={12} maxLength={128} value={values.temporary_password ?? ''} onChange={e => update('temporary_password', e.target.value)} /></>}

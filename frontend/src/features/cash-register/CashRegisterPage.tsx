@@ -61,8 +61,8 @@ export function CashWorkspace() {
     <button type="button" onClick={() => setRevision(value => value + 1)}>Recargar caja</button></div>
     {notice && <Message variant="success">{notice}</Message>}
     {!result ? <LoadingState>Cargando caja…</LoadingState> : result.error !== undefined ? <Message>{getErrorMessage(result.error, 'No se pudo cargar caja.')}</Message> : <>
-      <CashForm key={`${account.user_id}:${revision}:${active?.shift_id ?? 'new'}`} userId={account.user_id} linkedEmployee={account.employee_id} supervisor={account.role !== 'Cashier'} shift={active}
-        onSaved={() => { setNotice('Operación de caja confirmada.'); setRevision(value => value + 1); setPage(1) }} />
+      {page === 1 && <CashForm key={`${account.user_id}:${revision}:${active?.shift_id ?? 'new'}`} userId={account.user_id} linkedEmployee={account.employee_id} supervisor={account.role !== 'Cashier'} shift={active}
+        onSaved={() => { setNotice('Operación de caja confirmada.'); setRevision(value => value + 1); setPage(1) }} />}
       {selected && <section className={styles.panel}><h3>Turno #{selected.shift_id} · {selected.status === 'open' ? 'Abierto' : 'Cerrado'}</h3>
         <p>Empleado #{selected.employee_id} · Apertura {selected.opened_at} · Cuenta #{selected.opened_by_user_id}</p>
         <p>Inicial: {reportMoney(selected.opening_amount)} · Cobrado en efectivo: {reportMoney(selected.cash_collected)} · Transferencias: {reportMoney(selected.transfers_collected)}</p>
@@ -72,7 +72,7 @@ export function CashWorkspace() {
         <TableContainer label="Movimientos de efectivo"><table><thead><tr><th>Tipo</th><th>NIO</th><th>Motivo</th><th>Cuenta</th></tr></thead><tbody>{selected.movements.map(row => <tr key={row.movement_id}><td>{row.kind === 'deposit' ? 'Ingreso' : 'Retiro'}</td><td>{reportMoney(row.amount)}</td><td>{row.reason}</td><td>#{row.performed_by_user_id}</td></tr>)}</tbody></table></TableContainer>
       </section>}
       <section className={styles.panel}><h3>Historial de turnos</h3><TableContainer label="Turnos de caja"><table><thead><tr><th>Turno</th><th>Estado</th><th>Empleado</th><th>Apertura</th><th>Detalle</th></tr></thead><tbody>{rows.map(row => <tr key={row.shift_id}><td>#{row.shift_id}</td><td>{row.status === 'open' ? 'Abierto' : 'Cerrado'}</td><td>#{row.employee_id}</td><td>{row.opened_at}</td><td><button type="button" onClick={() => setSelectedId(row.shift_id)}>Ver turno #{row.shift_id}</button></td></tr>)}</tbody></table></TableContainer></section>
-      <PageNavigation page={page} hasNext={(result.data?.length ?? 0) > 20} onPageChange={next => setPage(next)} />
+      <PageNavigation page={page} hasNext={(result.data?.length ?? 0) > 20} onPageChange={next => { setPage(next); setSelectedId(null) }} />
     </>}
   </div>
 }

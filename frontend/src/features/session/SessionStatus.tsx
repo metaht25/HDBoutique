@@ -4,7 +4,7 @@ import { Message } from '../../shared/ui/Feedback'
 import { useSession } from './sessionContext'
 import styles from './SessionStatus.module.css'
 
-const roleLabels = { Administrator: 'Administración', Manager: 'Gerencia', Cashier: 'Caja' }
+const roleLabels = { Administrator: 'Dueña', Cashier: 'Colaborador' }
 
 export function SessionStatus() {
   const { state, refresh, logout } = useSession()

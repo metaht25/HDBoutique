@@ -23,7 +23,10 @@ def main() -> None:
         factory = sessionmaker(bind=engine, expire_on_commit=False)
         with factory.begin() as session:
             seed_sales(session)
-        print("Synthetic browser seed ready: three roles, catalog and purchasing graph")
+        print(
+            "Synthetic browser seed ready: two active roles, "
+            "retired role trace and catalog"
+        )
     finally:
         engine.dispose()
 

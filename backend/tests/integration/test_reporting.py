@@ -22,7 +22,11 @@ pytestmark = pytest.mark.postgres
 
 def test_sales_totals_are_global_exact_and_filter_document_dates(sales_context) -> None:  # noqa: F811
     client, graph, factory, _, _ = sales_context
-    assert register(client, graph).status_code == 201
+    with patch("app.modules.sales.service.datetime") as clock:
+        clock.now.side_effect = lambda tz: datetime(
+            2026, 10, 28, 18, 0, tzinfo=UTC
+        ).astimezone(tz)
+        assert register(client, graph).status_code == 201
     with factory.begin() as session:
         session.execute(
             insert(Sale),
@@ -138,7 +142,7 @@ def test_purchases_keep_historical_costs_and_missing_amounts(sales_context) -> N
 def test_inventory_boundaries_and_customer_group_identity(sales_context) -> None:  # noqa: F811
     client, graph, factory, _, _ = sales_context
     with factory.begin() as session:
-        for stock in (None, -1, 0, 1, 10, 11):
+        for stock in (None, -1, 0, 1, 5, 6):
             session.add(
                 Product(
                     name=None,
@@ -172,10 +176,14 @@ def test_inventory_boundaries_and_customer_group_identity(sales_context) -> None
     assert client.get("/api/v1/reports/customers?offset=99").json()["total_count"] == 1
 
 
-@pytest.mark.parametrize("role", ["administrator", "manager", "cashier"])
+@pytest.mark.parametrize("role", ["administrator"])
 def test_reporting_access_and_business_midnight(sales_context, role: str) -> None:  # noqa: F811
     client, graph, factory, _, _ = sales_context
-    assert register(client, graph).status_code == 201
+    with patch("app.modules.sales.service.datetime") as clock:
+        clock.now.side_effect = lambda tz: datetime(
+            2026, 10, 28, 18, 0, tzinfo=UTC
+        ).astimezone(tz)
+        assert register(client, graph).status_code == 201
     login(client, "purchasing-" + role)
     for now, expected, count in (
         (datetime(2026, 10, 29, 0, 30, tzinfo=UTC), "2026-10-28", 1),

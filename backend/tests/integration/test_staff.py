@@ -20,7 +20,9 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
         "first_names": "Ana",
         "last_names": "Prueba",
         "phone_number": "0012345678",
-        "job_title": "Manager",
+        "job_title": "Colaborador",
+        "username": "synthetic-cashier",
+        "temporary_password": SYNTHETIC_PASSWORD,
         "work_email": "ana@example.test",
         "start_date": "2026-01-01",
     }
@@ -35,7 +37,7 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
         ("address_id", 999999),
         ("phone_number", "x" * 11),
         ("first_names", " "),
-        ("work_email", "x" * 21),
+        ("work_email", "x" * 101),
         ("start_date", "invalid"),
         ("role", "Administrator"),
     ]:
@@ -82,7 +84,7 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
             "employee_id": row["employee_id"],
         },
     )
-    assert account.status_code == 201
+    assert account.status_code == 409
     conflict = client.post(
         "/api/v1/users",
         json={
@@ -94,6 +96,17 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
     )
     assert conflict.status_code == 409
     login(client, "synthetic-cashier")
+    assert (
+        client.post(
+            "/api/v1/auth/password",
+            json={
+                "current_password": SYNTHETIC_PASSWORD,
+                "new_password": "new-synthetic-password-42",
+            },
+        ).status_code
+        == 204
+    )
+    login(client, "synthetic-cashier", "new-synthetic-password-42")
     assert client.get("/api/v1/auth/me").json()["employee_id"] == row["employee_id"]
     assert client.get("/api/v1/employees").status_code == 403
     assert client.get(path).status_code == 403
@@ -123,9 +136,8 @@ def test_manager_and_csrf(business_client: TestClient) -> None:  # noqa: F811
                 "role": "Manager",
             },
         ).status_code
-        == 201
+        == 422
     )
-    login(client, "synthetic-manager")
     assert client.get("/api/v1/employees").status_code == 200
     assert client.post("/api/v1/employees", json={}).status_code == 422
     assert (

@@ -15,6 +15,7 @@ import { employeeOptions } from '../employees/api'
 import type { EmployeeOption } from '../employees/api'
 import { useSession } from '../session/sessionContext'
 import { listAccounts, saveAccount } from './api'
+import type { AccountRecord } from './api'
 import styles from '../../shared/ui/Management.module.css'
 
 const roleLabels: Record<Role, string> = { Administrator: 'Dueña', Cashier: 'Colaborador' }
@@ -24,7 +25,7 @@ function accountError(error: unknown): string {
   return getErrorMessage(error, 'No se pudo guardar la cuenta.')
 }
 function AccountForm({ account, employees, accounts, onSaved, onCancel }: {
-  account: Account | null; employees: EmployeeOption[]; accounts: Account[]; onSaved: (account: Account) => void; onCancel: () => void
+  account: Account | null; employees: EmployeeOption[]; accounts: AccountRecord[]; onSaved: (account: Account) => void; onCancel: () => void
 }) {
   const [username, setUsername] = useState(account?.username ?? ''), [password, setPassword] = useState(''), [confirmation, setConfirmation] = useState('')
   const [role, setRole] = useState<Role>(account?.role ?? 'Cashier'), [active, setActive] = useState(account?.is_active ?? true), [employee, setEmployee] = useState(String(account?.employee_id ?? ''))
@@ -96,9 +97,9 @@ export function AccountsPanel() {
       <TextField label="Buscar cuenta por usuario" type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(1) }} />
       <p>{rows.length} cuentas encontradas.</p>
       <section className={styles.panel}><TableContainer label="Cuentas"><table><thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Empleado</th><th>Acciones</th></tr></thead><tbody>{rows.slice((page - 1) * 20, page * 20).map(row => <tr key={row.user_id}>
-        <td>{row.username}{row.user_id === state.account?.user_id ? ' (tu cuenta)' : ''}</td><td>{roleLabels[row.role]}</td><td>{row.is_active ? 'Activa' : 'Inactiva'}</td>
+        <td>{row.username}{row.user_id === state.account?.user_id ? ' (tu cuenta)' : ''}</td><td>{row.role === 'Manager' ? 'Perfil retirado' : roleLabels[row.role]}</td><td>{row.is_active ? 'Activa' : 'Inactiva'}</td>
         <td>{row.employee_id === null ? 'Sin vínculo' : (() => { const employee = result.data.employees.find(employee => employee.employee_id === row.employee_id); return employee ? `${employee.first_names} ${employee.last_names} (#${employee.employee_id})` : `Empleado #${row.employee_id}` })()}</td>
-        <td><button type="button" aria-label={`Editar cuenta ${row.username}`} onClick={() => { setEditing(row); setNotice('') }}>Editar</button></td>
+        <td>{row.role === 'Manager' ? 'Acceso retirado; historial conservado' : <button type="button" aria-label={`Editar cuenta ${row.username}`} onClick={() => { setEditing({ ...row, role: row.role as Role }); setNotice('') }}>Editar</button>}</td>
       </tr>)}</tbody></table></TableContainer>{!rows.length && <p>No hay cuentas que coincidan.</p>}</section>
       <PageNavigation page={page} hasNext={rows.length > page * 20} onPageChange={setPage} />
     </>}

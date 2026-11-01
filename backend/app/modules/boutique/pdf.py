@@ -81,6 +81,11 @@ def receipt_pdf(receipt: ReceiptRead) -> bytes:
     if sale.annulment:
         line(f"Motivo: {sale.annulment.reason}")
         line(f"Reintegro: C$ {sale.annulment.amount:,.2f}")
+        if sale.annulment.method == "mixed":
+            line(f"Efectivo reintegrado: C$ {sale.annulment.cash_amount:,.2f}")
+            line(f"Transferencia reintegrada: C$ {sale.annulment.transfer_amount:,.2f}")
+        if sale.annulment.reference:
+            line(f"Referencia del reintegro: {sale.annulment.reference}")
     if sale.notes:
         line(f"Notas: {sale.notes}")
     line("Gracias por tu compra", title)

@@ -24,7 +24,7 @@ export function Ticket({ receipt }: { receipt: Receipt }) {
     {payment && <><p>Pago: {methodLabels[payment.method]}</p>{payment.method === 'mixed' && <><p>Efectivo aplicado: {money(payment.cash_amount)}</p><p>Transferencia: {money(payment.transfer_amount)}</p></>}
       {payment.method !== 'transfer' && <><p>Efectivo recibido: {money(payment.received_amount)}</p><p>Cambio: {money(payment.change_amount)}</p></>}{payment.reference && <p>Referencia: {payment.reference}</p>}</>}
     <hr /><p><b>{sale.status === 'voided' ? 'ANULADO' : 'PAGADO · EMITIDO'}</b></p>
-    {sale.annulment && <><p>Motivo: {sale.annulment.reason}</p><p>Reintegro: {money(sale.annulment.amount)}</p>{sale.payment?.method === 'mixed' && <><p>Efectivo reintegrado: {money(sale.annulment.cash_amount)}</p><p>Transferencia reintegrada: {money(sale.annulment.transfer_amount)}</p></>}</>}
+    {sale.annulment && <><p>Motivo: {sale.annulment.reason}</p><p>Reintegro: {money(sale.annulment.amount)}</p>{sale.payment?.method === 'mixed' && <><p>Efectivo reintegrado: {money(sale.annulment.cash_amount)}</p><p>Transferencia reintegrada: {money(sale.annulment.transfer_amount)}</p></>}{sale.annulment.reference && <p>Referencia del reintegro: {sale.annulment.reference}</p>}</>}
     {sale.notes && <p>Notas: {sale.notes}</p>}<h3>¡Gracias por tu compra!</h3>
   </article>
 }

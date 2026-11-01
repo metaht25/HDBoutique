@@ -1,5 +1,25 @@
 # Migraciones de esquema y estrategia de datos
 
+## Estado vigente y compatibilidad
+
+Head de código 0006_boutique_experience, 32 tablas más alembic_version. 0001–0005
+se conservan sin editar. 0006 agrega perfil/logo, auditoría, activación, municipio,
+instantáneas y componentes mixtos; mantiene columnas antiguas, IDs e historiales.
+Solo el retiro explícito de Manager modifica cuentas/sesiones antiguas y genera
+auditoría. No se infieren costos, pagos, domicilios ni existencias faltantes.
+
+Pruebas aisladas verifican upgrade vacío, downgrade seguro vacío, rechazo de
+pérdida operativa, conservación histórica, retiro trazable y ausencia de drift.
+El destino real requiere respaldo previo/final restaurado y huellas de las
+columnas anteriores. [Registro concreto del corte](cutover.md).
+El retorno seguro conserva desarrollo y restaura en otra base; no ejecutar
+un downgrade en caliente ni restaurar --clean sobre desarrollo.
+
+## Historia de fases anteriores
+
+Los conteos y estados de las fases siguientes son históricos. Los comandos de
+Alembic siguen siendo operaciones expresas sobre un destino autorizado.
+
 Actualizacion fase 15: corte local ejecutado en el destino hdboutique autorizado,
 0001 -> 0004, con respaldo previo/final restaurados y conciliados. Sin origen SQL
 Server ni carga comercial. [Evidencia y retorno](cutover.md). Los hitos de fases
@@ -124,9 +144,9 @@ La suite --run-postgres exige todos los valores HDB_TEST_DATABASE_* por separado
 base con nombre terminado en _test y esquema vacio; falla antes de migrar si
 encuentra tablas. No hereda HDB_DATABASE_* como alternativa. Las pruebas de
 persistencia usan transacciones/savepoints y datos sinteticos; el caso de commit
-comprueba visibilidad desde otra conexion. Las pruebas Django siguen con dummy.
+comprueba visibilidad desde otra conexion. Las pruebas Django se retiraron en fase 15.
 
-Sin --run-postgres, Pytest ejecuta las pruebas sin base y **omite** once casos
+Sin --run-postgres, Pytest ejecuta las pruebas sin base y **omite** los casos
 de integracion. No presentar esas omisiones como integracion aprobada. La prueba
 de SQL offline si se ejecuta sin PostgreSQL. Resultados reales en
 [caracterizacion](characterization.md#verificacion-de-fase-5).

@@ -22,10 +22,13 @@ por ID; claves idempotentes evitan duplicados de reintentos. Dinero Decimal/NIO 
 texto decimal en JSON. No se reconstruyen precios o movimientos historicos.
 
 Modulos activos: locations, catalog, customers, suppliers, identity, purchases,
-sales, cash, inventory y reporting. staff conserva modelos/relaciones, sin CRUD.
+sales, cash, inventory, reporting, staff y boutique. staff gestiona personal y
+cuentas de colaborador en una transacción; boutique guarda el perfil/logo y emite
+recibos PDF. Las consultas de pantallas usan snapshots REPEATABLE READ.
 [Caja](cash-register.md) agrega turnos y pago completo con venta, correcciones
 mediante anulacion total y movimientos compensatorios. Credito/abonos excluidos
-permanentemente; activacion y ampliaciones de devolucion siguen fuera del alcance.
+permanentemente. La activación preserva historia y bloquea nuevas operaciones;
+la anulación repone únicamente mercancía devuelta, incluido cero.
 
 El frontend organiza app (rutas), layouts, features (modulos) y shared (HTTP,
 sesion, formularios/UI). Solo /api/v1, respuestas externas validadas, dinero textual,
@@ -37,7 +40,11 @@ Nginx sirve dist y dirige /api/v1 a FastAPI manteniendo el origen. El despliegue
 local usa loopback/HTTP y cookies locales; production exige HTTPS/Secure y su
 propia infraestructura. No hay proxy ni servicio Django.
 
-30 tablas SQLAlchemy y cinco revisiones Alembic hasta 0005_cash_checkout.
+32 tablas SQLAlchemy y seis revisiones Alembic hasta 0006_boutique_experience.
+La última incorpora boutique_profiles, management_events, municipio, activación,
+instantáneas de venta, componentes de pago mixto y movimientos initial_stock.
+El retiro del perfil Manager desactiva y audita sin elevar privilegios. Dueña y
+Colaborador tienen permisos en servidor y guardas antes de montar consultas UI.
 0001_compatibility se conserva; el corte local actualizo la base existente tras
 respaldo restaurado y comparacion de sus datos/identidades. No hay SQL Server ni
 historicos disponibles; data_migration mantiene herramientas offline de referencia,

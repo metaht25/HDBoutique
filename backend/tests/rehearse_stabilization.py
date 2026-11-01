@@ -17,6 +17,8 @@ from tests.rehearsal_helpers import require_isolated_rehearsal
 def encode(value: object) -> str:
     if isinstance(value, (Decimal, date, datetime)):
         return str(value)
+    if isinstance(value, bytes):
+        return value.hex()
     raise TypeError("Unsupported snapshot value")
 
 
@@ -28,7 +30,7 @@ def snapshot(engine: Engine) -> dict[str, object]:
         if names != expected:
             raise RuntimeError("Rehearsal schema differs from current metadata")
         version = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        if version != "0005_cash_checkout":
+        if version != "0006_boutique_experience":
             raise RuntimeError("Unexpected Alembic head")
         for table in Base.metadata.sorted_tables:
             rows = [
@@ -82,7 +84,7 @@ def main() -> None:
                 "Restored rows, monetary values, history or identities differ"
             )
         print(
-            "Synthetic restore verified: 30 tables, exact field hashes, "
+            "Synthetic restore verified: 32 tables, exact field hashes, "
             "identities and Alembic head; no values printed"
         )
     finally:

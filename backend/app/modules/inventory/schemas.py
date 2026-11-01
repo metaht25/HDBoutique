@@ -12,10 +12,12 @@ class MovementRead(OutputModel):
     purchase_item_id: int | None
     sale_item_id: int | None
     return_item_id: int | None
-    movement_type: Literal["purchase_receipt", "sale_issue", "sale_return"]
+    movement_type: Literal[
+        "purchase_receipt", "sale_issue", "sale_return", "initial_stock"
+    ]
     quantity: int
     stock_before: int
     stock_after: int
     created_at: datetime
     performed_by_user_id: int
-    employee_id: int
+    employee_id: int | None

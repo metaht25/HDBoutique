@@ -30,8 +30,8 @@ No hay servicio Django ni destino a 8000 en el host. Ninguna pantalla usa Django
 Python 3.13.15/uv 0.12.10 y Node 24.22.2 estan fijados por version/digest.
 backend development instala runtime+dev y herramientas; runtime excluye dev/uv.
 Ambos carecen de Django/DRF/mssql-django/pyodbc. uv es el unico gestor Python.
-El incremento de caja incorpora 30 modelos y head 0005_cash_checkout, conservando
-las revisiones anteriores sin reescritura. [Contrato y operacion](cash-register.md).
+La reconstrucción incorpora 32 modelos y head 0006_boutique_experience, conservando
+0001–0005 sin reescritura. [Contrato y operación](cash-register.md).
 
 frontend/Dockerfile construye con npm ci y sirve solo dist desde Nginx 1.30.6,
 fijado por digest. Ejecuta como nginx, puerto interno 8080, raiz de solo lectura y
@@ -92,5 +92,5 @@ claves/roles existentes. Plan de retorno y evidencia concreta en [corte](cutover
 Nunca usar datos/volumen/credenciales de desarrollo para Pytest o semillas.
 Compose.test.yaml siempre con -p hdboutique-test: PostgreSQL tmpfs y sin puertos,
 cuentas sinteticas y guardas antes de conectar. Comandos en [desarrollo](development.md).
-compose.frontend-test.yaml ejecuta tipos/lint/Vitest/build/80 E2E sin red/backend.
+compose.frontend-test.yaml ejecuta tipos/lint/Vitest/build/20 E2E sin red/backend.
 El perfil integration prueba la imagen Nginx real con FastAPI y PostgreSQL.

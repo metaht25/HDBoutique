@@ -97,7 +97,9 @@ def test_login_rotation_logout_and_cookie_flags(
     assert response.status_code == 200
     authenticated = client.cookies[COOKIE_NAME]
     assert authenticated != preauth
-    assert "password_hash" not in response.text and SYNTHETIC_PASSWORD not in response.text
+    assert (
+        "password_hash" not in response.text and SYNTHETIC_PASSWORD not in response.text
+    )
     assert response.json()["employee_id"] is None
     assert response.headers["cache-control"] == "no-store"
     client.headers["X-CSRF-Token"] = response.headers["X-CSRF-Token"]
@@ -124,20 +126,22 @@ def test_role_matrix_all_business_operations(
 ) -> None:
     client = identity_client
     login(client, role.lower())
-    cashier_read = {"categories", "sizes", "products", "customer-types", "customers", "departments", "municipalities"}
+    cashier_read = {
+        "categories",
+        "sizes",
+        "products",
+        "customer-types",
+        "customers",
+        "departments",
+        "municipalities",
+    }
     for resource in RESOURCES:
         for method in ("GET", "POST", "PUT", "PATCH", "DELETE"):
-            allowed = (
-                role == "Administrator"
-                or (
-                    role == "Cashier"
-                    and (
-                        (method == "GET" and resource in cashier_read)
-                        or (
-                            resource == "customers"
-                            and method in {"POST", "PUT", "PATCH"}
-                        )
-                    )
+            allowed = role == "Administrator" or (
+                role == "Cashier"
+                and (
+                    (method == "GET" and resource in cashier_read)
+                    or (resource == "customers" and method in {"POST", "PUT", "PATCH"})
                 )
             )
             path = "/api/v1/" + resource
@@ -289,7 +293,9 @@ def test_user_changes_revoke_sessions_and_guard_last_administrator(
         identity_app, base_url=TEST_ORIGIN, headers={"Origin": TEST_ORIGIN}
     ) as cashier:
         login(cashier, "cashier")
-        response = client.patch(f"/api/v1/users/{cashier_id}", json={"role": "Administrator"})
+        response = client.patch(
+            f"/api/v1/users/{cashier_id}", json={"role": "Administrator"}
+        )
         assert response.status_code == 200
         assert cashier.get("/api/v1/auth/me").status_code == 401
         login(cashier, "cashier")

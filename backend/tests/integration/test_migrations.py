@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import Connection, Engine, func, inspect, select, text
+from sqlalchemy import Connection, Engine, MetaData, Table, func, inspect, select, text
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database import models
@@ -74,7 +74,8 @@ def test_receipt_upgrade_preserves_legacy_values_without_cost_inference(
     tables, issues = transform(source)
     assert not issues
     for mapping in MAPPINGS:
-        database_connection.execute(mapping.table.insert(), tables[mapping.target])
+        table = Table(mapping.target, MetaData(), autoload_with=database_connection)
+        database_connection.execute(table.insert(), tables[mapping.target])
     command.upgrade(config, "head")
     assert database_connection.scalar(select(models.Product.legacy_stock)) == stock
     assert (
@@ -95,12 +96,12 @@ def test_sales_upgrade_preserves_existing_receipt(
 ) -> None:
     config = Config(str(BACKEND_ROOT / "alembic.ini"))
     config.attributes["connection"] = database_connection
-    command.downgrade(config, "0003_purchase_receipts")
     with Session(
         bind=database_connection, join_transaction_mode="create_savepoint"
     ) as session:
         with session.begin():
             graph = seed_purchasing(session)
+    command.downgrade(config, "0003_purchase_receipts")
     purchase_id = database_connection.scalar(
         models.Purchase.__table__.insert()
         .values(
@@ -154,4 +155,40 @@ def test_sales_upgrade_preserves_existing_receipt(
         )
         == 0
     )
+    command.check(config)
+
+
+def test_boutique_upgrade_retires_manager_without_changing_identity(
+    database_connection,
+):
+    config = Config(str(BACKEND_ROOT / "alembic.ini"))
+    config.attributes["connection"] = database_connection
+    command.downgrade(config, "0005_cash_checkout")
+    user_id = database_connection.scalar(
+        text(
+            "INSERT INTO user_accounts(username,password_hash,role,is_active) "
+            "VALUES ('retired-synthetic','synthetic-hash','Manager',true) "
+            "RETURNING user_id"
+        )
+    )
+    database_connection.execute(
+        text(
+            "INSERT INTO web_sessions(token_hash,csrf_hash,user_id,"
+            "expires_at,last_seen_at) "
+            "VALUES (:token,:csrf,:id,CURRENT_TIMESTAMP + interval '1 hour',"
+            "CURRENT_TIMESTAMP)"
+        ),
+        {"token": "1" * 64, "csrf": "2" * 64, "id": user_id},
+    )
+    command.upgrade(config, "head")
+    row = database_connection.execute(
+        text("SELECT username,role,is_active FROM user_accounts WHERE user_id=:id"),
+        {"id": user_id},
+    ).one()
+    assert tuple(row) == ("retired-synthetic", "Manager", False)
+    assert database_connection.scalar(text("SELECT count(*) FROM web_sessions")) == 0
+    event = database_connection.execute(
+        text("SELECT record_id,action,actor_id FROM management_events")
+    ).one()
+    assert tuple(event) == (user_id, "role_retired", None)
     command.check(config)

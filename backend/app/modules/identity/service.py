@@ -339,6 +339,7 @@ class IdentityService:
                     password_hash=hash_password(payload.password.get_secret_value()),
                     role=payload.role,
                     employee_id=payload.employee_id,
+                    must_change_password=not bootstrap,
                     is_active=True,
                 )
 

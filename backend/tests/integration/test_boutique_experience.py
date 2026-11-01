@@ -445,3 +445,41 @@ def test_invalid_mixed_amounts_leave_inventory_unchanged(boutique, transfer, rec
             )
             == 0
         )
+
+
+@pytest.mark.parametrize("value", [True, 100.1, "100.001", "NaN", "86956521.74"])
+def test_product_cost_rejects_inexact_or_overflow_values(boutique, value):
+    client, graph, factory = boutique
+    body = {
+        "name": "Rejected cost",
+        "cost": value,
+        "initial_stock": 5,
+        "category_id": graph["category"],
+        "size_id": graph["size"],
+    }
+    with factory.begin() as session:
+        count = session.scalar(select(func.count()).select_from(Product))
+    assert client.post("/api/v1/products", json=body).status_code == 422
+    with factory.begin() as session:
+        assert session.scalar(select(func.count()).select_from(Product)) == count
+
+
+def test_retired_role_cannot_log_in_or_be_created(boutique):
+    client, _, _ = boutique
+    response = client.post(
+        "/api/v1/users",
+        json={
+            "username": "retired-new",
+            "password": SYNTHETIC_PASSWORD,
+            "role": "Manager",
+        },
+    )
+    assert response.status_code == 422
+    client.post("/api/v1/auth/logout")
+    csrf = client.get("/api/v1/auth/csrf").json()["csrf_token"]
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": "purchasing-manager", "password": SYNTHETIC_PASSWORD},
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert response.status_code == 401

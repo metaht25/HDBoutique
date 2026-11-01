@@ -1,6 +1,6 @@
 import { expect, it, vi } from 'vitest'
 import { apiClient } from '../../src/shared/api/client'
-import { parseAccount, parseCatalog, preparationStatus, preparationSteps } from '../../src/features/settings/api'
+import { parseAccount, parseAccountRecord, parseCatalog, preparationStatus, preparationSteps } from '../../src/features/settings/api'
 
 it('preserves nullable catalog labels and exact decimal costs', () => {
   expect(parseCatalog('categories', { category_id: 1, name: null })).toEqual({ id: 1, text: null })
@@ -31,4 +31,10 @@ it('checks presence independently with bounded reads', async () => {
     expect(statuses.filter(Boolean)).toHaveLength(1)
     expect(request.mock.calls.every(([path]) => path.endsWith('offset=0&limit=1'))).toBe(true)
   } finally { request.mockRestore() }
+})
+
+it('preserves retired account history without accepting it as a session', () => {
+  const retired = { user_id: 3, username: 'retired', role: 'Manager', is_active: false, employee_id: null }
+  expect(parseAccountRecord(retired)).toEqual(retired)
+  expect(() => parseAccount(retired)).toThrow()
 })

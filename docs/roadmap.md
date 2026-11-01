@@ -1,11 +1,9 @@
 # Plan de refactorizacion por fases
 
-Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
-edicion, consulta y selector operativo; Administrator/Manager gestionan,
-Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
-sobre operaciones. [Configuracion inicial](initial-setup.md) completada posteriormente:
-catalogos, ubicaciones, costes/ofertas y cuentas con los permisos existentes.
-Estos contratos actualizan las referencias historicas pendientes que siguen abajo.
+Incremento visual y funcional autorizado el 31 de octubre de 2026; reconstrucción
+basada en 26 referencias. Estado y revisión en [reconstrucción](visual-reconstruction.md).
+Dos perfiles, nueva navegación, delivery/pago mixto, PDF, precio automático,
+activación y personal/cuenta. Sustituye acuerdos anteriores incompatibles.
 
 Se trabaja con una sola persona, en Cris-develop y con commits locales. Cada fase
 se inicia por instruccion del usuario, entrega un resultado verificable y se
@@ -13,17 +11,16 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 
 ## Estado de avance
 
-Alcance funcional de la primera version local completado con Empleados y
-[Configuracion inicial](initial-setup.md). Diez pantallas TS/FastAPI. Se conserva
-head 0005 y 30 tablas; datos reales se preparan desde la interfaz, sin semillas.
-Sin despliegue publico ni reapertura de los alcances excluidos.
+La primera versión local se amplía con 0006_boutique_experience y 32 tablas.
+Dueña dispone de diez pantallas y Colaborador de cinco; caja/reportes/preparación
+se integran en sus módulos. No se introducen semillas comerciales en desarrollo.
+[Reglas vigentes](business-rules.md), [navegación](frontend-modules.md),
+[destino local y respaldos](cutover.md).
 
-Incremento posterior al corte solicitado por el usuario: [caja y correccion de
-ventas](cash-register.md), con contado exclusivo en efectivo/transferencia,
-sin abonos/credito en ninguna version. Implementacion agrega revision 0005 y
-sustituye el prototipo de caja. No reabre la migracion SQL Server ni declara
-modificadas las condiciones del corte original. Empleados y Configuracion inicial
-se completaron posteriormente segun los contratos enlazados al inicio.
+El cierre del incremento se registra tras sus pruebas conectadas, revisión visual
+y migración verificada; [resultados](characterization.md). Las filas siguientes
+conservan los hitos históricos de cada fase, incluidos permisos y exclusiones
+vigentes en aquel momento. No son contratos operativos alternativos actuales.
 
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |

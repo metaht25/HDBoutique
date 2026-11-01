@@ -24,6 +24,7 @@ class SupplierPatch(PatchModel):
     is_active: Annotated[bool | None, Field(strict=True)] = None
     required_fields = frozenset(
         [
+            "is_active",
             "address_id",
             "company_name",
             "contact_first_names",

@@ -3,9 +3,9 @@
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import Field
+from pydantic import BeforeValidator, Field
 
-from app.api.schemas import InputModel, OutputModel, PatchModel
+from app.api.schemas import InputModel, OutputModel, PatchModel, require_exact_decimal
 
 
 class CategoryCreate(InputModel):
@@ -40,7 +40,11 @@ class ProductCreate(InputModel):
     category_id: Annotated[int, Field(gt=0, strict=True)]
     size_id: Annotated[int, Field(gt=0, strict=True)]
     name: Annotated[str, Field(max_length=40, min_length=1)]
-    cost: Annotated[Decimal, Field(gt=0, le=Decimal("86956521.73"), decimal_places=2)]
+    cost: Annotated[
+        Decimal,
+        Field(gt=0, le=Decimal("86956521.73"), decimal_places=2),
+        BeforeValidator(require_exact_decimal),
+    ]
     initial_stock: Annotated[int, Field(ge=0, le=2147483647, strict=True)] = 0
     supplier_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     description: Annotated[str | None, Field(max_length=500)] = None
@@ -52,7 +56,9 @@ class ProductPatch(PatchModel):
     size_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     name: Annotated[str | None, Field(max_length=40, min_length=1)] = None
     cost: Annotated[
-        Decimal | None, Field(gt=0, le=Decimal("86956521.73"), decimal_places=2)
+        Decimal | None,
+        Field(gt=0, le=Decimal("86956521.73"), decimal_places=2),
+        BeforeValidator(require_exact_decimal),
     ] = None
     supplier_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     description: Annotated[str | None, Field(max_length=500)] = None

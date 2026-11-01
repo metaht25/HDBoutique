@@ -7,7 +7,7 @@ import { SessionStatus } from '../../src/features/session/SessionStatus'
 import { useSession } from '../../src/features/session/sessionContext'
 import { apiClient } from '../../src/shared/api/client'
 
-const account = { user_id: 1, username: 'synthetic-manager', role: 'Manager', is_active: true, employee_id: null }
+const account = { user_id: 1, username: 'synthetic-owner', role: 'Administrator', is_active: true, employee_id: null }
 function json(body: unknown, status = 200, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), { status, headers })
 }
@@ -18,7 +18,7 @@ it('deduplicates restore under StrictMode and gets CSRF for an existing session'
     .mockResolvedValueOnce(json({ csrf_token: 'synthetic-token' }))
   vi.stubGlobal('fetch', fetchMock)
   render(<StrictMode><SessionProvider><SessionStatus /></SessionProvider></StrictMode>)
-  await screen.findByText('synthetic-manager · Gerencia')
+  await screen.findByText('synthetic-owner · Dueña')
   expect(fetchMock).toHaveBeenCalledTimes(2)
 })
 
@@ -58,7 +58,7 @@ it('keeps the session visible after a failed logout and shows the backend error'
   render(<SessionProvider><SessionStatus /></SessionProvider>)
   await userEvent.setup().click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
   await screen.findByRole('alert')
-  expect(screen.getByText('synthetic-manager · Gerencia')).toBeDefined()
+  expect(screen.getByText('synthetic-owner · Dueña')).toBeDefined()
   expect(screen.getByRole('alert').textContent).toContain('Inténtalo de nuevo')
 })
 
@@ -67,14 +67,14 @@ it('clears the header after a versioned request reports expiry', async () => {
     .mockResolvedValueOnce(json({ csrf_token: 'token' }))
     .mockResolvedValueOnce(json({ error: { code: 'authentication_required', message: 'Expired' } }, 401)))
   render(<SessionProvider><SessionStatus /></SessionProvider>)
-  await screen.findByText('synthetic-manager · Gerencia')
+  await screen.findByText('synthetic-owner · Dueña')
   await act(async () => { await apiClient.request('/api/v1/products').catch(() => undefined) })
   await screen.findByText('Sin sesión')
 })
 
 function LoginConsumer() {
   const { login } = useSession()
-  return <button onClick={() => void login('synthetic-manager', 'Synthetic-password-27!')}>Test login</button>
+  return <button onClick={() => void login('synthetic-owner', 'Synthetic-password-27!')}>Test login</button>
 }
 
 it('provides login for the next screen phase and uses the rotated CSRF for logout', async () => {
@@ -87,7 +87,7 @@ it('provides login for the next screen phase and uses the rotated CSRF for logou
   await screen.findByText('Sin sesión')
   const user = userEvent.setup()
   await user.click(screen.getByRole('button', { name: 'Test login' }))
-  await screen.findByText('synthetic-manager · Gerencia')
+  await screen.findByText('synthetic-owner · Dueña')
   await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4))
   expect(fetchMock.mock.calls[3]?.[1].headers['X-CSRF-Token']).toBe('rotated')
@@ -105,9 +105,9 @@ it('does not replace a newer login with a late restore response', async () => {
   vi.stubGlobal('fetch', fetchMock)
   render(<SessionProvider><LoginConsumer /><SessionStatus /></SessionProvider>)
   await userEvent.setup().click(screen.getByRole('button', { name: 'Test login' }))
-  await screen.findByText('new-session · Gerencia')
+  await screen.findByText('new-session · Dueña')
   await act(async () => { releaseRestore(json(account)); await oldRestore })
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
-  expect(screen.queryByText('synthetic-manager · Gerencia')).toBeNull()
-  expect(screen.getByText('new-session · Gerencia')).toBeDefined()
+  expect(screen.queryByText('synthetic-owner · Dueña')).toBeNull()
+  expect(screen.getByText('new-session · Dueña')).toBeDefined()
 })

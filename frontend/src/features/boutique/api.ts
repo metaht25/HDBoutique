@@ -9,8 +9,10 @@ export const methodLabels: Record<string, string> = { cash: 'Efectivo', transfer
 export const statusLabels: Record<string, string> = { confirmed: 'Confirmada', voided: 'Anulada', legacy: 'Histórica', registered: 'Pendiente', received: 'Recibida', low_stock: 'Stock bajo', out_of_stock: 'Agotado', available: 'En stock', unknown: 'Pendiente de conteo', invalid: 'Stock inválido' }
 export function money(value: string | number | null | undefined) {
   if (value === null || value === undefined) return 'No registrado'
-  const normalized = exactMoney(String(value))
-  if (normalized === null) return 'No registrado'
+  const raw = String(value)
+  if (!/^-?\d+(?:\.\d{1,2})?$/.test(raw)) return 'No registrado'
+  const [integer, fraction = ''] = raw.split('.')
+  const normalized = `${integer}.${fraction.padEnd(2, '0')}`
   const [whole = '0', cents = '00'] = normalized.split('.')
   return `C$ ${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${cents}`
 }

@@ -22,11 +22,12 @@ Ningun servicio migra ni crea cuentas al arrancar.
 
 ## Estado
 
-Primera version funcional local completada. Prepara los datos reales desde
-[Configuracion](http://127.0.0.1:8080/settings): ubicaciones, catalogos,
-cuentas del personal y referencias para compras. La guia muestra lo que falta.
+Reconstrucción visual y funcional basada en las 26 capturas del sistema anterior.
+Dos perfiles: Dueña (Administrator) y Colaborador (Cashier). La preparación se
+realiza desde el perfil del encabezado, Productos y los directorios;
+[guía contextual](docs/initial-setup.md), sin Configuración en el menú.
 
-30 modelos SQLAlchemy y Alembic head 0005_cash_checkout. El corte local autorizado
+32 modelos SQLAlchemy y Alembic head 0006_boutique_experience. El corte local autorizado
 actualizo hdboutique desde 0001 despues de respaldo restaurado y conciliacion;
 no existe origen/historicos SQL Server y no se cargaron datos comerciales.
 Administrador inicial sin empleado inventado. [Empleados](docs/employees.md)
@@ -35,8 +36,16 @@ registra turnos, apertura/cierre,
 cobros completos y correcciones supervisadas. Abonos/credito excluidos permanentemente.
 Una compra/venta requiere previamente sus referencias validas, incluido empleado.
 
-Diez pantallas usan exclusivamente /api/v1. Ventas atomicas con pago completo en
-efectivo o transferencia, sin pagos parciales; anulacion total auditada. Operaciones
+Diez pantallas de Dueña y cinco de Colaborador usan exclusivamente /api/v1.
+Dashboard/Inicio, Nueva venta, Productos, Clientes y Recibos; Dueña también dispone
+de Ventas, Historial de ventas, Compras, Proveedores y Empleados. Caja se integra
+en Dashboard/Nueva venta y los reportes en Ventas/Historial.
+
+Ventas atómicas con pago completo en efectivo, transferencia o mixto; cliente
+general estable, regular o delivery. Ticket imprimible y PDF real de 80 mm con
+perfil/logo durable. Producto con precio costo × 1.15 y existencia inicial auditada;
+stock bajo 1–5. Activación persistente y alta empleado/cuenta atómica con cambio de
+contraseña temporal. Anulación total auditada. Operaciones
 idempotentes, compra/recepcion separadas, dinero Decimal/NIO/texto, precios
 historicos, permisos por rol y reportes de servidor. No se infieren pagos historicos,
 utilidad, estados o costes ausentes. [Reglas](docs/business-rules.md).

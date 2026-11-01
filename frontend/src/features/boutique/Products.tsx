@@ -27,7 +27,7 @@ function ProductForm({ row, date, onSaved, onClose }: { row?: Product; date: str
     catch (error) { setError(getErrorMessage(error, 'No se pudo guardar el producto.')) } finally { sending.current = false; setBusy(false) }
   }
   return <Modal title={row ? 'Editar producto' : 'Nuevo producto'} onClose={() => { if (!busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={busy}><div className={styles.formGrid}>
-    <TextField label="Nombre" required maxLength={50} value={name} onChange={e => setName(e.target.value)} /><TextField label="Fecha actual" type="date" readOnly value={date} />
+    <TextField label="Nombre" required maxLength={40} value={name} onChange={e => setName(e.target.value)} /><TextField label="Fecha actual" type="date" readOnly value={date} />
     <DataState result={categories}><SelectField label="Categoría" required value={category} onChange={e => setCategory(e.target.value)}><option value="">Selecciona</option>{categories?.data?.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</SelectField></DataState>
     <DataState result={sizes}><SelectField label="Talla" required value={size} onChange={e => setSize(e.target.value)}><option value="">Selecciona</option>{sizes?.data?.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</SelectField></DataState>
     <TextField label="Buscar proveedor (opcional)" value={q} maxLength={100} onChange={e => setQ(e.target.value)} />
