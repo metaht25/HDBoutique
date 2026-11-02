@@ -59,11 +59,11 @@ class ReportingRepository:
             .all()
         )
         return (
-            {name: result[0][name] for name in totals.c.keys()},
+            {column.key: result[0][column] for column in totals.c},
             [
-                {name: row[name] for name in page.c.keys()}
+                {column.key: row[column] for column in page.c}
                 for row in result
-                if row[next(iter(page.c.keys()))] is not None
+                if row[next(iter(page.c))] is not None
             ],
         )
 

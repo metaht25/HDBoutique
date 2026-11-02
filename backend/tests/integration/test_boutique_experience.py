@@ -374,6 +374,40 @@ def test_reports_scope_private_fields_and_own_receipts(boutique):
         assert client.get("/api/v1/" + path).status_code == 403, path
 
 
+def test_ledger_keeps_row_units_distinct_from_global_summary(boutique):
+    client, graph, _ = boutique
+    first = post(client, "sales", general_sale(graph), "ledger-first-0001")
+    second = post(
+        client,
+        "sales",
+        general_sale(
+            graph,
+            items=[{"product_id": graph["product1"], "quantity": 2}],
+            payment={
+                "shift_id": graph["shift"],
+                "method": "cash",
+                "received_amount": "400.00",
+            },
+        ),
+        "ledger-second-0002",
+    )
+    for suffix in ("", "?receipts=true"):
+        ledger = client.get("/api/v1/reports/sales-ledger" + suffix).json()
+        assert ledger["summary"]["units"] == 3
+        assert {row["sale_id"]: row["units"] for row in ledger["items"]} == {
+            first["sale_id"]: 1,
+            second["sale_id"]: 2,
+        }
+    page = client.get("/api/v1/reports/sales-ledger?limit=1&offset=1").json()
+    assert page["summary"]["units"] == 3
+    assert len(page["items"]) == 1 and page["items"][0]["units"] == 1
+    empty = client.get("/api/v1/reports/sales-ledger?offset=50").json()
+    assert empty["summary"]["units"] == 3 and empty["items"] == []
+    overview = client.get("/api/v1/dashboard/overview").json()
+    assert overview["summary"]["today_units"] == 3
+    assert overview["summary"]["month_units"] == 3
+
+
 def test_logo_sanitization_and_delivery_references(boutique):
     client, graph, factory = boutique
     assert client.get("/api/v1/boutique-profile").json()["ready"] is False

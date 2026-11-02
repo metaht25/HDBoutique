@@ -15,7 +15,9 @@ from app.modules.reporting.service import report_context
 
 def summary_values(values: dict[str, Any]) -> dict[str, int | str | None]:
     return {
-        key: format(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), ".2f")
+        key: int(value)
+        if key in {"units", "today_units", "month_units"} and value is not None
+        else format(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), ".2f")
         if isinstance(value, Decimal)
         else value
         for key, value in values.items()

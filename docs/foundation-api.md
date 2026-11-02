@@ -1,11 +1,14 @@
 # API fundamental: incrementos de fase 7
 
-Incremento posterior autorizado: [Empleados](employees.md) implementa alta,
-edicion, consulta y selector operativo; Administrator/Manager gestionan,
-Cashier solo consulta ID/nombre. Sin borrado/desactivacion ni efecto de fechas
-sobre operaciones. [Configuracion inicial](initial-setup.md) completada posteriormente:
-catalogos, ubicaciones, costes/ofertas y cuentas con los permisos existentes.
-Estos contratos actualizan las referencias historicas pendientes que siguen abajo.
+Este documento conserva los contratos históricos de fase 7. La reconstrucción
+posterior los sustituye donde corresponda: solo Dueña y Colaborador, domicilio
+directo con municipio, activación persistente y precio calculado desde costo.
+Dueña gestiona [empleados y cuentas](employees.md); Colaborador solo recibe el
+selector operativo ID/nombre. Desactivar personal revoca acceso y conserva historia.
+La [preparación contextual](initial-setup.md) vive en los módulos actuales.
+[Permisos vigentes](authentication.md), [productos](purchases-inventory.md) y
+[ventas/clientes](sales.md) son la referencia operativa; las restricciones,
+roles y referencias a Django que siguen describen exclusivamente aquella fase.
 
 Implementados ubicaciones/catalogo y clientes/proveedores con schemas explicitos,
 repositorios concretos y transacciones en servicios. Empleados no forma parte del

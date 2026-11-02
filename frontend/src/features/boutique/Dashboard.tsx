@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useSession } from '../session/sessionContext'
 import { dateText, money, useQuery } from './api'
 import type { Overview } from './contracts'
-import { DataState, Panel, Stats, Table } from './ui'
+import { Badge, DataState, Panel, Stats, Table } from './ui'
 import { ShiftPanel } from './ShiftPanel'
 import { ReceiptModal } from './ReceiptModal'
 import styles from './Boutique.module.css'
@@ -29,7 +29,7 @@ export default function Dashboard() {
         <p className={styles.hint}>{Number(s.period_count) === 0 ? 'No hay ventas registradas para este período.' : 'Ventas confirmadas del período. Las anuladas se conservan en el historial.'}</p>
       </Panel>
       <Panel title={owner ? 'Últimas ventas' : 'Mis últimos recibos'}><DataState result={result} empty={data?.recent_sales.length === 0}>
-        <Table label="Últimas ventas"><thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Acción</th></tr></thead><tbody>{data?.recent_sales.map(row => <tr key={row.sale_id}><td>{dateText(row.sale_date)}</td><td>{row.customer_name}</td><td>{row.products ?? 'Sin detalle'}</td><td>{money(row.total)}</td><td>{row.receipt_id ? <button className="secondary" onClick={() => setReceipt(row.sale_id)}>Recibo</button> : 'Histórica'}</td></tr>)}</tbody></Table>
+        <Table label="Últimas ventas"><thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acción</th></tr></thead><tbody>{data?.recent_sales.map(row => <tr key={row.sale_id}><td>{dateText(row.sale_date)}</td><td>{row.customer_name}</td><td>{row.products ?? 'Sin detalle'}</td><td>{money(row.total)}</td><td><Badge status={row.status} /></td><td>{row.receipt_id ? <button className="secondary" onClick={() => setReceipt(row.sale_id)}>Recibo</button> : 'Histórica'}</td></tr>)}</tbody></Table>
       </DataState></Panel>
     </div>
     <Panel title="Productos con bajo stock" action={<Link to="/products?status=low_stock">Ver inventario</Link>}><DataState result={result} empty={data?.low_stock.length === 0}><Table label="Productos con bajo stock"><thead><tr><th>Producto</th><th>Categoría</th><th>Talla</th><th>Stock</th></tr></thead><tbody>{data?.low_stock.map(row => <tr key={row.product_id}><td>{row.name}</td><td>{row.category_name}</td><td>{row.size_name}</td><td>{row.legacy_stock}</td></tr>)}</tbody></Table></DataState></Panel>

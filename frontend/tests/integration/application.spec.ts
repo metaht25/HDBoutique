@@ -104,7 +104,9 @@ test('cash, transfer and mixed delivery sales produce real 80 mm receipts', asyn
       const pdf = await download, path = info.outputPath('ticket-mixed-80mm.pdf')
       await pdf.saveAs(path); const bytes = await readFile(path)
       expect(bytes.subarray(0, 5).toString()).toBe('%PDF-'); expect(bytes.toString('latin1')).toContain('226.7717')
-      await page.emulateMedia({ media: 'print' }); await page.screenshot({ path: info.outputPath('receipt-print-80mm.png'), fullPage: true }); await page.emulateMedia({ media: 'screen' })
+      await page.emulateMedia({ media: 'print' }); await page.screenshot({ path: info.outputPath('receipt-print-80mm.png'), fullPage: true })
+      await page.pdf({ path: info.outputPath('ticket-browser-print-80mm.pdf'), preferCSSPageSize: true, printBackground: true })
+      await page.emulateMedia({ media: 'screen' })
     }
   }
   const stock = await (await page.request.get('/api/v1/products/' + productId)).json(); expect(stock.legacy_stock).toBe(5)
@@ -145,6 +147,8 @@ test('owner registers a pending purchase, receives once and supervises a mixed v
   expect((await (await page.request.get('/api/v1/products/' + productId)).json()).legacy_stock).toBe(8)
   const ledger = await (await page.request.get('/api/v1/reports/sales-ledger')).json()
   expect(ledger.summary.total_amount).toBe('230.24')
+  expect(ledger.summary.units).toBe(2)
+  expect(ledger.items.map((row: { units: number }) => row.units)).toEqual([1, 1, 1])
   const sale = await (await page.request.get('/api/v1/sales/' + mixedSale)).json()
   expect(sale.annulment.cash_amount).toBe('90.12'); expect(sale.annulment.transfer_amount).toBe('50.00')
   await capture(page, info, 'owner-void-detail')
@@ -205,6 +209,7 @@ for (const role of ['owner', 'collaborator']) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 })
       for (const path of paths) {
         await page.goto('/' + path); await capture(page, info, role + '-' + width + '-' + path)
+        if (path === 'dashboard') await expect(page.getByText('Anulada', { exact: true })).toBeVisible()
         if (width === 390 && path === 'dashboard') {
           await page.getByRole('button', { name: 'Menú', exact: true }).click()
           await expect(page.getByRole('navigation', { name: 'Navegación principal' })).toBeVisible()
