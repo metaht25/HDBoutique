@@ -22,6 +22,9 @@ permite agregarlos sin modificar sus filas. Sin crédito, abonos, tarjeta ni ban
 Venta/pago/inventario/caja se confirman atómicamente. Bloqueo de caja y fila de turno
 serializan cobro/cierre/correcciones; Idempotency-Key identifica comando por cuenta.
 El navegador persiste operaciones inciertas y reintenta el mismo cuerpo/clave.
+Los importes de apertura, cierre, movimientos y pagos rechazan float, booleanos,
+valores no finitos, precisión excesiva y desbordamientos antes de persistir;
+se envían como texto decimal o entero exacto.
 
 Anulación total: solo Dueña, motivo y devolución completa por medios originales,
 referencia cuando hay transferencia. Efectivo reintegrado disminuye caja, transferencia

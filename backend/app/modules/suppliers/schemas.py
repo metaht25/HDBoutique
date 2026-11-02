@@ -3,9 +3,9 @@
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import Field
+from pydantic import BeforeValidator, Field
 
-from app.api.schemas import InputModel, OutputModel, PatchModel
+from app.api.schemas import InputModel, OutputModel, PatchModel, require_exact_decimal
 from app.modules.locations.composition import InlineAddress
 
 
@@ -61,14 +61,20 @@ class SupplierRead(OutputModel):
 
 class SupplierProductCreate(InputModel):
     product_id: Annotated[int, Field(gt=0, strict=True)]
-    purchase_price: Annotated[Decimal, Field(max_digits=10, decimal_places=2)]
+    purchase_price: Annotated[
+        Decimal,
+        Field(max_digits=10, decimal_places=2),
+        BeforeValidator(require_exact_decimal),
+    ]
 
 
 class SupplierProductPatch(PatchModel):
     required_fields = frozenset(["product_id", "purchase_price"])
     product_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     purchase_price: Annotated[
-        Decimal | None, Field(max_digits=10, decimal_places=2)
+        Decimal | None,
+        Field(max_digits=10, decimal_places=2),
+        BeforeValidator(require_exact_decimal),
     ] = None
 
 

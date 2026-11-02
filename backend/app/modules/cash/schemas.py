@@ -4,11 +4,15 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, Field, PlainSerializer, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, PlainSerializer, model_validator
 
-from app.api.schemas import InputModel, OutputModel
+from app.api.schemas import InputModel, OutputModel, require_exact_decimal
 
-Money = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
+Money = Annotated[
+    Decimal,
+    Field(ge=0, max_digits=12, decimal_places=2),
+    BeforeValidator(require_exact_decimal),
+]
 PositiveId = Annotated[int, Field(gt=0, strict=True)]
 Reason = Annotated[str, Field(min_length=1, max_length=300)]
 Reference = Annotated[str, Field(min_length=1, max_length=100)]
@@ -29,7 +33,7 @@ class ShiftClose(InputModel):
 
 class MovementCreate(InputModel):
     kind: Literal["deposit", "withdrawal"]
-    amount: Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=2)]
+    amount: Annotated[Money, Field(gt=0)]
     reason: Reason
 
 
@@ -59,13 +63,6 @@ class PaymentCreate(InputModel):
         if self.method == "transfer" and self.transfer_amount is not None:
             raise ValueError("Indica el monto exacto en received_amount")
         return self
-
-    @field_validator("received_amount", "transfer_amount", mode="before")
-    @classmethod
-    def exact_money(cls, value: object) -> object:
-        if isinstance(value, (float, bool)):
-            raise ValueError("Envía los importes como texto decimal")
-        return value
 
 
 class ReturnItemCreate(InputModel):

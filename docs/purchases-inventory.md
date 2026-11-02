@@ -10,6 +10,9 @@ NIO/Decimal/dos decimales; envío separado, sin prorrateo. Siempre Pendiente
 (registered). Registrar no aumenta existencias. Fechas antiguas de revisión/relleno
 se conservan sin inferir recepción.
 
+Los costos de proveedor también exigen texto decimal o entero exacto; rechazan
+float, booleanos, valores no finitos, precisión excesiva y desbordamientos.
+
 Recepción completa: confirmación explícita y empleado activo; registered → received
 una sola vez. Bloqueo transaccional de compra/productos; movimiento purchase_receipt
 con stock antes/después y autor. Un reintento no duplica inventario. No recepción
