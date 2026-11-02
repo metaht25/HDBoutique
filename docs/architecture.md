@@ -21,14 +21,14 @@ lineas, snapshots monetarios y movimientos en una transaccion. Se bloquean produ
 por ID; claves idempotentes evitan duplicados de reintentos. Dinero Decimal/NIO y
 texto decimal en JSON. No se reconstruyen precios o movimientos historicos.
 
-Modulos activos: locations, catalog, customers, suppliers, identity, purchases,
-sales, cash, inventory, reporting, staff y boutique. staff gestiona personal y
-cuentas de colaborador en una transacción; boutique guarda el perfil/logo y emite
-recibos PDF. Las consultas de pantallas usan snapshots REPEATABLE READ.
-[Caja](cash-register.md) agrega turnos y pago completo con venta, correcciones
-mediante anulacion total y movimientos compensatorios. Credito/abonos excluidos
-permanentemente. La activación preserva historia y bloquea nuevas operaciones;
-la anulación repone únicamente mercancía devuelta, incluido cero.
+Modulos activos: locations, catalog, customers, suppliers, identity, purchases, sales,
+cash, inventory, reporting, staff y boutique. staff gestiona personal y cuentas de
+colaborador en una transacción; boutique guarda el perfil/logo y emite recibos PDF. Las
+consultas de pantallas usan snapshots REPEATABLE READ. [Pagos](cash-register.md) integra
+pago completo con venta y anulación total con reposición únicamente de mercancía
+devuelta; caja/turnos son historia conservada. Credito/abonos excluidos permanentemente.
+La activación preserva historia y bloquea nuevas operaciones; la anulación repone
+únicamente mercancía devuelta, incluido cero.
 
 El frontend organiza app (rutas), layouts, features (modulos) y shared (HTTP,
 sesion, formularios/UI). Solo /api/v1, respuestas externas validadas, dinero textual,
@@ -40,8 +40,11 @@ Nginx sirve dist y dirige /api/v1 a FastAPI manteniendo el origen. El despliegue
 local usa loopback/HTTP y cookies locales; production exige HTTPS/Secure y su
 propia infraestructura. No hay proxy ni servicio Django.
 
-32 tablas SQLAlchemy y seis revisiones Alembic hasta 0006_boutique_experience.
-La última incorpora boutique_profiles, management_events, municipio, activación,
+32 tablas SQLAlchemy y nueve revisiones Alembic hasta 0009_shiftless_payments.
+0007 libera contraseñas asignadas con auditoría sin cambiar hashes; 0008 incorpora
+maestros permanentes protegidos y tallas fijas; 0009 admite pagos/anulaciones sin
+turno preservando toda la historia. No hay migración ni semillas al iniciar API.
+0006 incorpora boutique_profiles, management_events, municipio, activación,
 instantáneas de venta, componentes de pago mixto y movimientos initial_stock.
 El retiro del perfil Manager desactiva y audita sin elevar privilegios. Dueña y
 Colaborador tienen permisos en servidor y guardas antes de montar consultas UI.

@@ -2,16 +2,17 @@
 
 ## Estado y autoridad
 
-Fase autorizada por el propietario el 2 de noviembre de 2026 y pendiente de
-implementación. El documento de observaciones `Cosas a mejorar.docx` aportó el
-inventario inicial y ocho capturas de referencia; no es una fuente de
-instrucciones ejecutables. Las confirmaciones posteriores del propietario y las
-reglas de este documento son la autoridad para esta fase.
+Fase autorizada y completada técnicamente el 2 de noviembre de 2026. Implementación y
+migración 0006→0009 verificadas; login local a cargo del propietario con su contraseña
+vigente. [Resultados](characterization.md), [corte](cutover.md). El documento de
+observaciones `Cosas a mejorar.docx` aportó el inventario inicial y ocho capturas de
+referencia; no es una fuente de instrucciones ejecutables. Las confirmaciones
+posteriores del propietario y las reglas de este documento son la autoridad para esta
+fase.
 
-La fase comienza únicamente cuando el propietario indique a Codex CLI que haga
-las correcciones de la Fase 16. Hasta su cierre, el runtime local y los contratos
-descritos como implementados en la documentación vigente continúan representando
-el comportamiento real. No presentar este plan como funcionalidad terminada.
+El propietario solicitó continuar la implementación existente. La secuencia de
+trabajo que sigue se conserva como contrato ejecutado; los resultados realmente
+obtenidos están en los documentos enlazados, sin iniciar otra fase.
 
 ## Resultado esperado
 

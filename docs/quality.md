@@ -60,9 +60,13 @@ local limitado a login/logout y lecturas; no crear datos sinteticos en desarroll
 
 La verificación conectada incluye pagos efectivo/transferencia/mixto, cambio,
 cliente general estable, alta inline regular/delivery, producto costo × 1.15,
-existencia inicial, compra/recepción única y anulación mixta sin mercancía devuelta.
-También turnos visibles, movimientos supervisados, activación/rechazo de operaciones,
-cuenta/contraseña temporal y revocación. Ninguna escritura de prueba usa desarrollo.
+existencia inicial, compra/recepción única, anulación sin turno y sin mercancía
+devuelta, endpoints de caja retirados, activación de productos/proveedores y
+contraseña asignada por Dueña con revocación de sesiones. La suite backend agrega
+costos de varios proveedores y conservación/protección de maestros e historia.
+Frontend cubre teléfono (pegado/borrado/edición intermedia) y combobox (teclado,
+acentos, vacíos y cambios sucesivos de departamento). Ninguna escritura de prueba
+usa desarrollo.
 
 Capturas: diez rutas Dueña y cinco Colaborador a 1440×1000 y 390×844, menú móvil,
 modales y sus acciones, ticket/impresión. PDF renderizado con Poppler y ancho

@@ -2,22 +2,32 @@
 
 ## Esquema vigente
 
-32 modelos, head 0006_boutique_experience. La revisión agrega boutique_profiles
+32 modelos, head 0009_shiftless_payments. 0006 agregó boutique_profiles
 (perfil único y logo PNG binario durable) y management_events (actor, recurso,
 acción, fecha y detalle). El logo forma parte del respaldo PostgreSQL.
 
-Productos, clientes, empleados y proveedores incorporan is_active; los tres
-últimos, created_at nullable. addresses.municipality_id conserva nulos históricos.
-Customers permite domicilio/teléfono/tipo legado nulos, con kind y technical_key
-única para cliente general. Empleados amplía correo a 100; user_accounts incorpora
-must_change_password. Productos guarda costo, proveedor, fecha y descripción.
-Ventas y líneas conservan instantáneas de cliente/vendedor/producto/talla, delivery
-y notas; compras agrega descripción. No se rellenan históricos por suposición.
+Productos, clientes, empleados y proveedores incorporan is_active; los tres últimos,
+created_at nullable. addresses.municipality_id conserva nulos históricos. Customers
+permite domicilio/teléfono/tipo legado nulos, con kind y technical_key única para
+cliente general. Correo histórico de empleados se conserva sin lectura/escritura en
+contratos nuevos; user_accounts conserva must_change_password liberado por 0007 sin
+cambiar hashes. Productos guarda costo, proveedor, fecha y descripción. Ventas y líneas
+conservan instantáneas de cliente/vendedor/producto/talla, delivery y notas; compras
+agrega descripción. No se rellenan históricos por suposición.
 
 sale_payments y sale_voids conservan cash_amount y transfer_amount con restricciones
 de suma, método y cambio. Los valores antiguos siguen nulos. inventory_movements
 admite initial_stock incluso cero, autor obligatorio, empleado nullable solo para
 ese movimiento e índice único por producto. legacy_stock_quantity no se modifica.
+
+0008 agrega is_seeded/is_permanent en departments/municipalities/sizes. Carga
+idempotente de 3 departamentos, 28 municipios y 5 tallas; reutiliza coincidencias
+sin renombrar historia ni completar domicilios. Triggers protegen maestros. Las
+secuencias avanzan si los IDs históricos explícitos lo requieren, nunca retroceden.
+0009 vuelve nullable shift_id en sale_payments/sale_voids, sin borrar ni reescribir
+pagos/turnos/movimientos anteriores. Los nuevos pagos/anulaciones no usan caja.
+Las asociaciones products.supplier_id/supplier_products/supplier_offerings se
+conservan; Compras crea/reutiliza proveedor/producto/costo, sin alterar snapshots.
 
 0006 desactiva Manager, revoca sus sesiones y audita el retiro; no cambia su rol.
 Downgrade rechaza pérdida de datos nuevos/auditoría. Retorno mediante restauración

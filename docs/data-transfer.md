@@ -10,6 +10,12 @@ La matriz ejecutable contiene las 17 tablas y todos sus campos declarados;
 `mapping` la exporta con tipos, nulabilidad y revision de destino.
 Es una correspondencia basada en codigo, **no un inventario fisico certificado**.
 
+Desde Fase 16 el cargador offline queda fijado al contrato archivado 0006.
+Rechaza drift o un destino no vacío; no carga sobre el head operativo 0009, que
+contiene maestros permanentes. Sus pruebas usan una transacción aislada en 0006.
+Un traslado futuro requiere revisar el contrato en una copia autorizada; no usar
+los comandos históricos siguientes sobre desarrollo.
+
 ## Estado y entorno acordado
 
 La fase 6 queda completada para el alcance disponible. El usuario confirmo que no

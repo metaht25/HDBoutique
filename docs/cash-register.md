@@ -1,12 +1,9 @@
-# Caja y pagos completos
+# Pagos completos e historia de caja
 
-Caja principal única en NIO. Turnos persistentes con cuenta/empleado activo,
-apertura contada, cierre contado/esperado/diferencia y movimientos auditados.
-Se opera desde Dashboard o Nueva venta, sin módulo independiente en el menú.
-
-Dueña supervisa turnos, ingresos/retiros y correcciones. Colaborador abre/cierra
-su turno y consulta únicamente sus turnos. Cierre con diferencia requiere Dueña
-y motivo. Turnos cerrados inmutables; no se reabren para corregir ventas.
+La Fase 16 retira caja y turnos del comportamiento operativo. No hay apertura,
+cierre, saldo inicial, ingresos/retiros, conciliación ni diferencias. Dashboard y
+Nueva venta no montan componentes ni consultan turnos. /api/v1/cash/* devuelve 404.
+Venta y anulación no requieren shift_id ni crean cash_movements.
 
 | Pago | Regla |
 | --- | --- |
@@ -14,23 +11,20 @@ y motivo. Turnos cerrados inmutables; no se reabren para corregir ventas.
 | Transferencia | importe exacto = total; referencia y confirmación manual |
 | Mixto | 0 < transferencia < total; efectivo aplicado = total − transferencia; recibido >= aplicado; cambio = recibido − aplicado |
 
-Componentes cash_amount y transfer_amount se conservan por separado. Caja suma
-efectivo aplicado, nunca todo el recibido; transferencias se concilian separadamente.
-Históricos previos sin componentes explícitos conservan nulos y el método original
-permite agregarlos sin modificar sus filas. Sin crédito, abonos, tarjeta ni banco.
+Componentes cash_amount y transfer_amount separados. Venta/pago/salida de stock
+son atómicos e idempotentes. Importes exactos: texto decimal o entero; se rechazan
+float, booleanos, valores no finitos, precisión excesiva y desbordamientos.
+Nunca se infieren pagos históricos sin cobro. Sin tarjetas, crédito ni abonos.
 
-Venta/pago/inventario/caja se confirman atómicamente. Bloqueo de caja y fila de turno
-serializan cobro/cierre/correcciones; Idempotency-Key identifica comando por cuenta.
-El navegador persiste operaciones inciertas y reintenta el mismo cuerpo/clave.
-Los importes de apertura, cierre, movimientos y pagos rechazan float, booleanos,
-valores no finitos, precisión excesiva y desbordamientos antes de persistir;
-se envían como texto decimal o entero exacto.
+Anulación total solo Dueña: motivo, reintegro completo por medios originales,
+referencia para transferencia y cantidades realmente devueltas, incluido cero.
+Conserva original/recibo/auditoría; solo lo devuelto repone stock mediante sale_return.
+No necesita turno ni disponibilidad de caja para registrar el reintegro confirmado.
 
-Anulación total: solo Dueña, motivo y devolución completa por medios originales,
-referencia cuando hay transferencia. Efectivo reintegrado disminuye caja, transferencia
-queda registrada aparte. Reposición solo por unidades realmente devueltas (cero
-permitido). Original/recibo/stock anterior/auditoría se conservan. No hay pagos
-inferidos en históricos sin cobro. [Ventas](sales.md), [reglas](business-rules.md).
-
-0005 introdujo caja; 0006 agrega mixto/componentes sin editar la revisión anterior.
-[Respaldo, migración y retorno](cutover.md).
+0005 introdujo caja; 0006 agregó mixto. Se conservan ambas revisiones y todas sus
+tablas/filas históricas. 0009 hace nullable shift_id en sale_payments/sale_voids;
+las operaciones nuevas guardan null. Campos shift_id entrantes antiguos se admiten
+para preservar huellas de reintentos; no enlazan las operaciones nuevas a caja.
+Las intenciones antiguas de turnos quedan bloqueadas conservando evidencia.
+Downgrade con actividad sin turno falla; el retorno seguro restaura en una base
+separada y concilia operaciones posteriores. [Corte](cutover.md), [ventas](sales.md).

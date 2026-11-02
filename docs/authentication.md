@@ -13,15 +13,16 @@ No puede seleccionarse, crearse ni editarse desde los formularios actuales.
 | Consultar catálogo, precios de venta y stock | Sí | Sí, sin costos/proveedor/valor al costo |
 | Consultar departamentos y municipios | Sí | Sí, para domicilio de clientes |
 | Gestionar catálogos y ubicaciones | Sí | No |
-| Consultar, crear, editar y activar clientes | Sí | Sí |
+| Consultar clientes / alta atómica desde Nueva venta | Sí | Sí |
 | Registrar ventas completas | Sí | Sí |
 | Consultar ventas, recibos y PDF | Todas | Solo propios; ajenos 404 |
 | Dashboard y consultas de actividad | Global | Solo propia y stock permitido |
 | Proveedores, costos, ofertas, compras e inventario auditado | Sí | No |
 | Empleados, cuentas y perfil boutique | Sí | No |
 | Selector operativo de empleados activos | Sí | ID/nombre, sin datos privados |
-| Abrir/consultar/cerrar turnos | Todos | Propios, cierre sin diferencia |
-| Ingresos/retiros, cierre con diferencia y anulación total | Sí | No |
+| Desactivar/reactivar proveedores, alta desde Compras | Sí | No |
+| Anulación total supervisada | Sí | No |
+| Cambiar contraseña | Sí, propia y administradas | No |
 
 Las cuentas se deshabilitan, no se borran. Un vínculo cuenta/empleado es opcional,
 exclusivo y protegido por FK RESTRICT. El empleado debe estar activo para operar;
@@ -42,7 +43,7 @@ Salud permanece publica. OpenAPI describe cookie de autenticacion y errores.
 | POST /api/v1/auth/login | username y password; cuenta publica en JSON, cookie nueva y cabecera X-CSRF-Token nueva | Cookie previa, Origin y X-CSRF-Token validos |
 | GET /api/v1/auth/me | Cuenta de la sesion | Autenticado |
 | POST /api/v1/auth/logout | 204 y eliminacion de cookie y sesion servidor | Autenticado, Origin y CSRF |
-| POST /api/v1/auth/password | current_password y new_password; 204, revoca sesiones | Autenticado, Origin y CSRF |
+| POST /api/v1/auth/password | current_password y new_password; 204, revoca sesiones | Solo Administrator, Origin y CSRF |
 | GET /api/v1/users | Lista publica de cuentas; offset >= 0, limit 1..100, defecto 50 | Administrator |
 | POST /api/v1/users | username, password, role y employee_id opcional; 201 | Administrator, Origin y CSRF |
 | PATCH /api/v1/users/{user_id} | role, is_active, password y employee_id opcionales; 200 | Administrator, Origin y CSRF |
@@ -52,7 +53,7 @@ y must_change_password. La lista administrativa puede incluir roles retirados
 como historia; no son identidades de sesión válidas. Nunca devuelve
 password ni password_hash. Los usernames se normalizan a minusculas y admiten
 3..64 caracteres ASCII alfanumericos, punto, guion y guion bajo.
-Las nuevas contraseñas tienen 12..128 caracteres; los espacios se conservan.
+Las nuevas contraseñas tienen 6..128 caracteres; los espacios se conservan.
 PATCH distingue omitido de null; solo employee_id admite null para desvincular.
 No hay registro publico, cambio de rol propio sin permiso ni borrado de cuentas.
 
@@ -99,18 +100,18 @@ Eventos hdb.security registran exito/fallo, CSRF y cambios de cuenta sin
 contraseñas, tokens, usernames, IP ni payloads; los eventos de cuenta usan user_id.
 La configuracion del recolector de logs corresponde al despliegue.
 
-## Contraseña temporal
+## Contraseña asignada por Dueña
 
-Toda cuenta nueva, salvo el bootstrap inicial, exige cambiar la contraseña temporal.
-Mientras must_change_password sea true solo se permiten me, logout y password,
-además del token CSRF. Cambiar contraseña comprueba la actual, exige una nueva
-diferente de 12–128 caracteres y revoca sesiones; se vuelve al login. El frontend
-no carga pantallas de negocio antes del cambio. Restablecer desde Empleados o
-Cuentas también obliga reemplazarla. Nunca se devuelve el hash o contraseña.
+Dueña asigna y reemplaza contraseñas de 6–128 caracteres, preservando espacios.
+Colaborador no puede cambiar la propia: POST /auth/password devuelve 403.
+Dueña puede cambiar la propia comprobando su contraseña actual. Toda sustitución
+revoca sesiones. No hay contraseña temporal ni cambio obligatorio. 0007 libera
+must_change_password con auditoría password_policy_released y conserva el hash
+anterior. La columna sigue por compatibilidad. Nunca se devuelve contraseña ni hash.
 
 ## Preparación operativa explícita
 
-Head de código: 0006_boutique_experience, 32 tablas más alembic_version.
+Head de código: 0009_shiftless_payments, 32 tablas más alembic_version.
 El primer Administrator de desarrollo ya fue creado expresamente; no repetir
 bootstrap. Las cuentas posteriores se gestionan desde Empleados/Cuentas y accesos.
 La CLI bootstrap-admin queda reservada a una base nueva expresamente autorizada,
@@ -128,9 +129,9 @@ Configuracion nueva:
 Para un ensayo local HTTP puede configurarse Secure=false exclusivamente en
 development/test. En production con negocio habilitado se exige origen HTTPS y
 Secure=true; no se habilitan docs. TLS, proxy, origen y credenciales operativas se
-configuran antes de publicar. Desarrollo local habilita negocio exclusivamente en loopback mediante Compose;
-.env.docker privado conserva sus credenciales.
-Ninguna migracion ni bootstrap ocurre al arrancar FastAPI.
+configuran antes de publicar. Desarrollo local habilita negocio exclusivamente en
+loopback mediante Compose; .env.docker privado conserva sus credenciales. Ninguna
+migracion ni bootstrap ocurre al arrancar FastAPI.
 
 Mantenimiento, en el destino explicitamente autorizado:
 

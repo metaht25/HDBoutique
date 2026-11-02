@@ -12,7 +12,7 @@ uv sync --locked
 uv lock --check
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked mypy
+uv run --locked python -m mypy
 uv run --locked python -m pytest --cov=app --cov-report=term-missing
 ```
 
@@ -27,11 +27,13 @@ repositorios no confirman por su cuenta. Dinero Decimal y salida textual exacta.
 Empleados gestiona personal y cuenta de Colaborador en una transacción; boutique
 gestiona perfil/logo y recibos PDF de 80 mm. Solo Dueña y Colaborador pueden
 iniciar sesión. Abonos/crédito quedan excluidos permanentemente.
-[Caja y cobros completos](../docs/cash-register.md).
+[Pagos completos e historia de caja](../docs/cash-register.md).
 
-32 modelos/tablas, Alembic head 0006_boutique_experience. Revisiones anteriores intactas.
+32 modelos/tablas, Alembic head 0009_shiftless_payments. Revisiones anteriores intactas.
 La base local hdboutique se actualizo desde 0001 tras respaldo restaurado y
 conciliacion, sin carga comercial: no existe origen/historicos SQL Server.
+Fase 16 retira caja/turnos operativos, conserva su historia y admite ventas/anulaciones
+sin turno. Contraseña asignada por Dueña, maestros permanentes y recibos decimales.
 No se ejecutan migraciones ni bootstrap al arrancar la API.
 
 La CLI identity bootstrap-admin exige destino exacto y contrasena mediante getpass;

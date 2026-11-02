@@ -28,28 +28,29 @@ Dos perfiles: Dueña (Administrator) y Colaborador (Cashier). La preparación se
 realiza desde el perfil del encabezado, Productos y los directorios;
 [guía contextual](docs/initial-setup.md), sin Configuración en el menú.
 
-32 modelos SQLAlchemy y Alembic head 0006_boutique_experience. El corte local autorizado
+32 modelos SQLAlchemy y Alembic head 0009_shiftless_payments. El corte local autorizado
 actualizo hdboutique desde 0001 despues de respaldo restaurado y conciliacion;
 no existe origen/historicos SQL Server y no se cargaron datos comerciales.
 Administrador inicial sin empleado inventado. [Empleados](docs/employees.md)
-implementado y [Configuracion inicial](docs/initial-setup.md) completada. [Caja](docs/cash-register.md)
-registra turnos, apertura/cierre,
-cobros completos y correcciones supervisadas. Abonos/credito excluidos permanentemente.
+implementado y [Configuracion inicial](docs/initial-setup.md) completada. [Pagos](docs/cash-register.md) conserva cobros completos y correcciones supervisadas,
+sin caja ni turnos operativos. Abonos/credito excluidos permanentemente.
 Una compra/venta requiere previamente sus referencias validas, incluido empleado.
 
 Diez pantallas de Dueña y cinco de Colaborador usan exclusivamente /api/v1.
-Dashboard/Inicio, Nueva venta, Productos, Clientes y Recibos; Dueña también dispone
-de Ventas, Historial de ventas, Compras, Proveedores y Empleados. Caja se integra
-en Dashboard/Nueva venta y los reportes en Ventas/Historial.
+Dashboard/Inicio, Nueva venta, Productos, Clientes y Recibos; Dueña también dispone de
+Ventas, Historial de ventas, Compras, Proveedores y Empleados. Los reportes se integran
+en Ventas/Historial; Dashboard/Nueva venta no requieren turno.
 
-Ventas atómicas con pago completo en efectivo, transferencia o mixto; cliente
-general estable, regular o delivery. Ticket imprimible y PDF real de 80 mm con
-perfil/logo durable. Producto con precio costo × 1.15 y existencia inicial auditada;
-stock bajo 1–5. Activación persistente y alta empleado/cuenta atómica con cambio de
-contraseña temporal. Anulación total auditada. Operaciones
-idempotentes, compra/recepcion separadas, dinero Decimal/NIO/texto, precios
-historicos, permisos por rol y reportes de servidor. No se infieren pagos historicos,
-utilidad, estados o costes ausentes. [Reglas](docs/business-rules.md).
+Ventas atómicas con pago completo en efectivo, transferencia o mixto; cliente general
+estable, regular o delivery. Recibos decimales sin prefijo/relleno; ticket imprimible y
+PDF real de 80 mm con perfil/logo durable. Producto con precio costo × 1.15 y existencia
+inicial auditada; stock bajo 1–5. Clientes de consulta/alta en Nueva venta; proveedores
+de consulta/activación y alta en Compras. Alta empleado/cuenta atómica, teléfono
+8000-0000 y contraseña asignada por Dueña. Ubicaciones iniciales permanentes y tallas
+fijas S/M/L/XL/XXL. Anulación total auditada. Operaciones idempotentes, compra/recepcion
+separadas, dinero Decimal/NIO/texto, precios historicos, permisos por rol y reportes de
+servidor. No se infieren pagos historicos, utilidad, estados o costes ausentes.
+[Reglas](docs/business-rules.md).
 
 ## Desarrollo y verificacion
 

@@ -6,6 +6,9 @@ directo, activacion persistente, precio costo × 1.15, existencia inicial audita
 delivery, pago mixto completo y recibo PDF de 80 mm. Sin credito, abonos, tarjetas,
 descuentos, recepcion parcial ni perdidas de inventario.
 
+La reconstrucción y comparación de 0006 que sigue es un hito histórico.
+La verificación posterior de Fase 16 se registra al final de este documento.
+
 ## Referencias inspeccionadas
 
 Las 26 imagenes del ZIP se extrajeron con validacion de rutas a una carpeta
@@ -96,3 +99,29 @@ página. Poppler emitió avisos sobre fuentes de sustitución Symbol/ArialUnicod
 los renders no mostraron glifos perdidos. No se probó una impresora física.
 
 Pruebas y respaldo: [resultados finales](characterization.md), [corte](cutover.md).
+
+## Fase 16: simplificación verificada (2 de noviembre de 2026)
+
+Se inspeccionaron las 61 capturas conectadas finales y tres renders PDF (64 PNG),
+fuera de Git en `%TEMP%/hdb-phase16-resumed-captures`. Se usaron imágenes completas
+y 17 hojas de contacto, con revisión focal de formularios y PDF.
+
+Las diez rutas Dueña y cinco Colaborador se revisaron a 1440×1000 y 390×844,
+además de ambos menús móviles, modales de producto/compra/empleado/proveedor y
+clientes regular/delivery, tres pagos, venta completada, recibos y detalle anulado.
+Se verificaron los pies de formularios móviles desplazados. Rosa/fucsia y
+morado/lavanda se conservan, con tablas de desplazamiento local y sin overflow
+global/superposición material. Los contornos de títulos son foco accesible.
+
+Clientes queda sin acciones de mutación; Proveedores sin alta/edición; los registros
+se preparan dentro de venta/compra. Producto elimina proveedor redundante y
+administración de tallas; muestra costos por proveedor. Empleado muestra teléfono
+8000-0000, contraseña ocultable y ningún correo laboral. Dashboard/Checkout sin
+turno. Colaborador continúa sin costos/proveedores/datos administrativos.
+
+Recibo decimal coherente en listado, HTML, impresión y PDF. Poppler: mixto y
+anulado de una página a 226.772 pt (80 mm); impresión Chromium a 227.04 pt
+(~80.1 mm). Texto largo, acentos, símbolos, logo y reintegro mixto legibles.
+Poppler avisó de fuentes de sustitución Symbol/ArialUnicode; no se observaron
+glifos perdidos en los tres documentos finales. No se probó impresora física.
+Las capturas usan exclusivamente datos sintéticos del tmpfs de pruebas.

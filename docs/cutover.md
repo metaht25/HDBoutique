@@ -186,3 +186,56 @@ no se afirma que hubiera sido ejecutada antes de aplicar 0006. Ningún dato
 comercial sintético fue insertado por estas operaciones. El volumen y .env.docker
 se conservaron. El retorno sigue siendo una restauración separada y conciliada;
 el downgrade de 0006 protege contra pérdida de nuevos datos operativos.
+
+## Fase 16: simplificación operativa (2 de noviembre de 2026)
+
+Destino autorizado conservado: hdboutique-dev / hdboutique / volumen
+hdboutique-dev_postgres_data. Escritores web/backend detenidos durante respaldo,
+ensayo, migración y conciliación. Ninguna revisión 0001–0006 fue editada.
+
+Después de 290 pruebas PostgreSQL, nueve conectadas y revisión de 64 imágenes,
+se guardaron evidencias nuevas en `backups/phase16-20261102-closure/`, ignoradas y
+con ACL exclusiva del propietario. El archivo de código previo conservado en
+`backups/phase16-20261102-112604/before-code.zip` no se sobreescribió.
+
+| Respaldo custom | SHA-256 |
+| --- | --- |
+| before.dump (14:05:16 −06:00) | 898777F415F167622FE31F8D8C5DB045FA882C5B4B7F53ABB2D36E15938FDD5E |
+| final.dump (14:07:45 −06:00) | 6D2F5F268EFF829091943AF7CA414095184547B711B965BB7920BE7A9D302795 |
+
+El previo se restauró sin --clean en la base nueva
+`hdboutique_phase16_before_verify_20261102`, con objetos propiedad de hdboutique_app.
+Tablas, columnas, filas/hashes ordenados por PK, claves primarias y todas las
+secuencias coincidieron antes de migrar esa copia. El inventario previo de
+products.supplier_id/supplier_products/supplier_offerings quedó en evidencia privada.
+
+La copia se migró 0006→0007_assigned_passwords→0008_permanent_references→
+0009_shiftless_payments. Alembic check no encontró drift. La proyección de las
+32 tablas anteriores conservó filas/IDs, columnas/hashes y PK. Solo los cambios
+expresamente aprobados: una cuenta liberada de must_change_password con evento
+password_policy_released, sin cambiar hash; 1 departamento/25 municipios/4 tallas
+nuevos, reutilizando coincidencias para completar 3/28/5 maestros permanentes;
+shift_id nullable para nuevas operaciones. Secuencias anteriores intactas salvo
+maestros/auditoría autorizados, avanzadas sin retroceder. Ninguna asociación/costo,
+correo histórico, pago, turno, movimiento o anulación anterior se descartó.
+
+Solo después de aprobar el ensayo se aplicaron las mismas revisiones expresamente
+a hdboutique, con idéntica conciliación y sin drift. 32 tablas más alembic_version.
+No hubo bootstrap, restablecimiento de credenciales ni escrituras comerciales
+sintéticas. La liberación de la política temporal no sustituye la contraseña.
+
+El respaldo final se restauró en otra base nueva conservada:
+`hdboutique_phase16_final_verify_20261102`. Sus 33 tablas incluyendo Alembic,
+columnas/conteos/hashes, PK y todas las secuencias coincidieron exactamente con el
+snapshot final de desarrollo. Se preservan ambos dumps, snapshots, resultados y
+bases de verificación; no se borró el volumen ni se restauró sobre desarrollo.
+
+Runtime reconstruido y saludable: 127.0.0.1:8080/8001/5433. Humo sin comercio:
+diez URLs SPA HTTP 200, salud/readiness web y API 200, rutas de negocio anónimas
+401 y /api/v1/cash/shifts 404. Head 0009 confirmado. El propietario verifica
+login/logout con su contraseña vigente; no se utiliza la copia inicial ya obsoleta.
+
+Retorno: detener escritores y restaurar en otra base autorizada; conciliar toda
+actividad posterior antes de cambiar destino. 0007 bloquea pérdida de auditoría,
+0008 protege referencias en uso y 0009 rechaza downgrade con pagos/anulaciones sin
+turno. No hacer downgrade en caliente, down -v ni restauración --clean en desarrollo.

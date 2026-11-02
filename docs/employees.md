@@ -1,25 +1,30 @@
 # Empleados y cuentas
 
-Solo Dueña consulta y gestiona el directorio completo y cuentas. El selector
-operativo devuelve exclusivamente ID y nombre de empleados activos; no expone
-correo, domicilio, credenciales ni acceso administrativo a Colaborador.
+Solo Dueña consulta y gestiona empleados/cuentas. El selector operativo devuelve
+ID y nombre de empleados activos, sin datos privados para Colaborador.
 
-POST /api/v1/employees crea empleado y cuenta Cashier atómicamente. Campos:
-nombres, apellidos, teléfono, correo (hasta 100), cargo, fecha de ingreso,
-usuario, contraseña temporal y domicilio directo (departamento/municipio/texto).
-Un usuario duplicado revierte también empleado/dirección. Contraseña con Argon2id,
-nunca en respuesta ni logs; primer ingreso obliga reemplazarla y revoca sesiones.
+POST /api/v1/employees crea empleado, domicilio y cuenta Cashier atómicamente:
+nombres, apellidos, teléfono, cargo, fecha de ingreso, usuario, contraseña asignada
+y domicilio coherente departamento/municipio/dirección exacta. Un usuario duplicado
+revierte también empleado/domicilio.
 
-PATCH permite editar datos, restablecer contraseña temporal y activar/desactivar.
-Desactivar conserva toda la historia, bloquea nuevas operaciones/inicio de sesión
-y revoca sesiones. Reactivar habilita de nuevo el acceso conservando la identidad.
-No permite desactivar la última Dueña activa. No hay borrado de historia.
+Teléfono canónico: ocho dígitos ASCII, prefijo 7 u 8; presentación 8000-0000.
+Frontend admite pegado, borrado y edición intermedia. API y servicio validan el valor
+canónico con mensaje específico. Correo laboral ya no se acepta ni devuelve;
+se conservan la columna y los valores históricos.
 
-El usuario de acceso se conserva al editar empleado. «Cuentas y accesos» gestiona
-vínculo exclusivo opcional cuenta/empleado, perfil, estado y restablecimiento.
-Toda cuenta nueva no bootstrap exige cambiar contraseña. No hay bootstrap nuevo
-en desarrollo. Empleados preexistentes sin cuenta permanecen visibles como tales.
+Contraseña de 6–128 caracteres, con espacios preservados, inicialmente oculta y
+control accesible mostrar/ocultar. Se limpia al terminar/cancelar el formulario.
+Argon2id vigente; nunca se devuelve ni registra el secreto. No hay contraseña temporal
+ni cambio obligatorio. Solo Dueña puede reemplazarla; toda sustitución revoca sesiones.
+Colaborador no puede cambiar su propia contraseña.
 
-Solo Administrator y Cashier son perfiles funcionales. Cuentas del perfil retirado
-permanecen como historia sin acceso ni conversión automática. Cargo no concede
-permisos. [Autenticación](authentication.md), [reglas](business-rules.md).
+PATCH edita datos, contraseña y estado; conserva usuario. Desactivar bloquea login/
+nuevas operaciones y revoca sesiones; reactivar conserva identidad e historia.
+La última Dueña activa está protegida. No hay borrado. «Cuentas y accesos» administra
+cuentas/vínculos exclusivos existentes. Un empleado sin cuenta requiere vincular una
+antes de asignar contraseña. No repetir bootstrap.
+
+0007 libera must_change_password con auditoría sin cambiar hashes. Manager sigue
+retirado, sin conversión automática. Cargo no concede permisos.
+[Autenticación](authentication.md), [reglas](business-rules.md), [corte](cutover.md).

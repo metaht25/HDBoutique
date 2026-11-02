@@ -11,11 +11,11 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 
 ## Estado de avance
 
-La primera versión local se amplía con 0006_boutique_experience y 32 tablas.
-Dueña dispone de diez pantallas y Colaborador de cinco; caja/reportes/preparación
-se integran en sus módulos. No se introducen semillas comerciales en desarrollo.
-[Reglas vigentes](business-rules.md), [navegación](frontend-modules.md),
-[destino local y respaldos](cutover.md).
+La versión local está en 0009_shiftless_payments y conserva 32 tablas. Dueña dispone de
+diez pantallas y Colaborador de cinco; reportes/preparación se integran en sus módulos,
+sin caja/turnos operativos. No se introducen semillas comerciales en desarrollo. [Reglas
+vigentes](business-rules.md), [navegación](frontend-modules.md), [destino local y
+respaldos](cutover.md).
 
 Incremento cerrado el 2 de noviembre de 2026: 273 pruebas backend/PostgreSQL,
 94.68% de cobertura, 91 Vitest, 20 E2E interceptadas y nueve conectadas aprobadas;
@@ -27,11 +27,14 @@ ni una impresora física. Las filas siguientes
 conservan los hitos históricos de cada fase, incluidos permisos y exclusiones
 vigentes en aquel momento. No son contratos operativos alternativos actuales.
 
-La Fase 16 fue autorizada el 2 de noviembre de 2026 y está pendiente de
-implementación. Simplifica empleados, ubicaciones, directorios, catálogo,
-proveedores por producto y recibos, y retira caja/turnos del comportamiento
-operativo preservando su historia. Su contrato cerrado y orden de trabajo están
-en [Fase 16](phase-16-usability.md). No se ha implementado ni migrado todavía.
+La Fase 16 fue autorizada y completada técnicamente el 2 de noviembre de 2026.
+Simplifica empleados, ubicaciones, directorios, catálogo, proveedores por producto y
+recibos, y retira caja/turnos del comportamiento operativo preservando su historia. Su
+contrato cerrado y orden de trabajo están en [Fase 16](phase-16-usability.md).
+Implementada y migrada 0006→0009, con respaldo previo/final restaurados, historia
+conciliada, 290 pruebas backend (92.99%), 94 Vitest, 22 E2E interceptadas, nueve
+conectadas y 64 imágenes revisadas. Login local a cargo del propietario con su
+contraseña vigente. No se inicia otra fase.
 
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |
@@ -51,7 +54,7 @@ en [Fase 16](phase-16-usability.md). No se ha implementado ni migrado todavía.
 | 13 | Dashboard y reportes; caja segun alcance | Dashboard/reportes completados: agregaciones y filtros de servidor, fecha Managua, B14 y permisos confirmados; caja excluida por el usuario, pendiente B10 con [propuesta](cash-register-proposal.md). Ver [contrato](reporting.md) |
 | 14 | Integracion, seguridad y estabilizacion | Completada para el alcance disponible: 222 pruebas backend/PostgreSQL, 80 E2E simuladas y 4 conectadas, auditorias, volumen y restauracion de 24 tablas. Sin origen SQL Server disponible ni corte operativo. Ver [informe y riesgos](stabilization.md) |
 | 15 | Corte de datos y retirada de Django | Corte local autorizado completado: hdboutique a head 0004, respaldo previo/final restaurados y conciliados; Django/DRF/drivers/adaptadores retirados; web Nginx/FastAPI/PostgreSQL en loopback. Sin origen SQL Server ni carga comercial, B11 confirmado. Ver [resultado y limites](cutover.md) |
-| 16 | Simplificación operativa y datos maestros | Autorizada y pendiente: teléfono/contraseña de empleados, ubicaciones permanentes, directorios de consulta, tallas fijas, proveedores por producto, recibos decimales y retirada operativa de caja/turnos. Ver [contrato](phase-16-usability.md) |
+| 16 | Simplificación operativa y datos maestros | Completada técnicamente: teléfono/contraseña asignada de empleados, ubicaciones permanentes, directorios de consulta, tallas fijas, proveedores por producto, recibos decimales y retirada operativa de caja/turnos; migración local y respaldos conciliados. Ver [contrato](phase-16-usability.md) |
 
 Este documento registra el estado, sin sustituir los resultados detallados de
 [characterization.md](characterization.md). Actualizar cada fila al cerrar su fase.

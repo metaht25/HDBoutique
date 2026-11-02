@@ -5,7 +5,7 @@ transacciones de lectura REPEATABLE READ para que indicadores y filas concuerden
 Fecha comercial y contexto provienen del servidor en America/Managua.
 
 Dashboard: vendido hoy/mes, productos vendidos, bajo stock, resumen semana/mes/año,
-total y cantidad del periodo, últimas ventas y turno compacto. Colaborador recibe
+total y cantidad del periodo y últimas ventas; sin turno ni consultas de caja. Colaborador recibe
 solo su actividad; el catálogo permitido muestra stock, sin costo ni proveedor.
 
 API /api/v1:

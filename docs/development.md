@@ -14,7 +14,7 @@ uv sync --locked
 uv lock --check
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked mypy
+uv run --locked python -m mypy
 uv run --locked python -m pytest --cov=app --cov-report=term-missing
 ```
 
@@ -23,8 +23,8 @@ Sin --run-postgres se omite la integracion PostgreSQL. Para runtime usar
 revisando pyproject.toml y uv.lock. No cambiar las versiones de herramientas
 silenciosamente ni editar migraciones aplicadas.
 
-Este Windows bloquea la extension nativa de SQLAlchemy: usar los contenedores
-Linux para API/DB/pruebas; no cambiar la politica del equipo. Desde la raiz:
+En este Windows algunos lanzadores están bloqueados; usar python -m para mypy
+y los contenedores Linux para API/DB/integración; no cambiar la politica del equipo. Desde la raiz:
 
 ```powershell
 docker compose -p hdboutique-test -f compose.test.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from backend
@@ -89,8 +89,9 @@ docker compose -p hdboutique-test -f compose.test.yaml --profile integration dow
 ```
 
 Ejecutar sobre proyecto de pruebas nuevo, separado de la suite backend. La semilla
-rechaza bases pobladas. Playwright conectado exige el destino interno canonico;
-no tiene fallback a una base local real. [Docker](docker.md), [contratos frontend](frontend-modules.md).
+rechaza bases pobladas. Playwright conectado exige el destino interno canonico; no tiene
+fallback a una base local real. [Docker](docker.md), [contratos
+frontend](frontend-modules.md).
 
 ## Repetir pruebas sobre un tmpfs ya utilizado
 

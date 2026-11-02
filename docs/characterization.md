@@ -1,5 +1,57 @@
 # Pruebas de caracterizacion y regresion
 
+## Fase 16: verificación final (2 de noviembre de 2026)
+
+Implementación y migración local de B15–B21: empleados con teléfono canónico y
+contraseña asignada por Dueña, maestros protegidos, combobox dependientes,
+directorios de consulta y altas contextuales atómicas, tallas fijas, costos por
+proveedor, recibos decimales y retirada operativa de caja/turnos.
+
+Código verificado: backend `3b376ae` y frontend `dc4b1e4`.
+
+| Grupo | Resultado ejecutado |
+| --- | --- |
+| Backend Python 3.13.15/Linux | 290 aprobadas, cero omitidas, --run-postgres, 238.84 s |
+| Cobertura app | 92.99%, umbral 90% |
+| Ruff / formato / mypy / lock | Aprobados; 166 archivos con formato y 107 fuentes tipadas |
+| Frontend | TypeScript estricto, ESLint y build Vite aprobados |
+| Vitest | 94 aprobadas en 12 archivos |
+| E2E interceptadas | 22 aprobadas, escritorio/móvil, 46.4 s |
+| E2E conectadas | 9 aprobadas con Nginx/FastAPI/PostgreSQL, 1.5 min |
+| Restauración sintética | 32 tablas, hashes exactos, identidades y head mediante tests.rehearse_stabilization |
+| Revisión visual | 61 capturas y tres renders PDF inspeccionados; quince rutas en dos tamaños |
+| Migración local | 0006→0007→0008→0009, sin drift; 32 tablas más alembic_version |
+| Respaldo | Previo/final restaurados en bases separadas y conciliados exactamente |
+| Runtime | Web 8080, FastAPI 8001, PostgreSQL 5433 saludables, solo loopback |
+
+Regresiones: teléfono inválido, edición/pegado/borrado, contraseña de seis caracteres,
+mostrar/ocultar y limpieza; rechazo de cambio propio por Cashier y revocación por
+Dueña; maestros protegidos, normalización y reutilización histórica; costos de varios
+proveedores sin alterar precios ni compras anteriores; rollback de altas contextuales;
+reutilización del cliente tras la primera venta; números de recibo; venta/anulación
+sin turno, concurrencia y endpoints retirados; downgrade bloqueado cuando perdería
+actividad y huellas idempotentes anteriores conservadas, incluido el cuerpo recuperado
+por el frontend. Se conserva la regresión de operaciones inciertas tras recarga.
+
+La ejecución unitaria inicial de 91 casos pasó, pero su cobertura parcial no alcanzó
+el umbral global; no se usó como aprobación de integración. Las nuevas pruebas de
+migración requirieron corregir fixtures y retirar Result.tuples() obsoleto; la tabla
+registra la ejecución completa posterior aprobada, sin bajar el umbral ni omitir casos.
+
+La carga local añadió solo 1 departamento, 25 municipios y 4 tallas: reutilizó las
+coincidencias existentes para completar 3 departamentos/28 municipios/5 tallas
+permanentes. Una cuenta se liberó de must_change_password con auditoría y hash intacto.
+No se insertó comercio sintético ni se modificó credencial alguna en desarrollo.
+Humo local: diez rutas SPA, salud web/API, anónimos 401 y caja 404. El propietario
+realiza la comprobación de login/logout con su contraseña vigente; no se leyó ni
+usó la credencial inicial histórica. [Corte y evidencias](cutover.md).
+
+PDF mixto/anulado: una página, 226.772 pt de ancho; impresión Chromium 227.04 pt.
+Poppler avisó de fuentes de sustitución sin glifos perdidos en los renders.
+Sin prueba de impresora física ni despliegue público. [Revisión visual](visual-reconstruction.md).
+
+Los resultados siguientes son hitos históricos anteriores a Fase 16.
+
 ## Reconstrucción boutique: verificación final (2 de noviembre de 2026)
 
 El incremento autorizado el 31 de octubre incorpora dos perfiles, navegación

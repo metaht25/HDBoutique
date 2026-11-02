@@ -4,14 +4,16 @@ La preparación se realiza desde los módulos operativos, sin Configuración en 
 menú ni carga automática de datos comerciales:
 
 1. Dueña abre su perfil en encabezado para nombre, teléfono, dirección y logo.
-2. Productos contiene categorías, tallas, costos y ofertas.
-3. Los directorios contienen departamentos y municipios; las direcciones se
+2. Productos administra categorías/costo principal; tallas S/M/L/XL/XXL son fijas.
+3. Los directorios permiten ampliar departamentos y municipios; los 3 departamentos
+   y 28 municipios iniciales son permanentes. Las direcciones se
    escriben directamente en los formularios.
 4. Empleados crea personal y acceso de colaborador; «Cuentas y accesos» administra
    cuentas existentes. Una operación requiere empleado activo.
-5. Proveedores registra contactos activos; Productos registra costo y existencia
-   inicial auditada. Compras puede recibir inventario adicional.
-6. Dashboard/Nueva venta permite abrir el turno antes de cobrar.
+5. Compras registra proveedores contextualmente y costos por producto; Proveedores
+   consulta y activa/desactiva. Productos registra cantidad inicial auditada;
+   recepción de compras incorpora inventario adicional.
+6. Nueva venta registra clientes contextualmente y cobra el pago completo, sin turno.
 
 No se inventan referencias ni se afirma preparación completa por existir una fila.
 Los estados vacíos indican qué falta. Cliente general se materializa únicamente

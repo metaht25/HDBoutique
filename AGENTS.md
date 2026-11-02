@@ -40,9 +40,9 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   transferencia o mixto completo; sin abonos, crédito ni pagos parciales.
   El usuario autoriza correcciones trazables: anulacion total
   supervisada, motivo, original conservado, devolucion del importe y reposicion
-  solo de mercancia efectivamente devuelta. Implementados caja principal/turnos,
-  apertura/cierre, movimientos supervisados, pago completo atomico obligatorio
-  con venta y anulación auditada. Head de código 0006_boutique_experience, 32 tablas;
+  solo de mercancia efectivamente devuelta. Implementados pago completo atomico obligatorio
+  con venta y anulación auditada; caja/turnos retirados de la operación, historia
+  conservada. Head de código 0009_shiftless_payments, 32 tablas;
   estado concreto de migración local y respaldos en docs/cutover.md.
   Historicos sin pago no se marcan como cobrados. Ver B04/B06/B10 y
   docs/cash-register.md. Empleados: docs/employees.md. Configuracion inicial
@@ -57,7 +57,7 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 - Django/DRF, grupo legacy, requirements.txt, drivers SQL Server y adaptadores/
   servicios frontend retirados. Codigo anterior preservado en Git/archivo privado.
   Diez pantallas Dueña y cinco Colaborador TS/FastAPI; navegación exacta en
-  docs/frontend-modules.md. Caja contextual en Dashboard/Nueva venta, reportes
+  docs/frontend-modules.md. Sin caja/turnos operativos; reportes
   en Ventas/Historial, catálogos en Productos/directorios, cuentas en Empleados
   y perfil boutique en encabezado. Sin Caja/Reportes/Configuración en menú.
 - El usuario confirmo que no existe origen/historicos SQL Server y no utiliza
@@ -79,12 +79,17 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   >5 suficiente; null/negativo aparte. Fecha comercial America/Managua del servidor.
 - Solo Dueña/Administrator y Colaborador/Cashier. Manager retirado, sin creación
   ni login; cuentas históricas desactivadas/auditadas sin convertir privilegios.
-  Cashier consulta catálogo/clientes y actividad/recibos propios, crea/edita clientes
+  Cashier consulta catálogo/clientes y actividad/recibos propios, crea clientes
+  solo dentro de Nueva venta sin editar existentes
   y registra ventas; sin compras/proveedores/costos/personal/reportes globales.
 - Domicilio directo con departamento/municipio coherentes; teléfono textual hasta
   10. Cliente general técnico único, regular y delivery con costo manual incluido.
-  Activación persistente de productos/clientes/proveedores/empleados. Alta de
-  empleado + cuenta atómica, contraseña temporal y revocación al desactivar.
+  Activación persistente de productos/proveedores/empleados; clientes de consulta
+  conservan sus estados históricos sin mutaciones nuevas. Alta de
+  empleado + cuenta atómica, contraseña asignada por Dueña (6–128), teléfono
+  canónico de ocho dígitos prefijo 7/8 y revocación al desactivar. Sin correo laboral
+  nuevo ni cambio obligatorio de contraseña. Ubicaciones iniciales permanentes
+  (3 departamentos/28 municipios), combobox dependientes y tallas S/M/L/XL/XXL.
   Perfil/logo durable y recibo PDF/impresión de 80 mm. Sin municipio inferido,
   deuda, descuentos, pérdidas ni recepción parcial.
 - [Reglas](docs/business-rules.md), [autenticacion](docs/authentication.md),
@@ -97,11 +102,12 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 - data_migration mantiene herramientas y ensayos offline historicos sin drivers
   SQL Server distribuidos. Un origen futuro requiere inventario/ensayo autorizado;
   no presentar los ensayos sinteticos como traslado de datos reales.
-- Fase 16 autorizada y pendiente: [contrato](docs/phase-16-usability.md).
-  B15-B21 todavía no describen el runtime implementado. Solo al ejecutar y cerrar
-  esa fase sustituyen contraseña temporal/correo de empleado, edición de
-  directorios, tallas administrables, recibos con prefijo y caja/turnos. No mezclar
-  el plan futuro con afirmaciones sobre el estado vigente.
+- Fase 16: [contrato y cierre](docs/phase-16-usability.md). B15-B21 sustituyen
+  contraseña temporal/correo de empleado, edición de directorios, tallas
+  administrables, recibos con prefijo y caja/turnos. Clientes se crean en Nueva
+  venta; proveedores en Compras, con costos por producto sin alterar precios
+  principales ni compras anteriores. Recibo decimal usa identidad del pago.
+  Ver resultados reales y migración en docs/characterization.md y docs/cutover.md.
 
 ## Implementacion
 

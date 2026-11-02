@@ -30,8 +30,8 @@ No hay servicio Django ni destino a 8000 en el host. Ninguna pantalla usa Django
 Python 3.13.15/uv 0.12.10 y Node 24.22.2 estan fijados por version/digest.
 backend development instala runtime+dev y herramientas; runtime excluye dev/uv.
 Ambos carecen de Django/DRF/mssql-django/pyodbc. uv es el unico gestor Python.
-La reconstrucción incorpora 32 modelos y head 0006_boutique_experience, conservando
-0001–0005 sin reescritura. [Contrato y operación](cash-register.md).
+La reconstrucción incorpora 32 modelos y head 0009_shiftless_payments, conservando
+0001–0006 sin reescritura. [Contrato y operación](cash-register.md).
 
 frontend/Dockerfile construye con npm ci y sirve solo dist desde Nginx 1.30.6,
 fijado por digest. Ejecuta como nginx, puerto interno 8080, raiz de solo lectura y

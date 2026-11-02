@@ -2,11 +2,14 @@
 
 ## Estado vigente y compatibilidad
 
-Head de código 0006_boutique_experience, 32 tablas más alembic_version. 0001–0005
-se conservan sin editar. 0006 agrega perfil/logo, auditoría, activación, municipio,
-instantáneas y componentes mixtos; mantiene columnas antiguas, IDs e historiales.
-Solo el retiro explícito de Manager modifica cuentas/sesiones antiguas y genera
-auditoría. No se infieren costos, pagos, domicilios ni existencias faltantes.
+Head de código 0009_shiftless_payments, 32 tablas más alembic_version. 0001–0006 se
+conservan sin editar. 0007 libera must_change_password con auditoría sin cambiar hashes;
+0008 carga maestros permanentes protegidos y tallas fijas conservando coincidencias/IDs;
+0009 admite pago/anulación sin turno, conservando caja histórica. 0006 agrega
+perfil/logo, auditoría, activación, municipio, instantáneas y componentes mixtos;
+mantiene columnas antiguas, IDs e historiales. El retiro de Manager (0006) y liberación
+de política temporal (0007) son transformaciones expresas auditadas. Ninguna modifica
+hashes. No se infieren costos, pagos, domicilios ni existencias faltantes.
 
 Pruebas aisladas verifican upgrade vacío, downgrade seguro vacío, rechazo de
 pérdida operativa, conservación histórica, retiro trazable y ausencia de drift.
@@ -14,6 +17,10 @@ El destino real requiere respaldo previo/final restaurado y huellas de las
 columnas anteriores. [Registro concreto del corte](cutover.md).
 El retorno seguro conserva desarrollo y restaura en otra base; no ejecutar
 un downgrade en caliente ni restaurar --clean sobre desarrollo.
+
+El cargador data_migration mantiene un contrato offline archivado en 0006 y
+rechaza el esquema operativo 0009 con maestros; no se usa para este corte.
+[Alcance de las herramientas históricas](data-transfer.md).
 
 ## Historia de fases anteriores
 
