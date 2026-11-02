@@ -31,9 +31,8 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
   const [pending, setPending] = useState<PendingIntent | null>(restored.intent)
   const [party, setParty] = useState(String(restored.intent?.body[sales ? 'customer_id' : 'supplier_id'] ?? ''))
   const [date, setDate] = useState(restored.intent?.body[sales ? 'sale_date' : 'purchase_date'] ?? options.today)
-  const [employee, setEmployee] = useState(String(linkedEmployee ?? restored.intent?.body.employee_id ?? (kind === 'sales' ? options.shifts[0]?.employee_id : '') ?? ''))
+  const [employee, setEmployee] = useState(String(linkedEmployee ?? restored.intent?.body.employee_id ?? ''))
   const [shipping, setShipping] = useState(restored.intent?.body.shipping_cost ?? '0.00')
-  const [shiftId, setShiftId] = useState(String(restored.intent?.body.payment?.shift_id ?? options.shifts[0]?.shift_id ?? ''))
   const [method, setMethod] = useState(restored.intent?.body.payment?.method ?? 'cash')
   const [received, setReceived] = useState(restored.intent?.body.payment?.received_amount ?? '')
   const [reference, setReference] = useState(restored.intent?.body.payment?.reference ?? '')
@@ -67,16 +66,16 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
     let intent = pending
     if (!intent) {
       const partyId = inputId(party), employeeId = inputId(employee), shippingCost = exactMoney(shipping)
-      const shift = inputId(shiftId), cashReceived = exactMoney(received)
-      if (sales && (!shift || cashReceived === null || cashReceived.startsWith('-') || (method === 'transfer' && (!reference.trim() || !transferConfirmed)))) {
-        setError('Selecciona un turno abierto e indica el efectivo recibido o confirma la transferencia con su referencia.'); return
+      const cashReceived = exactMoney(received)
+      if (sales && (cashReceived === null || cashReceived.startsWith('-') || (method === 'transfer' && (!reference.trim() || !transferConfirmed)))) {
+        setError('Indica el efectivo recibido o confirma la transferencia con su referencia.'); return
       }
       if (!partyId || !employeeId || !date || !lines.length || (!sales && (shippingCost === null || shippingCost.startsWith('-')))) {
         setError('Completa fecha, cliente/proveedor, empleado existente y líneas; el envío debe ser un importe no negativo con dos decimales.'); return
       }
       const body: TransactionInput = { [sales ? 'customer_id' : 'supplier_id']: partyId, [sales ? 'sale_date' : 'purchase_date']: date,
         ...(linkedEmployee === null ? { employee_id: employeeId } : {}), ...(!sales ? { shipping_cost: shippingCost! } : {}),
-        ...(sales ? { payment: method === 'cash' ? { shift_id: shift!, method, received_amount: cashReceived! } : { shift_id: shift!, method, received_amount: cashReceived!, reference, transfer_confirmed: true } } : {}),
+        ...(sales ? { payment: method === 'cash' ? { method, received_amount: cashReceived! } : { method, received_amount: cashReceived!, reference, transfer_confirmed: true } } : {}),
         items: lines.map(row => ({ [sales ? 'product_id' : 'supplier_product_id']: row.id, quantity: row.quantity })) }
       intent = { key: crypto.randomUUID(), body }
       try { storeIntent(userId, kind, intent) } catch (error) { setError(getErrorMessage(error, 'No se pudo proteger la solicitud.')); return }
@@ -102,9 +101,6 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
         <EmployeeSelect label="Empleado responsable" value={employee} disabled={locked || linkedEmployee !== null} onChange={setEmployee} />
         {!sales && <TextField label="Costo de envío (NIO)" inputMode="decimal" value={shipping} disabled={locked} onChange={event => setShipping(event.target.value)} />}
         {sales && <>
-          <SelectField label="Turno de caja" value={shiftId} disabled={locked} onChange={event => { setShiftId(event.target.value); if (linkedEmployee === null) setEmployee(String(options.shifts.find(row => String(row.shift_id) === event.target.value)?.employee_id ?? '')) }}>
-            <option value="">Selecciona</option>{options.shifts.map(row => <option key={row.shift_id} value={row.shift_id}>Turno #{row.shift_id} · Empleado #{row.employee_id}</option>)}
-          </SelectField>
           <SelectField label="Medio de pago completo" value={method} disabled={locked} onChange={event => { setMethod(event.target.value as 'cash' | 'transfer'); setReceived(''); setTransferConfirmed(false) }}><option value="cash">Efectivo</option><option value="transfer">Transferencia</option></SelectField>
           <TextField label={method === 'cash' ? 'Efectivo recibido (NIO)' : 'Importe recibido por transferencia (NIO)'} inputMode="decimal" value={received} disabled={locked} onChange={event => { setReceived(event.target.value); setTransferConfirmed(false) }} />
           {method === 'transfer' && <>
@@ -167,7 +163,7 @@ function TransactionsWorkspace({ kind }: { kind: TransactionKind }) {
     <PageNavigation page={page} hasNext={(result?.data?.length ?? 0) > 20} onPageChange={next => setParams({ page: String(next) })} />
     {selected && <section className={styles.panel}><h3>Detalle #{selected.id}</h3><p>Fecha: {selected.date} · Empleado #{selected.employee_id} · Total: {reportMoney(selected.total)}</p>
       {!sales && <p>Mercancía: {reportMoney(selected.merchandise_total ?? null)} · Envío: {reportMoney(selected.shipping_cost ?? null)}</p>}
-      {sales && selected.payment && <p>Pago completo: {selected.payment.method === 'cash' ? 'Efectivo' : 'Transferencia'} · {reportMoney(selected.payment.amount)} · Recibido: {reportMoney(selected.payment.received_amount)} · Cambio: {reportMoney(selected.payment.change_amount)} · Referencia: {selected.payment.reference ?? 'No aplica'} · Turno #{selected.payment.shift_id}</p>}
+      {sales && selected.payment && <p>Pago completo: {selected.payment.method === 'cash' ? 'Efectivo' : 'Transferencia'} · {reportMoney(selected.payment.amount)} · Recibido: {reportMoney(selected.payment.received_amount)} · Cambio: {reportMoney(selected.payment.change_amount)} · Referencia: {selected.payment.reference ?? 'No aplica'}</p>}
       {sales && selected.annulment && <Message variant="info">Venta anulada. Motivo: {selected.annulment.reason}. Reintegro completo: {reportMoney(selected.annulment.amount)} ({selected.annulment.method === 'cash' ? 'efectivo' : 'transferencia'}). Referencia: {selected.annulment.reference ?? 'No aplica'}. Mercancía devuelta: {selected.annulment.items.map(item => `línea #${item.sale_item_id}: ${item.returned_quantity}`).join('; ')}.</Message>}
       <TableContainer label="Detalle de operación"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio histórico NIO</th><th>Subtotal NIO</th></tr></thead>
         <tbody>{selected.items.map(line => <tr key={line.line_id}><td>{line.product_id === null ? `Proveedor-producto #${line.supplier_product_id}` : `Producto #${line.product_id}`}</td><td>{line.quantity}</td><td>{reportMoney(line.unit_price)}</td><td>{reportMoney(line.subtotal)}</td></tr>)}</tbody>
@@ -175,7 +171,7 @@ function TransactionsWorkspace({ kind }: { kind: TransactionKind }) {
       {!sales && selected.status === 'registered' && <><EmployeeSelect label="Empleado para recepción" disabled={receiving || account.employee_id !== null} value={account.employee_id ?? employee} onChange={setEmployee} />
         <button disabled={receiving} type="button" onClick={() => void receive()}>{receiving ? 'Recibiendo…' : 'Confirmar recepción completa'}</button></>}
       {!sales && selected.status === null && <p>Compra histórica: requiere conciliación; no se infiere recepción ni coste faltante.</p>}
-      {sales && (selected.status === 'confirmed' || selected.status === 'voided') && selected.payment && account.role !== 'Cashier' && <VoidSaleForm key={`${account.user_id}:${selected.id}`} userId={account.user_id} sale={selected} shifts={options?.data?.shifts ?? []}
+      {sales && (selected.status === 'confirmed' || selected.status === 'voided') && selected.payment && account.role !== 'Cashier' && <VoidSaleForm key={`${account.user_id}:${selected.id}`} userId={account.user_id} sale={selected}
         onSaved={() => { setNotice(`Venta #${selected.id} anulada con reintegro completo.`); setSelected(null); setRevision(value => value + 1) }} />}
       {error && <Message>{error}</Message>}
     </section>}

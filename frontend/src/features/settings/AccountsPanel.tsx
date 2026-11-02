@@ -27,6 +27,7 @@ function accountError(error: unknown): string {
 function AccountForm({ account, employees, accounts, onSaved, onCancel }: {
   account: Account | null; employees: EmployeeOption[]; accounts: AccountRecord[]; onSaved: (account: Account) => void; onCancel: () => void
 }) {
+  const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState(account?.username ?? ''), [password, setPassword] = useState(''), [confirmation, setConfirmation] = useState('')
   const [role, setRole] = useState<Role>(account?.role ?? 'Cashier'), [active, setActive] = useState(account?.is_active ?? true), [employee, setEmployee] = useState(String(account?.employee_id ?? ''))
   const [busy, setBusy] = useState(false), [fields, setFields] = useState<FieldErrors>({}), [error, setError] = useState('')
@@ -37,7 +38,7 @@ function AccountForm({ account, employees, accounts, onSaved, onCancel }: {
     if (submitting.current) return
     const errors: FieldErrors = {}, body: Record<string, unknown> = {}, employeeId = employee ? inputId(employee) : null
     if (!account && !/^[a-zA-Z0-9_.-]{3,64}$/.test(username.trim())) errors.username = 'Usa de 3 a 64 letras, números, punto, guion o guion bajo.'
-    if ((!account || password) && (password.length < 12 || password.length > 128)) errors.password = 'Usa una contraseña de 12 a 128 caracteres.'
+    if ((!account || password) && (password.length < 6 || password.length > 128)) errors.password = 'Usa una contraseña de 6 a 128 caracteres.'
     if (password !== confirmation) errors.confirmation = 'Las contraseñas deben coincidir.'
     if (employee && (employeeId === null || !available.some(row => row.employee_id === employeeId))) errors.employee_id = 'Selecciona un empleado disponible.'
     setFields(errors); setError('')
@@ -65,8 +66,9 @@ function AccountForm({ account, employees, accounts, onSaved, onCancel }: {
         <option value="">Sin vínculo</option>{available.map(row => <option key={row.employee_id} value={row.employee_id}>{row.first_names} {row.last_names} (#{row.employee_id})</option>)}
       </SelectField>
       {account && <SelectField label="Estado de la cuenta" value={active ? 'active' : 'inactive'} disabled={busy} error={fields.is_active} onChange={event => setActive(event.target.value === 'active')}><option value="active">Activa</option><option value="inactive">Inactiva</option></SelectField>}
-      <TextField label={account ? 'Nueva contraseña (opcional)' : 'Contraseña'} type="password" autoComplete="new-password" value={password} maxLength={128} disabled={busy} error={fields.password} onChange={event => setPassword(event.target.value)} />
-      <TextField label="Repetir contraseña" type="password" autoComplete="new-password" value={confirmation} maxLength={128} disabled={busy} error={fields.confirmation} onChange={event => setConfirmation(event.target.value)} />
+      <TextField label={account ? 'Nueva contraseña (opcional)' : 'Contraseña'} type={showPassword ? "text" : "password"} autoComplete="new-password" value={password} maxLength={128} disabled={busy} error={fields.password} onChange={event => setPassword(event.target.value)} />
+      <TextField label="Repetir contraseña" type={showPassword ? "text" : "password"} autoComplete="new-password" value={confirmation} maxLength={128} disabled={busy} error={fields.confirmation} onChange={event => setConfirmation(event.target.value)} />
+      <button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}</button>
     </div>
       <p className={styles.note}>El empleado es opcional y exclusivo por cuenta. El cargo del empleado no asigna el rol.</p>
       {account && <Message variant="info">Guardar cambios cierra las sesiones de esta cuenta. Si modificas tu cuenta actual, deberás iniciar sesión de nuevo. El usuario se conserva.</Message>}

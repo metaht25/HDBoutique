@@ -1,10 +1,9 @@
 import { apiClient } from '../../shared/api/client'
 import { allOptions, nullableText, parseList, positiveId, record, requiredText } from '../../shared/api/validation'
 
-export interface CustomerInput {
+export interface Customer { customer_id: number;
   first_names: string; last_names: string; phone_number: string; address_id: number; customer_type_id: number
 }
-export interface Customer extends CustomerInput { customer_id: number }
 export interface CustomerType { customer_type_id: number; name: string | null }
 export interface Address { address_id: number; department_id: number; address_line: string | null }
 export interface Department { department_id: number; name: string }
@@ -42,9 +41,4 @@ export async function customerOptions(includeLocations: boolean, signal: AbortSi
       })), row => row.department_id),
   ])
   return { types: loadedTypes, addresses, departments }
-}
-export async function saveCustomer(input: CustomerInput, id?: number): Promise<Customer> {
-  return parseCustomer(await apiClient.request(id ? `/api/v1/customers/${id}` : '/api/v1/customers', {
-    method: id ? 'PATCH' : 'POST', body: input,
-  }))
 }

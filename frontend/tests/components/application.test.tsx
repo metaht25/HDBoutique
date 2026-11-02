@@ -64,10 +64,10 @@ it('blocks a collaborator from mounting administrative queries', async () => {
   await screen.findByText('Esta pantalla está disponible únicamente para la dueña.')
   expect(fetch.mock.calls.every(([path]) => !String(path).includes('employee-directory'))).toBe(true)
 })
-it('requires temporary password replacement before mounting a business screen', async () => {
+it('loads assigned-password accounts without a forced password form', async () => {
   const fetch = mockBackend({ authenticated: true, temporary: true }); renderApp('/new-sale')
-  await screen.findByRole('heading', { name: 'Cambia tu contraseña temporal' })
-  expect(fetch.mock.calls.every(([path]) => String(path).includes('/auth/'))).toBe(true)
+  await screen.findByRole('heading', { level: 1, name: 'Nueva venta' })
+  expect(fetch.mock.calls.some(([path]) => String(path).includes('/reports/product-catalog'))).toBe(true)
 })
 it('shows a useful product error after the lazy screen loads', async () => {
   mockBackend({ authenticated: true, productError: true }); renderApp('/products')

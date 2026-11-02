@@ -23,10 +23,11 @@ export function readIntent(userId: number, kind: TransactionKind): PendingIntent
     if (shipping !== undefined && !/^\d{1,8}\.\d{2}$/.test(shipping)) throw new Error('Invalid amount')
     let payment: PaymentInput | undefined
     if (sales) {
-      const saved = record(body.payment), shift_id = positiveId(saved.shift_id)
-      if (saved.method === 'cash' && /^\d{1,10}\.\d{2}$/.test(requiredText(saved.received_amount))) payment = { shift_id, method: 'cash', received_amount: requiredText(saved.received_amount) }
-      else if (saved.method === 'transfer' && saved.transfer_confirmed === true && /^\d{1,10}\.\d{2}$/.test(requiredText(saved.received_amount))) payment = { shift_id, method: 'transfer', received_amount: requiredText(saved.received_amount), reference: requiredText(saved.reference), transfer_confirmed: true }
+      const saved = record(body.payment)
+      if (saved.method === 'cash' && /^\d{1,10}\.\d{2}$/.test(requiredText(saved.received_amount))) payment = { method: 'cash', received_amount: requiredText(saved.received_amount) }
+      else if (saved.method === 'transfer' && saved.transfer_confirmed === true && /^\d{1,10}\.\d{2}$/.test(requiredText(saved.received_amount))) payment = { method: 'transfer', received_amount: requiredText(saved.received_amount), reference: requiredText(saved.reference), transfer_confirmed: true }
       else throw new Error('Invalid payment')
+      if (saved.shift_id !== undefined) payment.shift_id = positiveId(saved.shift_id)
     }
     return { key, body: { [sales ? 'customer_id' : 'supplier_id']: partyId, [sales ? 'sale_date' : 'purchase_date']: date,
       ...(body.employee_id !== undefined ? { employee_id: positiveId(body.employee_id) } : {}),

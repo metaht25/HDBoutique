@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest'
-import { customerOptions, parseCustomer, saveCustomer } from '../../src/features/customers/api'
+import { customerOptions, parseCustomer } from '../../src/features/customers/api'
 import { apiClient } from '../../src/shared/api/client'
 
 const customer = { customer_id: 1, address_id: 3, customer_type_id: 2,
@@ -19,10 +19,4 @@ it('Cashier loads customer types without requesting any locations', async () => 
   })
   expect(request).toHaveBeenCalledTimes(1)
   expect(request.mock.calls[0]?.[0]).toBe('/api/v1/customer-types?offset=0&limit=100')
-})
-it('writes the confirmed customer contract in one request', async () => {
-  const request = vi.spyOn(apiClient, 'request').mockResolvedValue(customer)
-  const { customer_id: id, ...input } = customer
-  await saveCustomer(input, id)
-  expect(request).toHaveBeenCalledExactlyOnceWith('/api/v1/customers/1', { method: 'PATCH', body: input })
 })

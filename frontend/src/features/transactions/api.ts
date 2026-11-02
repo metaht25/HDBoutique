@@ -4,7 +4,7 @@ import { parseCustomer } from '../customers/api'
 import { parseProduct } from '../products/api'
 import { parseSupplier } from '../suppliers/api'
 import { money } from '../reports/api'
-import { listShifts, parsePayment } from '../cash-register/api'
+import { parsePayment } from '../cash-register/api'
 import type { Payment, PaymentInput } from '../cash-register/api'
 
 export type TransactionKind = 'sales' | 'purchases'
@@ -45,7 +45,7 @@ export async function transactionOptions(kind: TransactionKind, signal: AbortSig
     apiClient.request('/api/v1/dashboard', { signal }),
   ])
   const today = date(record(record(dashboard).context).business_date)
-  if (kind === 'sales') return { products, parties, today, costs: [], offerings: [], shifts: (await listShifts(signal)).filter(row => row.status === 'open') }
+  if (kind === 'sales') return { products, parties, today, costs: [], offerings: [] }
   const [costs, offerings] = await Promise.all([
     allOptions(offset => apiClient.request(`/api/v1/supplier-products?offset=${offset}&limit=100`, { signal }).then(body => parseList(body, value => {
       const row = record(value); return { id: positiveId(row.supplier_product_id), product_id: positiveId(row.product_id), price: money(row.purchase_price) }
@@ -54,7 +54,7 @@ export async function transactionOptions(kind: TransactionKind, signal: AbortSig
       const row = record(value); return { id: positiveId(row.offering_id), supplier_id: positiveId(row.supplier_id), supplier_product_id: positiveId(row.supplier_product_id) }
     })), row => row.id),
   ])
-  return { products, parties, today, costs, offerings, shifts: [] }
+  return { products, parties, today, costs, offerings }
 }
 export async function registerTransaction(kind: TransactionKind, body: TransactionInput, key: string): Promise<Transaction> {
   return parseTransaction(kind, await apiClient.request(`/api/v1/${kind}`, { method: 'POST', body, idempotencyKey: key }))

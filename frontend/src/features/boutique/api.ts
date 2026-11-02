@@ -28,10 +28,11 @@ export function useQuery<T>(path: string, revision = 0) {
 }
 export async function choices(resource: string, signal: AbortSignal): Promise<Choice[]> {
   const ids: Record<string, string> = { categories: 'category_id', sizes: 'size_id', departments: 'department_id', municipalities: 'municipality_id', 'employee-options': 'employee_id' }
-  return allOptions(offset => apiClient.request(`/api/v1/${resource}?offset=${offset}&limit=100`, { signal }).then(data => parseList(data, value => {
+  const rows = await allOptions(offset => apiClient.request(`/api/v1/${resource}?offset=${offset}&limit=100`, { signal }).then(data => parseList(data, value => {
     const row = record(value)
-    return { id: positiveId(row[ids[resource]!]), label: String(row.name ?? `${row.first_names} ${row.last_names}`), ...(row.department_id ? { department_id: positiveId(row.department_id) } : {}) }
+    return { id: positiveId(row[ids[resource]!]), label: String(row.name ?? (row.first_names ? `${row.first_names} ${row.last_names}` : 'Nombre histórico no registrado')), ...(row.department_id ? { department_id: positiveId(row.department_id) } : {}) }
   })), row => row.id)
+  return resource === 'sizes' ? rows.filter(row => ['S', 'M', 'L', 'XL', 'XXL'].includes(row.label)) : rows
 }
 export function useChoices(resource: string, revision = 0) {
   const load = useCallback((signal: AbortSignal) => choices(resource, signal), [resource])

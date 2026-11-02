@@ -3,7 +3,6 @@ import { NavLink, Outlet, useLocation } from 'react-router'
 import { collaboratorOrder, navigation } from '../app/navigation'
 import { useSession } from '../features/session/sessionContext'
 import { ModuleAccess } from '../features/session/ModuleAccess'
-import { PasswordChange } from '../features/session/PasswordChange'
 import { ProfileModal } from '../features/boutique/ProfileModal'
 import { getErrorMessage } from '../shared/api/errors'
 import { Message } from '../shared/ui/Feedback'
@@ -29,7 +28,7 @@ export function MainLayout() {
     <main id="main-content" className={styles.main} tabIndex={-1}>
       <header className={styles.topbar}>{account && (owner ? <button className={styles.identity + ' secondary'} onClick={() => setProfile(true)}>Dueña<small>Mi perfil</small></button> : <div className={styles.identity}>{account.display_name ?? account.username}<small>Colaborador</small></div>)}</header>
       <div className={styles.content}><h1 ref={heading} tabIndex={-1}>{title}</h1>{error && <Message>{error}</Message>}
-        <ModuleAccess>{account?.must_change_password ? <PasswordChange /> : <div key={account?.user_id}><Outlet /></div>}</ModuleAccess>
+        <ModuleAccess>{<div key={account?.user_id}><Outlet /></div>}</ModuleAccess>
       </div>
       {profile && owner && <ProfileModal onClose={() => setProfile(false)} />}
     </main>

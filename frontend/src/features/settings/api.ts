@@ -8,19 +8,20 @@ export const catalogs = {
   departments: { label: 'Departamentos', id: 'department_id', field: 'name', fieldLabel: 'Nombre', max: 40, required: true },
   municipalities: { label: 'Municipios', id: 'municipality_id', field: 'name', fieldLabel: 'Nombre', max: 40, required: true },
   addresses: { label: 'Direcciones', id: 'address_id', field: 'address_line', fieldLabel: 'Detalle de dirección', max: 100, required: false },
-  categories: { label: 'Categorías', id: 'category_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: false },
+  categories: { label: 'Categorías', id: 'category_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: true },
   sizes: { label: 'Tallas', id: 'size_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: true },
-  'customer-types': { label: 'Tipos de cliente', id: 'customer_type_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: false },
+  'customer-types': { label: 'Tipos de cliente', id: 'customer_type_id', field: 'name', fieldLabel: 'Nombre', max: 20, required: true },
   'supplier-products': { label: 'Costes de compra', id: 'supplier_product_id', field: 'purchase_price', fieldLabel: 'Costo de compra (NIO)', max: 13, required: true },
   'supplier-offerings': { label: 'Ofertas de proveedores', id: 'offering_id', field: null, fieldLabel: '', max: 0, required: false },
 } as const
 export type Catalog = keyof typeof catalogs
-export interface CatalogRow { id: number; text: string | null; department_id?: number; product_id?: number; supplier_id?: number; supplier_product_id?: number }
+export interface CatalogRow { is_permanent?: boolean; id: number; text: string | null; department_id?: number; product_id?: number; supplier_id?: number; supplier_product_id?: number }
 export interface Choice { id: number; label: string }
 export function parseCatalog(kind: Catalog, value: unknown): CatalogRow {
   const row = record(value), config = catalogs[kind]
   return { id: positiveId(row[config.id]), text: config.field === null ? null : kind === 'supplier-products' ? money(row.purchase_price)
-    : config.required ? requiredText(row[config.field]) : nullableText(row[config.field]),
+    : nullableText(row[config.field]),
+    ...(typeof row.is_permanent === 'boolean' ? { is_permanent: row.is_permanent } : {}),
     ...((kind === 'addresses' || kind === 'municipalities') ? { department_id: positiveId(row.department_id) } : {}),
     ...(kind === 'supplier-products' ? { product_id: positiveId(row.product_id) } : {}),
     ...(kind === 'supplier-offerings' ? { supplier_id: positiveId(row.supplier_id), supplier_product_id: positiveId(row.supplier_product_id) } : {}),
@@ -76,10 +77,10 @@ export const preparationSteps = [
   { resource: 'categories', label: 'Categorías', to: '/settings?section=categories', help: 'Clasificación de los productos.' },
   { resource: 'sizes', label: 'Tallas', to: '/settings?section=sizes', help: 'Necesarias para registrar productos.' },
   { resource: 'customer-types', label: 'Tipos de cliente', to: '/settings?section=customer-types', help: 'Necesarios para registrar clientes; no aplican descuentos.' },
-  { resource: 'employee-options', label: 'Empleados', to: '/employees', help: 'Responsables de compras, ventas y caja.' },
-  { resource: 'products', label: 'Productos', to: '/products', help: 'Registra precio de venta; el stock nuevo comienza en cero.' },
-  { resource: 'customers', label: 'Clientes', to: '/customers', help: 'Cada venta requiere un cliente existente.' },
-  { resource: 'suppliers', label: 'Proveedores', to: '/suppliers', help: 'Cada compra requiere un proveedor existente.' },
+  { resource: 'employee-options', label: 'Empleados', to: '/employees', help: 'Responsables de compras y ventas.' },
+  { resource: 'products', label: 'Productos', to: '/products', help: 'Registra costo principal y cantidad inicial; el precio se calcula en el servidor.' },
+  { resource: 'customers', label: 'Clientes', to: '/customers', help: 'Consulta de clientes; alta contextual desde Nueva venta.' },
+  { resource: 'suppliers', label: 'Proveedores', to: '/suppliers', help: 'Consulta y activación; alta contextual desde Compras.' },
   { resource: 'supplier-products', label: 'Costes de compra', to: '/settings?section=supplier-products', help: 'Registra producto y costo vigente de compra.' },
   { resource: 'supplier-offerings', label: 'Ofertas de proveedores', to: '/settings?section=supplier-offerings', help: 'Relaciona cada proveedor con los productos y costes que ofrece.' },
 ] as const

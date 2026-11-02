@@ -33,11 +33,7 @@ export function responseError(status: number, body: unknown, fallback: string): 
 
 export function getErrorMessage(error: unknown, fallback: string): string {
   const cashMessages: Record<string, string> = {
-    shift_closed: 'El turno está cerrado. Abre un turno nuevo para continuar.',
-    shift_already_open: 'La caja principal ya tiene un turno abierto. Solicita su cierre al responsable o encargado.',
     payment_incomplete: 'La venta exige el pago completo. Revisa el efectivo recibido.',
-    insufficient_cash: 'El efectivo disponible no alcanza para ese retiro o reintegro.',
-    reason_required: 'Indica el motivo de la diferencia de caja.',
     sale_already_voided: 'La venta ya fue anulada. Consulta su detalle.',
     invalid_return: 'Indica la cantidad realmente devuelta para cada línea de la venta original.',
     payment_reconciliation_required: 'Esta venta histórica no tiene un cobro registrado. Requiere conciliación antes de corregirla.',

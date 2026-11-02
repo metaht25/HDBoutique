@@ -28,7 +28,7 @@ function Preparation({ administrator }: { administrator: boolean }) {
     <ol><li><p><Link to="/purchases">Registrar una compra y recibirla</Link> para incorporar la mercancía realmente recibida al inventario.</p></li>
       <li><p><Link to="/cash-register">Abrir caja</Link> con el empleado responsable y el efectivo inicial contado.</p></li>
       <li><p><Link to="/sales">Registrar la venta</Link> con stock disponible, cliente y pago completo en efectivo o transferencia.</p></li></ol>
-    <p className={styles.note}>Los registros de referencia no garantizan stock, precios válidos ni un turno abierto. Cada operación verifica sus requisitos al confirmarse.</p>
+    <p className={styles.note}>Los registros de referencia no garantizan stock ni precios válidos. Cada operación verifica sus requisitos al confirmarse.</p>
   </section>
 }
 

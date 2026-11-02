@@ -86,7 +86,7 @@ export function CatalogPanel({ kind }: { kind: Catalog }) {
         {Object.keys(choices?.data ?? {}).map(field => <th key={field}>{relationLabels[field]}</th>)}
         {catalogs[kind].field && <th>{catalogs[kind].fieldLabel}</th>}<th>Acciones</th></tr></thead><tbody>
         {rows.map(row => <tr key={row.id}><td>{row.id}</td>{Object.keys(choices?.data ?? {}).map(field => <td key={field}>{label(field, row[field as keyof CatalogRow] as number | undefined)}</td>)}
-          {catalogs[kind].field && <td>{row.text ?? 'Sin detalle'}</td>}<td><button type="button" aria-label={`Editar registro ${row.id}`} onClick={() => { setEditing(row); setNotice('') }}>Editar</button></td></tr>)}
+          {catalogs[kind].field && <td>{row.text ?? 'Nombre histórico no registrado'}</td>}<td>{row.is_permanent ? <span>Permanente</span> : <button type="button" aria-label={`Editar registro ${row.id}`} onClick={() => { setEditing(row); setNotice('') }}>Editar</button>}</td></tr>)}
       </tbody></table></TableContainer></section>}
     <PageNavigation page={page} hasNext={(result?.data?.length ?? 0) > 20} onPageChange={next => setPage(next)} />
   </div>

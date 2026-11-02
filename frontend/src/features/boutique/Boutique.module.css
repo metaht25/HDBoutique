@@ -51,8 +51,6 @@
 .productGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 12px; margin: 18px 0; }
 .productCard { border: 1px solid var(--border); padding: 16px; border-radius: 12px; display: grid; gap: 10px; }
 .productCard p, .productCard h3 { margin: 0; font-size: 15px; }
-.shift { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border: 1px solid var(--border); border-radius: 12px; background: white; }
-.shift small { display: block; color: var(--muted); margin-top: 5px; }
 .bar { height: 10px; background: var(--soft); border-radius: 6px; overflow: hidden; margin: 10px 0 18px; }
 .bar span { display: block; background: var(--accent); height: 100%; border-radius: inherit; }
 .ticket { width: 80mm; max-width: 100%; margin: 0 auto; padding: 4mm; background: white; color: black; font: 12px/1.5 Arial, sans-serif; border: 1px solid #ddd; overflow-wrap: anywhere; }

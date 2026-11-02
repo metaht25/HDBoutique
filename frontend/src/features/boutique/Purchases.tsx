@@ -1,8 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { apiClient } from '../../shared/api/client'
-import { allOptions, parseList, positiveId, record, requiredText } from '../../shared/api/validation'
-import { useResource } from '../../shared/hooks/useResource'
 import { exactMoney } from '../../shared/forms/fields'
 import { TextField } from '../../shared/ui/TextField'
 import { SelectField } from '../../shared/ui/SelectField'
@@ -11,42 +8,41 @@ import { EmployeeSelect } from '../employees/EmployeeSelect'
 import { useSession } from '../session/sessionContext'
 import { useCashCommand } from '../cash-register/useCashCommand'
 import { amount, cents, dateText, money, query, useQuery } from './api'
-import type { Page, PurchaseRow, Supplier } from './contracts'
+import { PartyForm } from './PartyForm'
+import type { Page, Product, PurchaseRow, Supplier } from './contracts'
 import { Badge, DataState, Modal, Pager, Panel, Stats, Table } from './ui'
 import styles from './Boutique.module.css'
 
 interface Purchase { purchase_id: number; purchase_date: string; status: string | null; shipping_cost: string | null; total: string | null; description: string | null; items: { purchase_item_id: number; product_id: number | null; quantity: number; unit_cost: string | null; subtotal: string | null }[] }
 interface Offer { supplierId: number; costId: number; productId: number; name: string; price: string }
-async function loadOffers(signal: AbortSignal): Promise<Offer[]> {
-  const load = (resource: string, id: string) => allOptions(offset => apiClient.request(`/api/v1/${resource}?offset=${offset}&limit=100`, { signal }).then(body => parseList(body, record)), row => positiveId(row[id]))
-  const [products, costs, offerings] = await Promise.all([load('products', 'product_id'), load('supplier-products', 'supplier_product_id'), load('supplier-offerings', 'offering_id')])
-  return offerings.flatMap(offering => { const cost = costs.find(row => row.supplier_product_id === offering.supplier_product_id), product = products.find(row => row.product_id === cost?.product_id); return cost && product?.is_active === true ? [{ supplierId: positiveId(offering.supplier_id), costId: positiveId(cost.supplier_product_id), productId: positiveId(product.product_id), name: String(product.name ?? `Producto #${product.product_id}`), price: requiredText(cost.purchase_price) }] : [] })
-}
 function PurchaseForm({ date, onClose, onSaved }: { date: string; onClose: () => void; onSaved: () => void }) {
+  const [supplierDraft, setSupplierDraft] = useState<Record<string, unknown> | null>(null), [newSupplier, setNewSupplier] = useState(false), [supplierName, setSupplierName] = useState(''), [supplierDetails, setSupplierDetails] = useState(''), [cost, setCost] = useState('')
   const account = useSession().state.account!, [supplier, setSupplier] = useState(''), [employee, setEmployee] = useState(String(account.employee_id ?? '')), [q, setQ] = useState(''), [selected, setSelected] = useState(''), [quantity, setQuantity] = useState('1'), [shipping, setShipping] = useState('0.00'), [description, setDescription] = useState(''), [lines, setLines] = useState<{ offer: Offer; quantity: number }[]>([])
-  const command = useCashCommand<Purchase>(account.user_id, 'purchase', onSaved), load = useCallback((signal: AbortSignal) => loadOffers(signal), []), offers = useResource('purchase-offers', load)
+  const command = useCashCommand<Purchase>(account.user_id, 'purchase', onSaved), products = useQuery<Page<Product>>('reports/product-catalog?status=active&limit=100')
   const suppliers = useQuery<Page<Supplier>>('reports/supplier-directory?' + query({ q, status: 'active', limit: 100 }))
+  const selectedSupplier = suppliers?.data?.items.find(row => row.supplier_id === Number(supplier))
   const total = lines.reduce((sum, line) => sum + cents(line.offer.price) * BigInt(line.quantity), 0n) + cents(shipping)
   function add() {
-    const offer = offers?.data?.find(row => row.costId === Number(selected) && row.supplierId === Number(supplier))
-    if (!offer || !/^[1-9]\d*$/.test(quantity) || Number(quantity) > 2147483647) { command.setError('Selecciona una oferta y una cantidad entera positiva.'); return }
+    const product = products?.data?.items.find(row => row.product_id === Number(selected))
+    const offer: Offer | undefined = product && exactMoney(cost) && cents(cost) > 0n ? { supplierId: Number(supplier), costId: product.product_id, productId: product.product_id, name: product.name ?? 'Nombre histórico no registrado', price: exactMoney(cost)! } : undefined
+    if (!offer || !/^[1-9]\d*$/.test(quantity) || Number(quantity) > 2147483647) { command.setError('Selecciona un producto, costo positivo y cantidad entera positiva.'); return }
     setLines(current => { const found = current.find(row => row.offer.costId === offer.costId); return found ? current.map(row => row === found ? { ...row, quantity: row.quantity + Number(quantity) } : row) : [...current, { offer, quantity: Number(quantity) }] }); command.setError('')
   }
   async function submit(event: FormEvent) {
     event.preventDefault(); if (command.pending) { await command.send('', {}); return }
-    if (!supplier || !employee || !lines.length || exactMoney(shipping) === null || cents(shipping) < 0n) { command.setError('Revisa proveedor, empleado, productos y costo de envío.'); return }
-    await command.send('/api/v1/purchases', { supplier_id: Number(supplier), employee_id: Number(employee), purchase_date: date, shipping_cost: exactMoney(shipping), description: description.trim() || null, items: lines.map(line => ({ supplier_product_id: line.offer.costId, quantity: line.quantity })) })
+    if ((!supplier && !supplierDraft) || !employee || !lines.length || exactMoney(shipping) === null || cents(shipping) < 0n) { command.setError('Revisa proveedor, empleado, productos y costo de envío.'); return }
+    await command.send('/api/v1/purchases', { ...(supplierDraft ? { supplier: supplierDraft } : { supplier_id: Number(supplier) }), employee_id: Number(employee), purchase_date: date, shipping_cost: exactMoney(shipping), description: description.trim() || null, items: lines.map(line => ({ product_id: line.offer.productId, unit_cost: line.offer.price, quantity: line.quantity })) })
   }
   return <Modal title="Nueva compra" wide onClose={() => { if (!command.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={command.locked}>
-    <div className={styles.formGrid}><TextField label="Buscar proveedor" value={q} maxLength={100} onChange={e => setQ(e.target.value)} /><SelectField label="Proveedor" required value={supplier} onChange={e => { setSupplier(e.target.value); setLines([]); setSelected('') }}><option value="">Selecciona</option>{suppliers?.data?.items.map(row => <option key={row.supplier_id} value={row.supplier_id}>{row.company_name}</option>)}</SelectField>
-      <TextField label="Fecha de compra" readOnly type="date" value={date} /><EmployeeSelect label="Empleado responsable" value={employee} disabled={account.employee_id !== null || command.locked} onChange={setEmployee} />
-    </div><DataState result={offers}><div className={styles.filters}><SelectField label="Producto / oferta" value={selected} onChange={e => setSelected(e.target.value)}><option value="">Selecciona producto</option>{offers?.data?.filter(row => row.supplierId === Number(supplier)).map(row => <option key={row.costId} value={row.costId}>{row.name} · {money(row.price)}</option>)}</SelectField><TextField label="Cantidad" inputMode="numeric" value={quantity} onChange={e => setQuantity(e.target.value)} /><button type="button" className="secondary" onClick={add}>Agregar producto</button></div></DataState>
+    <div className={styles.formGrid}><TextField label="Buscar proveedor" value={q} maxLength={100} onChange={e => setQ(e.target.value)} /><SelectField label="Proveedor" required={!supplierDraft} value={supplier} onChange={e => { setSupplier(e.target.value); setSupplierDraft(null); setLines([]); setSelected('') }}><option value="">{supplierDraft ? supplierName : 'Selecciona'}</option>{suppliers?.data?.items.map(row => <option key={row.supplier_id} value={row.supplier_id}>{row.company_name}</option>)}</SelectField>
+      <button type="button" className="secondary" onClick={() => setNewSupplier(true)}>+ Registrar proveedor</button><TextField label="Fecha de compra" readOnly type="date" value={date} /><EmployeeSelect label="Empleado responsable" value={employee} disabled={account.employee_id !== null || command.locked} onChange={setEmployee} />
+    </div>{(selectedSupplier || supplierDraft) && <p className={styles.hint}>{supplierDraft ? supplierDetails : `${selectedSupplier?.contact_first_names} ${selectedSupplier?.contact_last_names} · ${selectedSupplier?.phone_number} · ${selectedSupplier?.department_name ?? ''}, ${selectedSupplier?.municipality_name ?? ''} · ${selectedSupplier?.address_line ?? ''}`}</p>}<DataState result={products}><div className={styles.filters}><SelectField label="Producto" value={selected} onChange={e => setSelected(e.target.value)}><option value="">Selecciona producto</option>{products?.data?.items.map(row => <option key={row.product_id} value={row.product_id}>{row.name ?? 'Nombre histórico no registrado'}</option>)}</SelectField><TextField label="Costo de compra (NIO)" inputMode="decimal" value={cost} onChange={e => setCost(e.target.value)} /><TextField label="Cantidad" inputMode="numeric" value={quantity} onChange={e => setQuantity(e.target.value)} /><button type="button" className="secondary" onClick={add}>Agregar producto</button></div></DataState>
     <Table label="Productos de compra"><thead><tr><th>Producto</th><th>Cantidad</th><th>Costo</th><th>Subtotal</th><th>Acción</th></tr></thead><tbody>{lines.map(line => <tr key={line.offer.costId}><td>{line.offer.name}</td><td>{line.quantity}</td><td>{money(line.offer.price)}</td><td>{money(amount(cents(line.offer.price) * BigInt(line.quantity)))}</td><td><button type="button" className="secondary" onClick={() => setLines(current => current.filter(row => row !== line))}>Quitar</button></td></tr>)}</tbody></Table>
     <div className={styles.formGrid}><TextField label="Costo de envío (NIO)" inputMode="decimal" value={shipping} onChange={e => setShipping(e.target.value)} /><TextField label="Descripción (opcional)" maxLength={500} value={description} onChange={e => setDescription(e.target.value)} /></div>
     <div className={styles.summary}><p className={styles.total}><span>Total</span><span>{money(amount(total))}</span></p></div><p className={styles.hint}>La compra quedará Pendiente. El stock aumenta únicamente al confirmar la recepción completa.</p>
     </fieldset>{command.error && <Message>{command.error}</Message>}{command.pending && <Message variant="info">Compra pendiente de confirmación. Reintenta la misma solicitud.</Message>}
     <div className={styles.actions}><button type="button" className="secondary" disabled={command.busy} onClick={onClose}>Cerrar</button><button disabled={command.busy || command.blocked}>{command.busy ? 'Guardando…' : command.pending ? 'Reintentar misma compra' : 'Guardar compra pendiente'}</button></div>
-  </form></Modal>
+  </form>{newSupplier && <PartyForm kind="suppliers" onSaved={() => undefined} onClose={() => setNewSupplier(false)} onDraft={(body, display) => { setSupplierDraft(body); setSupplier(''); setSupplierName(display.company_name ?? 'Nuevo proveedor'); setSupplierDetails(`${display.contact_first_names ?? ''} ${display.contact_last_names ?? ''} · ${display.phone_number ?? ''} · ${display.department_name ?? ''}, ${display.municipality_name ?? ''} · ${display.address_line ?? ''}`); setLines([]); setNewSupplier(false) }} />}</Modal>
 }
 function PurchaseDetail({ id, onClose, onSaved }: { id: number; onClose: () => void; onSaved: () => void }) {
   const account = useSession().state.account!, [employee, setEmployee] = useState(String(account.employee_id ?? '')), [revision, setRevision] = useState(0), [confirm, setConfirm] = useState(false)

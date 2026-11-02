@@ -4,7 +4,6 @@ import { useSession } from '../session/sessionContext'
 import { dateText, money, useQuery } from './api'
 import type { Overview } from './contracts'
 import { Badge, DataState, Panel, Stats, Table } from './ui'
-import { ShiftPanel } from './ShiftPanel'
 import { ReceiptModal } from './ReceiptModal'
 import styles from './Boutique.module.css'
 
@@ -22,7 +21,6 @@ export default function Dashboard() {
       { label: 'Mis ventas de hoy', value: s.today_count }, { label: 'Total vendido hoy', value: money(s.today_amount) },
       { label: 'Productos vendidos', value: s.today_units, hint: 'Hoy' }, { label: 'Alertas de stock', value: s.low_stock, hint: 'Productos con 1 a 5 unidades' },
     ]} /></DataState>
-    <ShiftPanel />
     <div className={styles.columns}>
       <Panel title="Resumen de ventas"><div className={styles.tabs}>{[['week', 'Semanal'], ['month', 'Mensual'], ['year', 'Anual']].map(([value, label]) => <button key={value} className={period === value ? '' : 'secondary'} aria-pressed={period === value} onClick={() => setPeriod(value!)}>{label}</button>)}</div>
         <div className={styles.summary}><p><span>Total vendido</span><b>{money(s.period_amount)}</b></p><p><span>Cantidad de ventas</span><b>{s.period_count ?? '—'}</b></p></div>

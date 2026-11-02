@@ -6,6 +6,3 @@ export const purchase = { purchase_id: 1, supplier_id: 106, employee_id: 102, pu
 export function supplierRows(count = 1) { return Array.from({ length: count }, (_, index) => ({
   supplier_id: index + 106, company_name: `Empresa sintética ${index + 1}`, address_id: 103, contact_first_names: 'Contacto', contact_last_names: 'Sintético', phone_number: '0000000000', work_email: null,
 })) }
-export const shift = { shift_id: 1, register_code: 'main', employee_id: 102, opened_by_user_id: 1, opened_at: '2026-10-29T15:00:00Z', status: 'open', opening_amount: '1000.00',
-  cash_collected: '0.00', transfers_collected: '0.00', cash_refunded: '0.00', transfers_refunded: '0.00', deposits: '0.00', withdrawals: '0.00', expected_amount: '1000.00',
-  counted_amount: null, difference: null, closed_at: null, closed_by_user_id: null, closing_reason: null, movements: [] }

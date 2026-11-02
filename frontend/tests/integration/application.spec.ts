@@ -5,6 +5,7 @@ import { capture, command, customerFromSale, selectAddress, signIn } from './hel
 test.describe.configure({ mode: 'serial' })
 let productId = 0, generalId = 0, regularSale = 0, mixedSale = 0, supplierId = 0, supplierProductId = 0
 test('owner prepares profile, supplier, product and audited initial inventory', async ({ page }, info) => {
+  test.setTimeout(120000)
   await signIn(page)
   const municipality = await command(page, 'municipalities', { department_id: 1, name: 'Municipio sintético' }); expect(municipality.status()).toBe(201)
   // A small raster exercises the safe upload path; no external assets.
@@ -15,20 +16,11 @@ test('owner prepares profile, supplier, product and audited initial inventory', 
   await profile.getByLabel('Dirección', { exact: true }).fill('Dirección sintética del entorno aislado')
   await profile.getByLabel('Logo', { exact: true }).setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAALElEQVR4nGO8ptfIQA3ARBVTGEYNIgaMBjZhMBpGhMFoGBEGo2FEGAy+MAIAD0ABtdV+OhwAAAAASUVORK5CYII=', 'base64') })
   await profile.getByRole('button', { name: 'Guardar datos de la boutique' }).click(); await expect(profile).toHaveCount(0)
-  await page.goto('/suppliers'); await page.getByRole('button', { name: '+ Nuevo proveedor' }).click()
-  const supplier = page.getByRole('dialog', { name: 'Nuevo proveedor' })
-  await supplier.getByLabel('Empresa', { exact: true }).fill('Proveedor de prueba conectada')
-  await supplier.getByLabel('Nombres del contacto').fill('Contacto'); await supplier.getByLabel('Apellidos del contacto').fill('Sintético')
-  await supplier.getByLabel('Teléfono', { exact: true }).fill('00000000'); await supplier.getByLabel('Correo', { exact: true }).fill('proveedor@example.invalid')
-  await selectAddress(page); await capture(page, info, 'owner-supplier-modal')
-  const savedSupplier = page.waitForResponse(res => res.url().endsWith('/api/v1/suppliers') && res.request().method() === 'POST')
-  await supplier.getByRole('button', { name: 'Guardar proveedor' }).click(); supplierId = (await (await savedSupplier).json()).supplier_id
-  await expect(supplier).toHaveCount(0); await capture(page, info, 'owner-suppliers')
   await page.goto('/products'); await page.getByRole('button', { name: '+ Nuevo producto' }).click()
   const product = page.getByRole('dialog', { name: 'Nuevo producto' })
   await product.getByLabel('Nombre', { exact: true }).fill('Prenda de prueba conectada')
   await product.getByLabel('Categoría', { exact: true }).selectOption('1'); await product.getByLabel('Talla', { exact: true }).selectOption('1')
-  await product.getByLabel('Proveedor / oferta').selectOption(String(supplierId)); await product.getByLabel('Costo (NIO)', { exact: true }).fill('100.10'); await product.getByLabel('Cantidad inicial').fill('8')
+  await product.getByLabel('Costo (NIO)', { exact: true }).fill('100.10'); await product.getByLabel('Cantidad inicial').fill('8')
   await expect(product.getByLabel('Precio de venta (+15 %)')).toHaveValue('C$ 115.12'); await capture(page, info, 'owner-product-modal')
   const saved = page.waitForResponse(res => res.url().endsWith('/api/v1/products') && res.request().method() === 'POST')
   await product.getByRole('button', { name: 'Guardar producto' }).click(); const row = await (await saved).json(); productId = row.product_id
@@ -36,31 +28,33 @@ test('owner prepares profile, supplier, product and audited initial inventory', 
   const movements = await page.request.get('/api/v1/inventory/movements?product_id=' + productId)
   expect((await movements.json()).find((row: { movement_type: string }) => row.movement_type === 'initial_stock').quantity).toBe(8)
   await capture(page, info, 'owner-products')
+  await page.goto('/purchases'); await page.getByRole('button', { name: '+ Nueva compra' }).click(); await page.getByRole('button', { name: '+ Registrar proveedor' }).click()
+  const supplier = page.getByRole('dialog', { name: 'Nuevo proveedor' })
+  await supplier.getByLabel('Empresa', { exact: true }).fill('Proveedor de prueba conectada')
+  await supplier.getByLabel('Nombres del contacto').fill('Contacto'); await supplier.getByLabel('Apellidos del contacto').fill('Sintético')
+  await supplier.getByLabel('Teléfono', { exact: true }).fill('00000000'); await supplier.getByLabel('Correo', { exact: true }).fill('proveedor@example.invalid')
+  await selectAddress(page); await capture(page, info, 'owner-supplier-modal')
+  await page.setViewportSize({ width: 390, height: 844 }); await capture(page, info, 'owner-mobile-supplier-modal'); await page.setViewportSize({ width: 1440, height: 1000 })
+  await supplier.getByRole('button', { name: 'Usar proveedor en esta operación' }).click()
+  const purchaseModal = page.getByRole('dialog', { name: 'Nueva compra' })
+  await expect(purchaseModal.getByLabel('Proveedor', { exact: true })).not.toHaveAttribute('required', '')
+  await purchaseModal.getByLabel('Empleado responsable').selectOption('1')
+  await purchaseModal.getByLabel('Producto', { exact: true }).selectOption(String(productId))
+  await purchaseModal.getByLabel('Costo de compra (NIO)').fill('100.10')
+  await purchaseModal.getByRole('button', { name: 'Agregar producto' }).click()
+  const savedPurchase = page.waitForResponse(res => res.url().endsWith('/api/v1/purchases') && res.request().method() === 'POST')
+  await purchaseModal.getByRole('button', { name: 'Guardar compra pendiente' }).click()
+  const firstPurchase = await (await savedPurchase).json(); supplierId = firstPurchase.supplier_id
+  expect(firstPurchase.status).toBe('registered'); await expect(purchaseModal).toHaveCount(0)
+  await page.goto('/suppliers'); await capture(page, info, 'owner-suppliers')
+
 })
 
-test('contextual cash supports supervised movements and a collaborator closing and opening', async ({ page }, info) => {
+test('cash endpoints are retired and checkout needs no shift', async ({ page }) => {
   await signIn(page)
-  await page.getByRole('button', { name: 'Gestionar turno' }).click()
-  const cash = page.getByRole('dialog', { name: 'Turnos y movimientos de caja' })
-  for (const action of ['deposit', 'withdrawal']) {
-    await cash.getByLabel('Operación de caja').selectOption(action)
-    await cash.getByLabel('Importe de efectivo (NIO)').fill('50.00')
-    await cash.getByLabel('Motivo / observaciones').fill('Movimiento sintético supervisado')
-    await cash.getByRole('button', { name: 'Confirmar operación de caja' }).click()
-    await expect(cash.getByLabel('Operación de caja')).toHaveValue('close')
-  }
-  await capture(page, info, 'owner-cash-movements')
-  await page.keyboard.press('Escape'); await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await signIn(page, 'purchasing-cashier')
-  await page.getByRole('button', { name: 'Gestionar turno' }).click()
-  await cash.getByLabel('Efectivo final contado (NIO)').fill('1000.00')
-  await cash.getByRole('button', { name: 'Confirmar operación de caja' }).click()
-  await expect(cash.getByLabel('Efectivo inicial contado (NIO)')).toBeVisible()
-  await cash.getByLabel('Empleado responsable').selectOption('1')
-  await cash.getByLabel('Efectivo inicial contado (NIO)').fill('1000.00')
-  await cash.getByRole('button', { name: 'Confirmar operación de caja' }).click()
-  await expect(cash.getByLabel('Efectivo final contado (NIO)')).toBeVisible()
-  await capture(page, info, 'collaborator-cash-open')
+  expect((await page.request.get('/api/v1/cash/shifts')).status()).toBe(404)
+  await page.goto('/new-sale')
+  await expect(page.getByRole('button', { name: 'Gestionar turno' })).toHaveCount(0)
 })
 
 test('cash, transfer and mixed delivery sales produce real 80 mm receipts', async ({ page }, info) => {
@@ -72,7 +66,7 @@ test('cash, transfer and mixed delivery sales produce real 80 mm receipts', asyn
     await page.getByLabel('Método de pago').selectOption(method)
     if (method !== 'cash') await customerFromSale(page, method === 'mixed', info)
     if (method === 'mixed') {
-      await expect(page.getByText('0000000000 · Synthetic purchasing, Municipio sintético · Domicilio sintético para prueba aislada', { exact: true })).toBeVisible()
+      await expect(page.getByText(/0000000000 · Managua, Managua · Domicilio sintético/)).toBeVisible()
       await page.getByLabel('Costo del delivery (NIO)').fill('25.00')
       await page.getByLabel('Notas (opcional)').fill('Texto sintético <etiqueta> & caracteres especiales. Dirección y observaciones largas deben ajustarse al ancho del ticket sin perder información.')
     }
@@ -100,6 +94,7 @@ test('cash, transfer and mixed delivery sales produce real 80 mm receipts', asyn
     await expect(page.getByRole('article', { name: 'Ticket de 80 mm' })).toContainText('H&D Boutique')
     await capture(page, info, 'receipt-' + method)
     if (method === 'mixed') {
+      await page.setViewportSize({ width: 390, height: 844 }); await capture(page, info, 'receipt-mobile-mixed'); await page.setViewportSize({ width: 1440, height: 1000 })
       const download = page.waitForEvent('download')
       await page.getByRole('button', { name: 'Exportar PDF' }).click()
       const pdf = await download, path = info.outputPath('ticket-mixed-80mm.pdf')
@@ -122,7 +117,7 @@ test('owner registers a pending purchase, receives once and supervises a mixed v
   await signIn(page); await page.goto('/purchases'); await page.getByRole('button', { name: '+ Nueva compra' }).click()
   const modal = page.getByRole('dialog', { name: 'Nueva compra' })
   await modal.getByLabel('Proveedor', { exact: true }).selectOption(String(supplierId)); await modal.getByLabel('Empleado responsable').selectOption('1')
-  await modal.getByLabel('Producto / oferta').selectOption({ index: 1 }); await modal.getByLabel('Cantidad', { exact: true }).fill('3'); await modal.getByRole('button', { name: 'Agregar producto' }).click()
+  await modal.getByLabel('Producto', { exact: true }).selectOption(String(productId)); await modal.getByLabel('Costo de compra (NIO)').fill('100.10'); await modal.getByLabel('Cantidad', { exact: true }).fill('3'); await modal.getByRole('button', { name: 'Agregar producto' }).click()
   await modal.getByLabel('Costo de envío (NIO)').fill('10.00'); await modal.getByLabel('Descripción (opcional)').fill('Recepción sintética completa')
   await capture(page, info, 'owner-purchase-modal')
   const saved = page.waitForResponse(res => res.url().endsWith('/api/v1/purchases') && res.request().method() === 'POST')
@@ -130,7 +125,7 @@ test('owner registers a pending purchase, receives once and supervises a mixed v
   expect(purchase.status).toBe('registered'); expect(purchase.total).toBe('310.30')
   supplierProductId = purchase.items[0].supplier_product_id
   await expect(modal).toHaveCount(0)
-  await page.getByRole('row').filter({ hasText: 'Proveedor de prueba conectada' }).getByRole('button', { name: 'Ver / recibir' }).click()
+  await page.getByRole('row').filter({ hasText: '#' + purchase.purchase_id }).getByRole('button', { name: 'Ver / recibir' }).click()
   const detail = page.getByRole('dialog', { name: 'Compra #' + purchase.purchase_id })
   await detail.getByLabel('Responsable de recepción').selectOption('1'); await detail.getByLabel(/Confirmo que llegó/).check()
   await detail.getByRole('button', { name: 'Marcar como recibida' }).click(); await expect(detail.getByText('Recibida', { exact: true })).toBeVisible()
@@ -160,8 +155,7 @@ test('owner registers a pending purchase, receives once and supervises a mixed v
 
 test('personal receipts are protected and general identity is reused', async ({ page }) => {
   await signIn(page)
-  const shifts = await (await page.request.get('/api/v1/cash/shifts')).json(), current = shifts.find((row: { status: string }) => row.status === 'open')
-  const body = { customer_kind: 'general', employee_id: 1, items: [{ product_id: productId, quantity: 1 }], payment: { shift_id: current.shift_id, method: 'cash', received_amount: '120.00' } }
+  const body = { customer_kind: 'general', employee_id: 1, items: [{ product_id: productId, quantity: 1 }], payment: { method: 'cash', received_amount: '120.00' } }
   const saved = await command(page, 'sales', body, 'POST', 'browser-owner-general')
   expect(saved.status()).toBe(201); const sale = await saved.json(); expect(sale.customer_id).toBe(generalId)
   const repeat = await command(page, 'sales', body, 'POST', 'browser-owner-general'); expect(await repeat.json()).toEqual(sale)
@@ -177,20 +171,19 @@ test('personal receipts are protected and general identity is reused', async ({ 
   }
 })
 
-test('inactive products, customers and suppliers block new operations until reactivated', async ({ page }) => {
+test('inactive products and suppliers block new operations until reactivated', async ({ page }) => {
   await signIn(page)
-  const shifts = await (await page.request.get('/api/v1/cash/shifts')).json(), current = shifts.find((row: { status: string }) => row.status === 'open')
-  const sale = { customer_kind: 'general', employee_id: 1, items: [{ product_id: productId, quantity: 1 }], payment: { shift_id: current.shift_id, method: 'cash', received_amount: '120.00' } }
+  const sale = { customer_kind: 'general', employee_id: 1, items: [{ product_id: productId, quantity: 1 }], payment: { method: 'cash', received_amount: '120.00' } }
   const regular = await (await page.request.get('/api/v1/sales/' + regularSale)).json()
   const before = await (await page.request.get('/api/v1/products/' + productId)).json()
-  for (const [path, name, id] of [['products', 'Prenda de prueba conectada', productId], ['customers', 'Prueba Regular', regular.customer_id], ['suppliers', 'Proveedor de prueba conectada', supplierId]] as const) {
+  for (const [path, name, id] of [['products', 'Prenda de prueba conectada', productId], ['suppliers', 'Proveedor de prueba conectada', supplierId]] as const) {
     await page.goto('/' + path)
     const row = page.getByRole('row').filter({ hasText: name })
     await row.getByRole('button', { name: 'Desactivar', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: path === 'products' ? 'Confirmar' : 'Confirmar desactivación', exact: true }).click()
     await expect(row.getByRole('button', { name: 'Activar', exact: true })).toBeVisible()
     expect((await (await page.request.get('/api/v1/' + path + '/' + id)).json()).is_active).toBe(false)
-    const payload = path === 'suppliers' ? { supplier_id: supplierId, employee_id: 1, purchase_date: regular.sale_date, items: [{ supplier_product_id: supplierProductId, quantity: 1 }] } : path === 'customers' ? { ...sale, customer_kind: 'regular', customer_id: id } : sale
+    const payload = path === 'suppliers' ? { supplier_id: supplierId, employee_id: 1, purchase_date: regular.sale_date, items: [{ supplier_product_id: supplierProductId, quantity: 1 }] } : sale
     const blocked = await command(page, path === 'suppliers' ? 'purchases' : 'sales', payload, 'POST', 'inactive-' + path)
     expect(blocked.status()).toBe(422)
     await row.getByRole('button', { name: 'Activar', exact: true }).click()
@@ -218,7 +211,7 @@ for (const role of ['owner', 'collaborator']) {
           await page.getByRole('button', { name: 'Menú', exact: true }).click()
         }
         if (width === 390 && role === 'owner') {
-          const forms: Record<string, string> = { products: '+ Nuevo producto', suppliers: '+ Nuevo proveedor', customers: '+ Nuevo cliente', employees: '+ Nuevo empleado', purchases: '+ Nueva compra' }
+          const forms: Record<string, string> = { products: '+ Nuevo producto', employees: '+ Nuevo empleado', purchases: '+ Nueva compra' }
           const form = forms[path]
           if (form) {
             await page.getByRole('button', { name: form, exact: true }).click()

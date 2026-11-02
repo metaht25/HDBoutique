@@ -31,8 +31,12 @@ export async function capture(page: Page, info: TestInfo, name: string) {
 }
 export async function selectAddress(page: Page, department = '1') {
   const modal = page.getByRole('dialog').last()
-  await modal.getByLabel('Departamento', { exact: true }).selectOption(department)
-  await modal.getByLabel('Municipio', { exact: true }).selectOption({ index: 1 })
+  const response = await page.request.get('/api/v1/departments?limit=100')
+  const name = (await response.json()).find((row: { department_id: number }) => String(row.department_id) === department).name
+  await modal.getByLabel('Departamento', { exact: true }).click()
+  await modal.getByRole('listbox', { name: 'Departamento' }).getByRole('option', { name, exact: true }).click()
+  await modal.getByLabel('Municipio', { exact: true }).click()
+  await modal.getByRole('listbox', { name: 'Municipio' }).getByRole('option').first().click()
   await modal.getByLabel('Dirección exacta').fill('Domicilio sintético para prueba aislada')
 }
 export async function customerFromSale(page: Page, delivery = false, info?: TestInfo) {
@@ -42,7 +46,12 @@ export async function customerFromSale(page: Page, delivery = false, info?: Test
   await modal.getByLabel('Nombres', { exact: true }).fill('Prueba')
   await modal.getByLabel('Apellidos', { exact: true }).fill(delivery ? 'Delivery' : 'Regular')
   if (delivery) { await modal.getByLabel('Teléfono', { exact: true }).fill('0000000000'); await selectAddress(page) }
-  if (info) await capture(page, info, delivery ? 'customer-delivery-modal' : 'customer-regular-modal')
-  await modal.getByRole('button', { name: 'Guardar cliente' }).click()
+  if (info) {
+    await capture(page, info, delivery ? 'customer-delivery-modal' : 'customer-regular-modal')
+    await page.setViewportSize({ width: 390, height: 844 })
+    await capture(page, info, delivery ? 'mobile-customer-delivery-modal' : 'mobile-customer-regular-modal')
+    await page.setViewportSize({ width: 1440, height: 1000 })
+  }
+  await modal.getByRole('button', { name: 'Usar cliente en esta operación' }).click()
   await expect(modal).toHaveCount(0)
 }
