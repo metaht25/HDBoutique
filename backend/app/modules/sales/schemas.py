@@ -8,6 +8,7 @@ from pydantic import BaseModel, BeforeValidator, Field, model_validator
 
 from app.api.schemas import InputModel, require_exact_decimal
 from app.modules.cash.schemas import PaymentCreate, PaymentRead, VoidRead
+from app.modules.customers.schemas import CustomerCreate
 
 PositiveId = Annotated[int, Field(gt=0, strict=True)]
 
@@ -18,6 +19,7 @@ class SaleLineCreate(InputModel):
 
 
 class SaleCreate(InputModel):
+    customer: CustomerCreate | None = None
     customer_id: PositiveId | None = None
     customer_kind: Literal["general", "regular", "delivery"] = "regular"
     delivery_cost: Annotated[

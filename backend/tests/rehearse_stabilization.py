@@ -30,7 +30,7 @@ def snapshot(engine: Engine) -> dict[str, object]:
         if names != expected:
             raise RuntimeError("Rehearsal schema differs from current metadata")
         version = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        if version != "0006_boutique_experience":
+        if version != "0009_shiftless_payments":
             raise RuntimeError("Unexpected Alembic head")
         for table in Base.metadata.sorted_tables:
             rows = [

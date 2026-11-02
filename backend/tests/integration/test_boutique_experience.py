@@ -88,7 +88,6 @@ def general_sale(graph, **changes):
         "employee_id": graph["employee1"],
         "items": [{"product_id": graph["product1"], "quantity": 1}],
         "payment": {
-            "shift_id": graph["shift"],
             "method": "cash",
             "received_amount": "200.00",
         },
@@ -101,8 +100,7 @@ def test_initial_stock_automatic_markup_and_deactivation(boutique):
     body = {
         "name": "Synthetic new product",
         "category_id": graph["category"],
-        "size_id": graph["size"],
-        "supplier_id": graph["supplier1"],
+        "size_id": client.get("/api/v1/sizes").json()[0]["size_id"],
         "cost": "100.10",
         "initial_stock": 5,
     }
@@ -184,25 +182,20 @@ def test_general_identity_server_date_and_retries(boutique):
 
 def test_delivery_mixed_payment_receipt_pdf_and_partial_return(boutique):
     client, graph, factory = boutique
-    customer = post(
-        client,
-        "customers",
-        {
-            "first_names": "Synthetic",
-            "last_names": "Delivery",
-            "kind": "delivery",
-            "phone_number": "0000000000",
-            "address": address(client, graph),
-        },
-    )
+    customer = {
+        "first_names": "Synthetic",
+        "last_names": "Delivery",
+        "kind": "delivery",
+        "phone_number": "0000000000",
+        "address": address(client, graph),
+    }
     payload = general_sale(
         graph,
         customer_kind="delivery",
-        customer_id=customer["customer_id"],
+        customer=customer,
         delivery_cost="50.00",
         notes="Synthetic delivery note",
         payment={
-            "shift_id": graph["shift"],
             "method": "mixed",
             "transfer_amount": "100.00",
             "received_amount": "200.00",
@@ -215,9 +208,7 @@ def test_delivery_mixed_payment_receipt_pdf_and_partial_return(boutique):
     assert sale["payment"]["cash_amount"] == "149.50"
     assert sale["payment"]["transfer_amount"] == "100.00"
     assert sale["payment"]["change_amount"] == "50.50"
-    shift = client.get("/api/v1/cash/shifts").json()[0]
-    assert shift["expected_amount"] == "1149.50"
-    assert shift["transfers_collected"] == "100.00"
+    assert client.get("/api/v1/cash/shifts").status_code == 404
     receipt = client.get(f"/api/v1/receipts/{sale['sale_id']}")
     assert receipt.status_code == 200, receipt.text
     assert receipt.json()["sale"]["customer_address"]
@@ -225,7 +216,6 @@ def test_delivery_mixed_payment_receipt_pdf_and_partial_return(boutique):
     assert pdf.status_code == 200 and pdf.headers["content-type"] == "application/pdf"
     assert pdf.content.startswith(b"%PDF-") and b"226.7717" in pdf.content
     body = {
-        "shift_id": graph["shift"],
         "reason": "Synthetic supervised correction",
         "refund_confirmed": True,
         "reference": "SYNTHETIC-REFUND",
@@ -239,7 +229,7 @@ def test_delivery_mixed_payment_receipt_pdf_and_partial_return(boutique):
         post(client, f"sales/{sale['sale_id']}/void", body, "mixed-refund-key")
         == refund
     )
-    assert client.get("/api/v1/cash/shifts").json()[0]["expected_amount"] == "1000.00"
+    assert client.get("/api/v1/cash/shifts").status_code == 404
     with factory.begin() as session:
         assert session.get(Product, graph["product1"]).legacy_stock == 11
     ledger = client.get("/api/v1/reports/sales-ledger").json()
@@ -256,12 +246,11 @@ def test_direct_addresses_and_atomic_employee_access(boutique):
     body = {
         "first_names": "Synthetic",
         "last_names": "Colleague",
-        "phone_number": "00000000",
-        "work_email": "synthetic-long-address@example.invalid",
+        "phone_number": "80000000",
         "job_title": "Ventas",
         "address": inline,
         "username": "synthetic-new-colleague",
-        "temporary_password": SYNTHETIC_PASSWORD,
+        "password": SYNTHETIC_PASSWORD,
     }
     employee = post(client, "employees", body)
     with factory.begin() as session:
@@ -270,7 +259,7 @@ def test_direct_addresses_and_atomic_employee_access(boutique):
                 UserAccount.employee_id == employee["employee_id"]
             )
         )
-        assert account.role == "Cashier" and account.must_change_password
+        assert account.role == "Cashier" and not account.must_change_password
         assert account.password_hash != SYNTHETIC_PASSWORD
         counts = [
             session.scalar(select(func.count()).select_from(model))
@@ -283,8 +272,8 @@ def test_direct_addresses_and_atomic_employee_access(boutique):
             for model in (Employee, Address, UserAccount)
         ] == counts
     login(client, "synthetic-new-colleague")
-    assert client.get("/api/v1/auth/me").json()["must_change_password"] is True
-    assert client.get("/api/v1/products").status_code == 403
+    assert client.get("/api/v1/auth/me").json()["must_change_password"] is False
+    assert client.get("/api/v1/products").status_code == 200
     response = client.post(
         "/api/v1/auth/password",
         json={
@@ -292,8 +281,8 @@ def test_direct_addresses_and_atomic_employee_access(boutique):
             "new_password": "new-synthetic-password-42",
         },
     )
-    assert response.status_code == 204, response.text
-    assert client.get("/api/v1/auth/me").status_code == 401
+    assert response.status_code == 403, response.text
+    assert client.get("/api/v1/auth/me").status_code == 200
     login(client, "purchasing-administrator")
     assert (
         client.patch(
@@ -318,12 +307,12 @@ def test_direct_addresses_and_atomic_employee_access(boutique):
     assert (
         client.patch(
             f"/api/v1/employees/{employee['employee_id']}",
-            json={"is_active": True, "temporary_password": SYNTHETIC_PASSWORD},
+            json={"is_active": True, "password": SYNTHETIC_PASSWORD},
         ).status_code
         == 200
     )
     login(client, "synthetic-new-colleague")
-    assert client.get("/api/v1/auth/me").json()["must_change_password"] is True
+    assert client.get("/api/v1/auth/me").json()["must_change_password"] is False
 
 
 def test_reports_scope_private_fields_and_own_receipts(boutique):
@@ -384,7 +373,6 @@ def test_ledger_keeps_row_units_distinct_from_global_summary(boutique):
             graph,
             items=[{"product_id": graph["product1"], "quantity": 2}],
             payment={
-                "shift_id": graph["shift"],
                 "method": "cash",
                 "received_amount": "400.00",
             },
@@ -430,14 +418,19 @@ def test_logo_sanitization_and_delivery_references(boutique):
     with factory.begin() as session:
         count = session.scalar(select(func.count()).select_from(Address))
     response = client.post(
-        "/api/v1/customers",
-        json={
-            "kind": "delivery",
-            "first_names": "Synthetic",
-            "last_names": "Mismatch",
-            "phone_number": "00000000",
-            "address": inline,
-        },
+        "/api/v1/sales",
+        json=general_sale(
+            graph,
+            customer_kind="delivery",
+            customer={
+                "kind": "delivery",
+                "first_names": "Synthetic",
+                "last_names": "Mismatch",
+                "phone_number": "00000000",
+                "address": inline,
+            },
+        ),
+        headers={"Idempotency-Key": "invalid-delivery-inline"},
     )
     assert response.status_code == 422
     with factory.begin() as session:
@@ -453,7 +446,6 @@ def test_invalid_mixed_amounts_leave_inventory_unchanged(boutique, transfer, rec
     payload = general_sale(
         graph,
         payment={
-            "shift_id": graph["shift"],
             "method": "mixed",
             "transfer_amount": transfer,
             "received_amount": received,
@@ -489,7 +481,7 @@ def test_product_cost_rejects_inexact_or_overflow_values(boutique, value):
         "cost": value,
         "initial_stock": 5,
         "category_id": graph["category"],
-        "size_id": graph["size"],
+        "size_id": client.get("/api/v1/sizes").json()[0]["size_id"],
     }
     with factory.begin() as session:
         count = session.scalar(select(func.count()).select_from(Product))

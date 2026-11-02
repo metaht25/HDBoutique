@@ -69,15 +69,6 @@ def current_identity(
         write=write,
     )
 
-    if principal.must_change_password and request.url.path not in {
-        "/api/v1/auth/me",
-        "/api/v1/auth/logout",
-        "/api/v1/auth/password",
-    }:
-        raise ApplicationError(
-            403, "password_change_required", "Debes cambiar tu contraseña temporal."
-        )
-
     return principal
 
 
@@ -89,6 +80,16 @@ def authorize_business_request(request: Request, principal: CurrentIdentity) -> 
     resource = request.url.path.split("/")[3]
 
     read = request.method in {"GET", "HEAD", "OPTIONS"}
+
+    if not read and (
+        resource == "customers"
+        or (resource == "suppliers" and request.method != "PATCH")
+    ):
+        raise ApplicationError(
+            403,
+            "contextual_creation_required",
+            "Registra el contacto desde Nueva venta o Compras.",
+        )
 
     allowed = resource in READ_RESOURCES and (
         principal.role == "Administrator"

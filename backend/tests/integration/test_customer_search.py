@@ -17,7 +17,9 @@ def test_customer_search_filters_before_paging_and_preserves_phone(
         "/api/v1/addresses",
         json={"department_id": department["department_id"], "address_line": None},
     ).json()
-    customer_type = client.post("/api/v1/customer-types", json={"name": None}).json()
+    customer_type = client.post(
+        "/api/v1/customer-types", json={"name": "Synthetic"}
+    ).json()
     identifiers = []
     for first, last, phone in (
         ("Ana", "Primera", "0012345678"),
@@ -25,19 +27,21 @@ def test_customer_search_filters_before_paging_and_preserves_phone(
         ("ANA", "Segunda", "3000000000"),
         ("Literal%_", "Name", "4000000000"),
     ):
-        response = client.post(
-            "/api/v1/customers",
-            json={
-                "first_names": first,
-                "last_names": last,
-                "phone_number": phone,
-                "address_id": address["address_id"],
-                "customer_type_id": customer_type["customer_type_id"],
-            },
-        )
-        assert response.status_code == 201
-        assert response.json()["phone_number"] == phone
-        identifiers.append(response.json()["customer_id"])
+        from app.modules.customers.schemas import CustomerCreate
+        from app.modules.customers.service import CustomersService
+
+        with client.app.state.session_factory() as session:
+            row = CustomersService(session).save_customer(
+                CustomerCreate(
+                    first_names=first,
+                    last_names=last,
+                    phone_number=phone,
+                    address_id=address["address_id"],
+                    customer_type_id=customer_type["customer_type_id"],
+                )
+            )
+            assert row.phone_number == phone
+            identifiers.append(row.customer_id)
     result = client.get(
         "/api/v1/customers", params={"q": " ana ", "offset": 1, "limit": 1}
     ).json()

@@ -99,7 +99,6 @@ def sale_payload(graph: dict[str, int]) -> dict:
         "employee_id": graph["employee1"],
         "sale_date": "2026-10-28",
         "payment": {
-            "shift_id": graph["shift"],
             "method": "cash",
             "received_amount": "99999999.99",
         },

@@ -37,7 +37,6 @@ def command(client, path, payload, key="cash-command-01"):
 
 def refund_payload(graph, sale):
     return {
-        "shift_id": graph["shift"],
         "reason": "Synthetic correction",
         "refund_confirmed": True,
         "items": [
@@ -50,64 +49,33 @@ def refund_payload(graph, sale):
     }
 
 
-def test_cash_sale_change_and_exact_close(sales_context):
+def test_cash_sale_change_without_operational_shift(sales_context):
     client, graph, _, _, _ = sales_context
     payload = sale_payload(graph)
     payload["payment"]["received_amount"] = "1000.00"
     sale = register(client, graph, payload=payload).json()
     assert sale["payment"]["amount"] == "997.50"
     assert sale["payment"]["change_amount"] == "2.50"
-    shifts = client.get("/api/v1/cash/shifts").json()
-    assert shifts[0]["expected_amount"] == "1997.50"
-    login(client, "purchasing-cashier")
-    path = f"/api/v1/cash/shifts/{graph['shift']}/close"
-    result = command(client, path, {"counted_amount": "1997.50"})
-    assert result.status_code == 200, result.text
-    assert result.json()["status"] == "closed"
-    assert result.json()["difference"] == "0.00"
-    assert command(client, path, {"counted_amount": "1997.50"}).json() == result.json()
-    assert (
-        command(
-            client, path, {"counted_amount": "1997.50"}, "another-close"
-        ).status_code
-        == 409
-    )
-    assert register(client, graph, "after-close", payload).status_code == 409
-    # A lost sale response remains recoverable even after closing its shift.
-    login(client, "purchasing-administrator")
-    assert register(client, graph, payload=payload).json() == sale
+    assert sale["payment"]["shift_id"] is None
+    assert client.get("/api/v1/cash/shifts").status_code == 404
 
 
-def test_transfer_never_increases_drawer_and_refund_is_separate(sales_context):
+def test_transfer_payment_and_refund_without_shift(sales_context):
     client, graph, _, _, _ = sales_context
     payload = sale_payload(graph)
     payload["payment"] = {
-        "shift_id": graph["shift"],
         "method": "transfer",
         "received_amount": "997.50",
-        "reference": "synthetic-bank-001",
+        "reference": "SYNTHETIC",
         "transfer_confirmed": True,
     }
-    response = register(client, graph, payload=payload)
-    assert response.status_code == 201, response.text
-    sale = response.json()
-    shift = client.get("/api/v1/cash/shifts").json()[0]
-    assert (
-        shift["expected_amount"] == "1000.00"
-        and shift["transfers_collected"] == "997.50"
-    )
-    body = refund_payload(graph, sale)
-    path = f"/api/v1/sales/{sale['sale_id']}/void"
-    assert command(client, path, body).status_code == 422
-    body["reference"] = "synthetic-refund-001"
-    result = command(client, path, body)
+    sale = register(client, graph, payload=payload).json()
+    assert sale["payment"]["cash_amount"] == "0.00"
+    body = {**refund_payload(graph, sale), "reference": "SYNTHETIC-REFUND"}
+    result = command(client, f"/api/v1/sales/{sale['sale_id']}/void", body)
     assert result.status_code == 201, result.text
-    assert result.json()["method"] == "transfer"
-    shift = client.get("/api/v1/cash/shifts").json()[0]
-    assert (
-        shift["expected_amount"] == "1000.00"
-        and shift["transfers_refunded"] == "997.50"
-    )
+    assert result.json()["amount"] == "997.50"
+    assert result.json()["shift_id"] is None
 
 
 @pytest.mark.parametrize(
@@ -138,7 +106,6 @@ def test_no_unpaid_partial_card_or_abono_can_create_sale(
         payload["payment"]["received_amount"] = "997.49"
     elif mutation in {"transfer_short", "transfer_over"}:
         payload["payment"] = {
-            "shift_id": graph["shift"],
             "method": "transfer",
             "received_amount": "997.49" if mutation == "transfer_short" else "997.51",
             "reference": "synthetic",
@@ -146,7 +113,6 @@ def test_no_unpaid_partial_card_or_abono_can_create_sale(
         }
     elif mutation.startswith("transfer"):
         payload["payment"] = {
-            "shift_id": graph["shift"],
             "method": "transfer",
             "received_amount": "997.50",
             "reference": "synthetic",
@@ -175,73 +141,14 @@ def test_no_unpaid_partial_card_or_abono_can_create_sale(
     )
 
 
-def test_supervised_movements_difference_opening_and_immutability(sales_context):
+def test_retired_cash_endpoints_cannot_mutate_history(sales_context):
     client, graph, _, _, _ = sales_context
-    path = f"/api/v1/cash/shifts/{graph['shift']}"
-    move = {"kind": "withdrawal", "amount": "1000.01", "reason": "Synthetic"}
-    assert command(client, path + "/movements", move).status_code == 409
-    move["amount"] = "100.00"
-    result = command(client, path + "/movements", move)
-    assert result.status_code == 201 and result.json()["expected_amount"] == "900.00"
-    assert command(client, path + "/movements", move).json() == result.json()
-    assert (
-        command(client, path + "/movements", {**move, "amount": "99.00"}).status_code
-        == 409
-    )
-    deposit = {"kind": "deposit", "amount": "20.00", "reason": "Synthetic float"}
-    assert (
-        command(client, path + "/movements", deposit, "deposit-key").json()[
-            "expected_amount"
-        ]
-        == "920.00"
-    )
-    login(client, "purchasing-cashier")
-    assert (
-        command(client, path + "/movements", deposit, "cashier-deposit").status_code
-        == 403
-    )
-    assert (
-        command(
-            client,
-            path + "/close",
-            {"counted_amount": "919.00", "reason": "Synthetic difference"},
-        ).status_code
-        == 403
-    )
-    login(client, "purchasing-administrator")
-    assert (
-        command(client, path + "/close", {"counted_amount": "919.00"}).status_code
-        == 422
-    )
-    close = {"counted_amount": "919.00", "reason": "Synthetic difference"}
-    closed = command(client, path + "/close", close)
-    assert closed.status_code == 200 and closed.json()["difference"] == "-1.00"
-    assert (
-        command(client, path + "/movements", deposit, "closed-deposit").status_code
-        == 409
-    )
-    body = {"employee_id": graph["employee1"], "opening_amount": "0.00"}
-    opened = command(client, "/api/v1/cash/shifts", body, "new-shift-key")
-    assert opened.status_code == 201, opened.text
-    assert (
-        command(client, "/api/v1/cash/shifts", body, "new-shift-key").json()
-        == opened.json()
-    )
-    assert (
-        command(client, "/api/v1/cash/shifts", body, "duplicate-shift").status_code
-        == 409
-    )
-    login(client, "purchasing-cashier")
-    assert len(client.get("/api/v1/cash/shifts").json()) == 1
-    assert (
-        command(
-            client,
-            f"/api/v1/cash/shifts/{opened.json()['shift_id']}/close",
-            {"counted_amount": "0.00"},
-            "wrong-owner",
-        ).status_code
-        == 403
-    )
+    for path in (
+        "/api/v1/cash/shifts",
+        f"/api/v1/cash/shifts/{graph['shift']}/close",
+        f"/api/v1/cash/shifts/{graph['shift']}/movements",
+    ):
+        assert command(client, path, {}).status_code == 404
 
 
 def test_full_void_preserves_original_returns_only_actual_goods_and_updates_reports(
@@ -308,7 +215,6 @@ def test_full_void_preserves_original_returns_only_actual_goods_and_updates_repo
         "refund_unconfirmed",
         "blank_reason",
         "stock_unknown",
-        "insufficient_cash",
     ],
 )
 def test_void_rejects_inconsistent_data_without_partial_effects(

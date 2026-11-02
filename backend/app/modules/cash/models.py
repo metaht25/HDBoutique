@@ -94,7 +94,7 @@ class SalePayment(Base):
     sale_id: Mapped[int] = mapped_column(
         ForeignKey("sales.sale_id", ondelete="RESTRICT"), unique=True, index=True
     )
-    shift_id: Mapped[int] = mapped_column(
+    shift_id: Mapped[int | None] = mapped_column(
         ForeignKey("cash_shifts.shift_id", ondelete="RESTRICT"), index=True
     )
     method: Mapped[str] = mapped_column(String(16))
@@ -153,7 +153,7 @@ class SaleVoid(Base):
     sale_id: Mapped[int] = mapped_column(
         ForeignKey("sales.sale_id", ondelete="RESTRICT"), unique=True, index=True
     )
-    shift_id: Mapped[int] = mapped_column(
+    shift_id: Mapped[int | None] = mapped_column(
         ForeignKey("cash_shifts.shift_id", ondelete="RESTRICT"), index=True
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))

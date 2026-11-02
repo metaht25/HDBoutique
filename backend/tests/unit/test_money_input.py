@@ -5,16 +5,14 @@ from decimal import Decimal
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from app.modules.cash.schemas import MovementCreate, ShiftClose, ShiftOpen
+from app.modules.cash.schemas import PaymentCreate
 from app.modules.suppliers.schemas import SupplierProductCreate, SupplierProductPatch
 
 
 @pytest.mark.parametrize(
     ("schema", "payload", "field"),
     [
-        (ShiftOpen, {"employee_id": 1}, "opening_amount"),
-        (ShiftClose, {}, "counted_amount"),
-        (MovementCreate, {"kind": "deposit", "reason": "Test"}, "amount"),
+        (PaymentCreate, {"method": "cash"}, "received_amount"),
         (SupplierProductCreate, {"product_id": 1}, "purchase_price"),
         (SupplierProductPatch, {}, "purchase_price"),
     ],

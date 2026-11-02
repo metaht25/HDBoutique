@@ -1,6 +1,8 @@
 """locations use cases with explicit service-owned transactions."""
 
-from sqlalchemy import select
+import unicodedata
+
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -52,6 +54,24 @@ class LocationsService:
                     )
                 for field, value in values.items():
                     setattr(record, field, value)
+                if record_id is not None and record.is_permanent:
+                    raise ApplicationError(
+                        409,
+                        "permanent_reference",
+                        "Los registros iniciales son permanentes.",
+                    )
+                self.session.execute(text("SELECT pg_advisory_xact_lock(671443120621)"))
+                normalized = normalize_name(record.name)
+                with self.session.no_autoflush:
+                    candidates = self.session.scalars(select(Department)).all()
+                if any(
+                    other.department_id != record_id
+                    and normalize_name(other.name) == normalized
+                    for other in candidates
+                ):
+                    raise ApplicationError(
+                        409, "duplicate_name", "El nombre ya existe en esta ubicación."
+                    )
                 self.repository.add_department(record)
             return record
         except IntegrityError as error:
@@ -65,6 +85,12 @@ class LocationsService:
                 record = self.repository.get_department(record_id)
                 if record is None:
                     raise ApplicationError(404, "not_found", "Record not found")
+                if record.is_permanent:
+                    raise ApplicationError(
+                        409,
+                        "permanent_reference",
+                        "Los registros iniciales son permanentes.",
+                    )
                 self.repository.delete_department(record)
         except IntegrityError as error:
             raise ApplicationError(
@@ -120,6 +146,25 @@ class LocationsService:
                         "municipality_in_use",
                         "El municipio tiene domicilios en su departamento actual.",
                     )
+                if record_id is not None and record.is_permanent:
+                    raise ApplicationError(
+                        409,
+                        "permanent_reference",
+                        "Los registros iniciales son permanentes.",
+                    )
+                self.session.execute(text("SELECT pg_advisory_xact_lock(671443120621)"))
+                normalized = normalize_name(record.name)
+                with self.session.no_autoflush:
+                    candidates = self.session.scalars(select(Municipality)).all()
+                if any(
+                    other.municipality_id != record_id
+                    and normalize_name(other.name) == normalized
+                    and other.department_id == record.department_id
+                    for other in candidates
+                ):
+                    raise ApplicationError(
+                        409, "duplicate_name", "El nombre ya existe en esta ubicación."
+                    )
                 self.repository.add_municipality(record)
             return record
         except IntegrityError as error:
@@ -133,6 +178,12 @@ class LocationsService:
                 record = self.repository.get_municipality(record_id)
                 if record is None:
                     raise ApplicationError(404, "not_found", "Record not found")
+                if record.is_permanent:
+                    raise ApplicationError(
+                        409,
+                        "permanent_reference",
+                        "Los registros iniciales son permanentes.",
+                    )
                 self.repository.delete_municipality(record)
         except IntegrityError as error:
             raise ApplicationError(
@@ -201,3 +252,15 @@ class LocationsService:
             raise ApplicationError(
                 409, "integrity_conflict", "Record is referenced"
             ) from error
+
+
+def normalize_name(value: str | None) -> str:
+    return (
+        "".join(
+            c
+            for c in unicodedata.normalize("NFKD", value or "")
+            if not unicodedata.combining(c)
+        )
+        .strip()
+        .casefold()
+    )

@@ -1,5 +1,6 @@
 """customers use cases with explicit service-owned transactions."""
 
+from contextlib import nullcontext
 from datetime import UTC, datetime
 
 from sqlalchemy import select, text
@@ -118,10 +119,12 @@ class CustomersService:
         payload: CustomerCreate | CustomerPatch,
         record_id: int | None = None,
         actor_id: int | None = None,
+        *,
+        in_transaction: bool = False,
     ) -> Customer:
 
         try:
-            with self.session.begin():
+            with nullcontext() if in_transaction else self.session.begin():
                 values = payload.model_dump(exclude_unset=True)
 
                 values.pop("address", None)

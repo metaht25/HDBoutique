@@ -12,7 +12,7 @@ def payload() -> dict:
         "customer_id": 1,
         "employee_id": 2,
         "sale_date": "2026-10-28",
-        "payment": {"shift_id": 1, "method": "cash", "received_amount": "1000.00"},
+        "payment": {"method": "cash", "received_amount": "1000.00"},
         "items": [{"product_id": 3, "quantity": 2}],
     }
 

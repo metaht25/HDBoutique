@@ -75,20 +75,42 @@ def records(
     result: dict[str, dict] = {}
 
     def create(route: str, **values: object) -> dict:
+        if route in {"customers", "suppliers"}:
+            from app.modules.customers.schemas import CustomerCreate, CustomerRead
+            from app.modules.customers.service import CustomersService
+            from app.modules.suppliers.schemas import SupplierCreate, SupplierRead
+            from app.modules.suppliers.service import SuppliersService
+
+            with client.app.state.session_factory() as session:
+                if route == "customers":
+                    row = CustomersService(session).save_customer(
+                        CustomerCreate(**values)
+                    )
+                    data = CustomerRead.model_validate(row).model_dump(mode="json")
+                else:
+                    row = SuppliersService(session).save_supplier(
+                        SupplierCreate(**values)
+                    )
+                    data = SupplierRead.model_validate(row).model_dump(mode="json")
+            result[route] = data
+            return data
         response = client.post("/api/v1/" + route, json=values)
         assert response.status_code == 201, response.text
         result[route] = response.json()
         return response.json()
 
     department = create("departments", name="Synthetic")
-    create("municipalities", department_id=department["department_id"], name=None)
+    create(
+        "municipalities", department_id=department["department_id"], name="Synthetic"
+    )
     address = create(
         "addresses",
         department_id=department["department_id"],
         address_line="Synthetic address",
     )
-    category = create("categories", name=None)
-    size = create("sizes", name="M")
+    category = create("categories", name="Synthetic")
+    size = next(row for row in client.get("/api/v1/sizes").json() if row["name"] == "M")
+    result["sizes"] = size
     product = create(
         "products",
         category_id=category["category_id"],
@@ -109,7 +131,7 @@ def records(
     result["products"] = client.get(
         "/api/v1/products/" + str(product["product_id"])
     ).json()
-    customer_type = create("customer-types", name=None)
+    customer_type = create("customer-types", name="Synthetic")
     create(
         "customers",
         address_id=address["address_id"],
@@ -152,13 +174,32 @@ def test_resource_workflow(
     detail = path + "/" + str(original[key])
     assert client.get(detail).json() == original
     assert original in client.get(path).json()
-    assert client.get(path, params={"offset": 0, "limit": 1}).json() == [original]
+    if route not in {"departments", "municipalities", "sizes"}:
+        assert client.get(path, params={"offset": 0, "limit": 1}).json() == [original]
+    if route in {"customers", "suppliers", "sizes"}:
+        assert client.patch(detail, json={"name": "Edited"}).status_code in {
+            403,
+            409,
+            422,
+        }
+        return
     assert client.get(path, params={"offset": 100}).json() == []
     payload = {field: value for field, value in original.items() if field != key}
-    for field in ("is_active", "created_at", "created_date", "technical_key"):
+    for field in (
+        "is_active",
+        "created_at",
+        "created_date",
+        "technical_key",
+        "is_permanent",
+    ):
         payload.pop(field, None)
     if route == "products":
-        for field in ("legacy_stock_quantity", "legacy_stock", "unit_price"):
+        for field in (
+            "legacy_stock_quantity",
+            "legacy_stock",
+            "unit_price",
+            "supplier_id",
+        ):
             payload.pop(field)
     assert client.put(detail, json=payload).json() == original
     assert client.patch(detail, json={}).json() == original
@@ -199,7 +240,9 @@ def test_resource_workflow(
     table = route.replace("-", "_")
     assert database_connection.execute(
         text(f"SELECT count(*) FROM {table}")
-    ).scalar_one() == (2 if preserved else 1)
+    ).scalar_one() == (
+        2 if preserved else {"departments": 4, "municipalities": 29}.get(route, 1)
+    )
 
 
 @pytest.mark.parametrize(
@@ -221,10 +264,12 @@ def test_referenced_delete_rolls_back(
     key = dict(RESOURCES)[route]
     detail = "/api/v1/" + route + "/" + str(records[route][key])
     response = business_client.delete(detail)
-    assert response.status_code == 409
+    assert response.status_code in {403, 409}
     assert response.json()["error"]["code"] in {
         "integrity_conflict",
         "history_preserved",
+        "fixed_sizes",
+        "contextual_creation_required",
     }
     assert business_client.get(detail).json() == records[route]
 
@@ -310,8 +355,8 @@ def test_http_validation_and_put_reset(
     assert preserved["name"] == product["name"]
     customer_path = "/api/v1/customers/" + str(records["customers"]["customer_id"])
     assert (
-        client.patch(customer_path, json={"phone_number": "0" * 11}).status_code == 422
+        client.patch(customer_path, json={"phone_number": "0" * 11}).status_code == 403
     )
     assert (
-        client.patch(customer_path, json={"phone_number": 12345678}).status_code == 422
+        client.patch(customer_path, json={"phone_number": 12345678}).status_code == 403
     )

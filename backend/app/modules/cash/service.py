@@ -1,4 +1,4 @@
-"""Atomic cash shifts, full payment and supervised whole-sale corrections."""
+"""Atomic full payments and supervised whole-sale corrections; no live shifts."""
 
 import json
 from datetime import UTC, datetime
@@ -7,27 +7,19 @@ from hashlib import sha256
 
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApplicationError
 from app.modules.cash.models import (
-    CashMovement,
     CashRequest,
-    CashShift,
     SalePayment,
     SaleReturnItem,
     SaleVoid,
 )
 from app.modules.cash.repository import CashRepository
 from app.modules.cash.schemas import (
-    MovementCreate,
-    MovementRead,
     PaymentCreate,
     ReturnItemRead,
-    ShiftClose,
-    ShiftOpen,
-    ShiftRead,
     VoidCreate,
     VoidRead,
 )
@@ -36,7 +28,6 @@ from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
 from app.modules.sales.models import Sale, SaleItem
-from app.modules.staff.models import Employee
 
 
 def conflict(code: str, message: str) -> ApplicationError:
@@ -59,10 +50,11 @@ class CashService:
         self, actor: Principal, operation: str, key: str, payload: BaseModel
     ) -> tuple[CashRequest | None, str, str]:
         key_hash = sha256(key.encode()).hexdigest()
+        values = payload.model_dump(mode="json")
+        if values.get("shift_id") is None:
+            values.pop("shift_id", None)
         digest = sha256(
-            json.dumps(
-                payload.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
-            ).encode()
+            json.dumps(values, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
         self.repository.lock_request(actor.user_id, operation, key_hash)
         existing = self.repository.request(actor.user_id, operation, key_hash)
@@ -70,7 +62,6 @@ class CashService:
             raise conflict(
                 "idempotency_conflict", "Key already used for another request"
             )
-        self.repository.lock_register()
         return existing, key_hash, digest
 
     def _remember(
@@ -91,196 +82,10 @@ class CashService:
             )
         )
 
-    def lock_shift(
-        self, shift_id: int, actor: Principal, *, employee_id: int | None = None
-    ) -> CashShift:
-        account = self._actor(actor)
-        self.repository.lock_register()
-        shift = self.repository.shift(shift_id)
-        if shift is None:
-            raise ApplicationError(404, "not_found", "Cash shift not found")
-        if account.role == "Cashier" and shift.opened_by_user_id != actor.user_id:
-            raise ApplicationError(403, "permission_denied", "Use your own cash shift")
-        if shift.closed_at is not None:
-            raise conflict("shift_closed", "Cash shift is closed")
-        if employee_id is not None and employee_id != shift.employee_id:
-            raise ApplicationError(
-                422, "employee_mismatch", "Use the cash shift employee"
-            )
-        return shift
-
-    def _read(self, shift_id: int, actor: Principal) -> ShiftRead:
-        account = self._actor(actor)
-        shift = self.session.get(CashShift, shift_id)
-        if shift is None:
-            raise ApplicationError(404, "not_found", "Cash shift not found")
-        if account.role == "Cashier" and shift.opened_by_user_id != actor.user_id:
-            raise ApplicationError(403, "permission_denied", "Permission denied")
-        totals = self.repository.totals(shift_id)
-        expected = (
-            shift.opening_amount
-            + totals["cash_collected"]
-            - totals["cash_refunded"]
-            + totals["deposit"]
-            - totals["withdrawal"]
-        )
-        return ShiftRead(
-            shift_id=shift_id,
-            employee_id=shift.employee_id,
-            opened_by_user_id=shift.opened_by_user_id,
-            opened_at=shift.opened_at,
-            opening_amount=shift.opening_amount,
-            status="closed" if shift.closed_at else "open",
-            cash_collected=totals["cash_collected"],
-            transfers_collected=totals["transfer_collected"],
-            cash_refunded=totals["cash_refunded"],
-            transfers_refunded=totals["transfer_refunded"],
-            deposits=totals["deposit"],
-            withdrawals=totals["withdrawal"],
-            expected_amount=shift.expected_amount if shift.closed_at else expected,
-            counted_amount=shift.counted_amount,
-            difference=shift.difference,
-            closed_at=shift.closed_at,
-            closed_by_user_id=shift.closed_by_user_id,
-            closing_reason=shift.closing_reason,
-            movements=[
-                MovementRead.model_validate(row)
-                for row in self.session.scalars(
-                    select(CashMovement)
-                    .where(CashMovement.shift_id == shift_id)
-                    .order_by(CashMovement.movement_id)
-                )
-            ],
-        )
-
-    def list_shifts(self, actor: Principal, offset: int, limit: int) -> list[ShiftRead]:
-        with self.session.begin():
-            account = self._actor(actor)
-            query = (
-                select(CashShift.shift_id)
-                .order_by(CashShift.shift_id.desc())
-                .offset(offset)
-                .limit(limit)
-            )
-            if account.role == "Cashier":
-                query = query.where(CashShift.opened_by_user_id == actor.user_id)
-            # Serialize aggregate reads with commands for a consistent cash count.
-            self.repository.lock_register()
-            return [
-                self._read(shift_id, actor) for shift_id in self.session.scalars(query)
-            ]
-
-    def open(self, payload: ShiftOpen, actor: Principal, key: str) -> ShiftRead:
-        try:
-            with self.session.begin():
-                account = self._actor(actor)
-                existing, key_hash, digest = self._request(actor, "open", key, payload)
-                if existing:
-                    return self._read(existing.result_id, actor)
-                if self.session.scalar(
-                    select(CashShift.shift_id).where(CashShift.closed_at.is_(None))
-                ):
-                    raise conflict(
-                        "shift_already_open",
-                        "Close the current shift before opening another",
-                    )
-                employee_id = (
-                    account.employee_id
-                    if account.employee_id is not None
-                    else payload.employee_id
-                )
-                if account.employee_id is not None and payload.employee_id not in (
-                    None,
-                    account.employee_id,
-                ):
-                    raise ApplicationError(
-                        422, "employee_mismatch", "Use the account employee"
-                    )
-                employee = (
-                    self.session.get(Employee, employee_id) if employee_id else None
-                )
-                if employee is None or not employee.is_active:
-                    raise ApplicationError(
-                        422, "employee_required", "An existing employee is required"
-                    )
-                shift = CashShift(
-                    register_code="main",
-                    employee_id=employee_id,
-                    opened_by_user_id=actor.user_id,
-                    opened_at=datetime.now(UTC),
-                    opening_amount=payload.opening_amount,
-                )
-                self.repository.add(shift)
-                self._remember(actor, "open", key_hash, digest, shift.shift_id)
-                return self._read(shift.shift_id, actor)
-        except IntegrityError as error:
-            raise conflict(
-                "integrity_conflict", "Conflicting cash shift data"
-            ) from error
-
-    def close(
-        self, shift_id: int, payload: ShiftClose, actor: Principal, key: str
-    ) -> ShiftRead:
-        with self.session.begin():
-            self._actor(actor)
-            operation = f"close:{shift_id}"
-            existing, key_hash, digest = self._request(actor, operation, key, payload)
-            if existing:
-                return self._read(existing.result_id, actor)
-            shift = self.lock_shift(shift_id, actor)
-            expected = self.repository.expected(shift)
-            difference = payload.counted_amount - expected
-            if difference != 0:
-                self._actor(actor, supervisor=True)
-                if not payload.reason:
-                    raise ApplicationError(
-                        422,
-                        "reason_required",
-                        "A reason is required for a cash difference",
-                    )
-            shift.counted_amount, shift.expected_amount, shift.difference = (
-                payload.counted_amount,
-                expected,
-                difference,
-            )
-            shift.closed_at, shift.closed_by_user_id = datetime.now(UTC), actor.user_id
-            shift.closing_reason = payload.reason
-            self.session.flush()
-            self._remember(actor, operation, key_hash, digest, shift_id)
-            return self._read(shift_id, actor)
-
-    def move(
-        self, shift_id: int, payload: MovementCreate, actor: Principal, key: str
-    ) -> ShiftRead:
-        with self.session.begin():
-            self._actor(actor, supervisor=True)
-            operation = f"move:{shift_id}"
-            existing, key_hash, digest = self._request(actor, operation, key, payload)
-            if existing:
-                return self._read(existing.result_id, actor)
-            shift = self.lock_shift(shift_id, actor)
-            if (
-                payload.kind == "withdrawal"
-                and self.repository.expected(shift) < payload.amount
-            ):
-                raise conflict("insufficient_cash", "Insufficient cash for withdrawal")
-            self.repository.add(
-                CashMovement(
-                    shift_id=shift_id,
-                    kind=payload.kind,
-                    amount=payload.amount,
-                    reason=payload.reason,
-                    created_at=datetime.now(UTC),
-                    performed_by_user_id=actor.user_id,
-                )
-            )
-            self._remember(actor, operation, key_hash, digest, shift_id)
-            return self._read(shift_id, actor)
-
     def collect(
         self, sale_id: int, total: Decimal, payload: PaymentCreate, actor: Principal
     ) -> None:
-        # Called only inside the sale transaction after locking its shift.
+        # Called only inside the atomic sale transaction.
         received = payload.received_amount
         transfer = (
             payload.transfer_amount
@@ -304,7 +109,7 @@ class CashService:
         self.repository.add(
             SalePayment(
                 sale_id=sale_id,
-                shift_id=payload.shift_id,
+                shift_id=None,
                 method=payload.method,
                 amount=total,
                 cash_amount=applied_cash,
@@ -357,7 +162,6 @@ class CashService:
                 result = self.void_detail(sale_id)
                 assert result is not None
                 return result
-            shift = self.lock_shift(payload.shift_id, actor)
             sale = self.session.scalar(
                 select(Sale).where(Sale.sale_id == sale_id).with_for_update()
             )
@@ -389,10 +193,6 @@ class CashService:
                 else Decimal("0.00")
             )
             transfer_refund = payment.amount - cash_refund
-            if self.repository.expected(shift) < cash_refund:
-                raise conflict(
-                    "insufficient_cash", "Insufficient cash for the full refund"
-                )
             lines = list(
                 self.session.scalars(
                     select(SaleItem)
@@ -420,7 +220,7 @@ class CashService:
             now = datetime.now(UTC)
             record = SaleVoid(
                 sale_id=sale_id,
-                shift_id=shift.shift_id,
+                shift_id=None,
                 amount=sale.total,
                 cash_amount=cash_refund,
                 transfer_amount=transfer_refund,
@@ -459,7 +259,7 @@ class CashService:
                             stock_after=product.legacy_stock,
                             created_at=now,
                             performed_by_user_id=actor.user_id,
-                            employee_id=shift.employee_id,
+                            employee_id=sale.employee_id,
                         )
                     )
             self._remember(actor, operation, key_hash, digest, record.void_id)

@@ -16,7 +16,7 @@ from app.modules.cash.schemas import PaymentRead
 from app.modules.cash.service import CashService
 from app.modules.catalog.models import Size
 from app.modules.customers.models import Customer
-from app.modules.customers.service import general_customer
+from app.modules.customers.service import CustomersService, general_customer
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
@@ -32,10 +32,13 @@ MAX_TOTAL = Decimal("99999999.99")
 
 
 def request_digest(payload: SaleCreate) -> str:
+    values = payload.model_dump(mode="json")
+    if payload.customer is None:
+        values.pop("customer")
+    if values["payment"]["shift_id"] is None:
+        values["payment"].pop("shift_id")
     return sha256(
-        json.dumps(
-            payload.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
-        ).encode()
+        json.dumps(values, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
 
 
@@ -155,16 +158,32 @@ class SaleService:
                     return self._detail(existing.sale_id)
                 employee_id = self._employee(actor, payload.employee_id)
                 cash = CashService(self.session)
-                cash.lock_shift(
-                    payload.payment.shift_id, actor, employee_id=employee_id
-                )
-                customer = (
-                    general_customer(self.session)
-                    if payload.customer_kind == "general"
-                    else self.session.get(Customer, payload.customer_id)
-                    if payload.customer_id
-                    else None
-                )
+                customer: Customer | None
+                if payload.customer is not None:
+                    if (
+                        payload.customer_id is not None
+                        or payload.customer_kind == "general"
+                    ):
+                        raise ApplicationError(
+                            422,
+                            "ambiguous_customer",
+                            "Selecciona un cliente o registra uno nuevo.",
+                        )
+                    if payload.customer.kind != payload.customer_kind:
+                        raise ApplicationError(
+                            422, "invalid_customer_type", "Revisa el tipo de cliente."
+                        )
+                    customer = CustomersService(self.session).save_customer(
+                        payload.customer, actor_id=actor.user_id, in_transaction=True
+                    )
+                else:
+                    customer = (
+                        general_customer(self.session)
+                        if payload.customer_kind == "general"
+                        else self.session.get(Customer, payload.customer_id)
+                        if payload.customer_id
+                        else None
+                    )
                 if customer is None or not customer.is_active:
                     raise ApplicationError(
                         422, "invalid_reference", "Selecciona un cliente activo."

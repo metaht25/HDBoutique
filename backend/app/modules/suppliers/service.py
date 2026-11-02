@@ -1,5 +1,6 @@
 """suppliers use cases with explicit service-owned transactions."""
 
+from contextlib import nullcontext
 from datetime import UTC, datetime
 
 from sqlalchemy.exc import IntegrityError
@@ -49,10 +50,18 @@ class SuppliersService:
         payload: SupplierCreate | SupplierPatch,
         record_id: int | None = None,
         actor_id: int | None = None,
+        *,
+        in_transaction: bool = False,
     ) -> Supplier:
 
+        if record_id is not None and payload.model_fields_set != {"is_active"}:
+            raise ApplicationError(
+                403,
+                "directory_read_only",
+                "Solo se permite activar o desactivar proveedores.",
+            )
         try:
-            with self.session.begin():
+            with nullcontext() if in_transaction else self.session.begin():
                 values = payload.model_dump(exclude_unset=True)
 
                 values.pop("address", None)

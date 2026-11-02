@@ -18,6 +18,8 @@ class Category(Base):
 
 class Size(Base):
     __tablename__ = "sizes"
+    is_seeded: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    is_permanent: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
 
     size_id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(20))

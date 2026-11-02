@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, BeforeValidator, Field, PlainSerializer, model_validator
+from pydantic import BeforeValidator, Field, PlainSerializer, model_validator
 
 from app.api.schemas import InputModel, OutputModel, require_exact_decimal
 
@@ -21,24 +21,14 @@ CashMoney = Annotated[
 ]
 
 
-class ShiftOpen(InputModel):
-    employee_id: PositiveId | None = None
-    opening_amount: Money
-
-
-class ShiftClose(InputModel):
-    counted_amount: Money
-    reason: Reason | None = None
-
-
-class MovementCreate(InputModel):
-    kind: Literal["deposit", "withdrawal"]
-    amount: Annotated[Money, Field(gt=0)]
-    reason: Reason
-
-
 class PaymentCreate(InputModel):
-    shift_id: PositiveId
+    shift_id: Annotated[
+        PositiveId | None,
+        Field(
+            deprecated=True,
+            description="Solo para reintentos anteriores; sin efecto operativo.",
+        ),
+    ] = None
     method: Literal["cash", "transfer", "mixed"]
     transfer_amount: Money | None = None
     received_amount: Money
@@ -71,7 +61,13 @@ class ReturnItemCreate(InputModel):
 
 
 class VoidCreate(InputModel):
-    shift_id: PositiveId
+    shift_id: Annotated[
+        PositiveId | None,
+        Field(
+            deprecated=True,
+            description="Solo para reintentos anteriores; no utiliza un turno.",
+        ),
+    ] = None
     reason: Reason
     refund_confirmed: Annotated[bool, Field(strict=True)]
     reference: Reference | None = None
@@ -88,7 +84,7 @@ class PaymentRead(OutputModel):
     cash_amount: CashMoney | None = None
     transfer_amount: CashMoney | None = None
     payment_id: int
-    shift_id: int
+    shift_id: int | None
     method: str
     amount: CashMoney
     received_amount: CashMoney
@@ -105,7 +101,7 @@ class VoidRead(OutputModel):
     cash_amount: CashMoney | None = None
     transfer_amount: CashMoney | None = None
     void_id: int
-    shift_id: int
+    shift_id: int | None
     reason: str
     method: str
     amount: CashMoney
@@ -113,35 +109,3 @@ class VoidRead(OutputModel):
     created_at: datetime
     performed_by_user_id: int
     items: list[ReturnItemRead]
-
-
-class MovementRead(OutputModel):
-    movement_id: int
-    kind: str
-    amount: CashMoney
-    reason: str
-    created_at: datetime
-    performed_by_user_id: int
-
-
-class ShiftRead(BaseModel):
-    shift_id: int
-    register_code: Literal["main"] = "main"
-    employee_id: int
-    opened_by_user_id: int
-    opened_at: datetime
-    opening_amount: CashMoney
-    status: Literal["open", "closed"]
-    cash_collected: CashMoney
-    transfers_collected: CashMoney
-    cash_refunded: CashMoney
-    transfers_refunded: CashMoney
-    deposits: CashMoney
-    withdrawals: CashMoney
-    expected_amount: CashMoney
-    counted_amount: CashMoney | None
-    difference: CashMoney | None
-    closed_at: datetime | None
-    closed_by_user_id: int | None
-    closing_reason: str | None
-    movements: list[MovementRead]

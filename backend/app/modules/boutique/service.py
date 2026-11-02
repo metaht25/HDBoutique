@@ -104,7 +104,7 @@ class BoutiqueService:
                 "recibo de cobro.",
             )
         return ReceiptRead(
-            receipt_number=f"R-{sale.payment.payment_id:05d}",
+            receipt_number=str(sale.payment.payment_id),
             sale_number=f"V-{sale_id:05d}",
             boutique=self.profile(),
             sale=sale,

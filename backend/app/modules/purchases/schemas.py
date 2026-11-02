@@ -4,22 +4,44 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, field_validator, model_validator
 
-from app.api.schemas import InputModel
+from app.api.schemas import InputModel, require_exact_decimal
+from app.modules.suppliers.schemas import SupplierCreate
 
 PositiveId = Annotated[int, Field(gt=0, strict=True)]
 Money = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=2)]
 
 
 class PurchaseLineCreate(InputModel):
-    supplier_product_id: PositiveId
+    supplier_product_id: PositiveId | None = None
+    product_id: PositiveId | None = None
+    unit_cost: (
+        Annotated[
+            Decimal,
+            Field(gt=0, max_digits=10, decimal_places=2),
+            BeforeValidator(require_exact_decimal),
+        ]
+        | None
+    ) = None
+
+    @model_validator(mode="after")
+    def validate_source(self) -> Self:
+        if (self.supplier_product_id is None) == (self.product_id is None):
+            raise ValueError("Indica un único producto")
+        if self.supplier_product_id is not None and self.unit_cost is not None:
+            raise ValueError("El costo explícito requiere seleccionar el producto")
+        if self.product_id is not None and self.unit_cost is None:
+            raise ValueError("Indica el costo de compra")
+        return self
+
     quantity: Annotated[int, Field(gt=0, le=2147483647, strict=True)]
 
 
 class PurchaseCreate(InputModel):
     description: Annotated[str | None, Field(max_length=500)] = None
-    supplier_id: PositiveId
+    supplier_id: PositiveId | None = None
+    supplier: SupplierCreate | None = None
     employee_id: PositiveId | None = None
     purchase_date: date
     review_date: date | None = None
@@ -42,7 +64,9 @@ class PurchaseCreate(InputModel):
 
     @model_validator(mode="after")
     def reject_duplicate_lines(self) -> Self:
-        if len({item.supplier_product_id for item in self.items}) != len(self.items):
+        if len(
+            {(item.supplier_product_id, item.product_id) for item in self.items}
+        ) != len(self.items):
             raise ValueError("Duplicate supplier product")
         return self
 

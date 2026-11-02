@@ -110,6 +110,10 @@ class IdentityService:
         )
 
     def change_password(self, actor: Principal, current: str, new: str) -> None:
+        if actor.role != "Administrator":
+            raise ApplicationError(
+                403, "permission_denied", "Solo la dueña puede cambiar contraseñas."
+            )
 
         with self.session.begin():
             self.repository.lock_administration()
@@ -339,7 +343,7 @@ class IdentityService:
                     password_hash=hash_password(payload.password.get_secret_value()),
                     role=payload.role,
                     employee_id=payload.employee_id,
-                    must_change_password=not bootstrap,
+                    must_change_password=False,
                     is_active=True,
                 )
 
@@ -394,7 +398,7 @@ class IdentityService:
                     if field == "password":
                         user.password_hash = hash_password(value.get_secret_value())
 
-                        user.must_change_password = True
+                        user.must_change_password = False
 
                     else:
                         setattr(user, field, value)

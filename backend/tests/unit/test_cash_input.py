@@ -16,7 +16,6 @@ def test_cash_money_always_serializes_two_decimal_places():
 def test_manual_transfer_requires_an_explicit_boolean_confirmation(confirmed):
     with pytest.raises(ValidationError):
         PaymentCreate(
-            shift_id=1,
             method="transfer",
             received_amount="1.00",
             reference="synthetic",
@@ -24,7 +23,6 @@ def test_manual_transfer_requires_an_explicit_boolean_confirmation(confirmed):
         )
     with pytest.raises(ValidationError):
         VoidCreate(
-            shift_id=1,
             reason="Synthetic",
             refund_confirmed=confirmed,
             items=[{"sale_item_id": 1, "returned_quantity": 0}],

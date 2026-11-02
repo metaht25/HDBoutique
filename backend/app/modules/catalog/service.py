@@ -22,7 +22,6 @@ from app.modules.catalog.schemas import (
 )
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
-from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
 
 class CatalogService:
@@ -118,53 +117,14 @@ class CatalogService:
         self, payload: SizeCreate | SizePatch, record_id: int | None = None
     ) -> Size:
 
-        try:
-            with self.session.begin():
-                values = payload.model_dump(exclude_unset=True)
-
-                if record_id is None:
-                    record = Size(**values)
-
-                else:
-                    existing = self.repository.get_size(record_id)
-
-                    if existing is None:
-                        raise ApplicationError(404, "not_found", "Record not found")
-
-                    record = existing
-
-                if not self.repository.validate_size_references(values):
-                    raise ApplicationError(
-                        422, "invalid_reference", "Related record not found"
-                    )
-
-                for field, value in values.items():
-                    setattr(record, field, value)
-
-                self.repository.add_size(record)
-
-            return record
-
-        except IntegrityError as error:
-            raise ApplicationError(
-                409, "integrity_conflict", "Conflicting related data"
-            ) from error
+        raise ApplicationError(
+            409, "fixed_sizes", "Las tallas son fijas y no se pueden modificar."
+        )
 
     def delete_size(self, record_id: int) -> None:
-
-        try:
-            with self.session.begin():
-                record = self.repository.get_size(record_id)
-
-                if record is None:
-                    raise ApplicationError(404, "not_found", "Record not found")
-
-                self.repository.delete_size(record)
-
-        except IntegrityError as error:
-            raise ApplicationError(
-                409, "integrity_conflict", "Record is referenced"
-            ) from error
+        raise ApplicationError(
+            409, "fixed_sizes", "Las tallas son fijas y no se pueden modificar."
+        )
 
     def list_product(
         self, offset: int, limit: int, query: str | None = None
@@ -227,14 +187,11 @@ class CatalogService:
                         422, "invalid_reference", "Revisa la categoría y talla."
                     )
 
-                supplier_id = values.get("supplier_id", record.supplier_id)
-
-                if supplier_id is not None:
-                    supplier = self.session.get(Supplier, supplier_id)
-
-                    if supplier is None or not supplier.is_active:
+                if "size_id" in values:
+                    size = self.session.get(Size, values["size_id"])
+                    if size is None or not size.is_permanent:
                         raise ApplicationError(
-                            422, "inactive_supplier", "Selecciona un proveedor activo."
+                            422, "fixed_sizes", "Selecciona S, M, L, XL o XXL."
                         )
 
                 for field, value in values.items():
@@ -261,42 +218,6 @@ class CatalogService:
                             employee_id=actor.employee_id,
                         )
                     )
-
-                if record.supplier_id and record.cost is not None:
-                    offered = self.session.scalar(
-                        select(SupplierProduct)
-                        .join(
-                            SupplierOffering,
-                            SupplierOffering.supplier_product_id
-                            == SupplierProduct.supplier_product_id,
-                        )
-                        .where(
-                            SupplierProduct.product_id == record.product_id,
-                            SupplierOffering.supplier_id == record.supplier_id,
-                        )
-                        .order_by(SupplierProduct.supplier_product_id)
-                        .with_for_update()
-                    )
-
-                    if offered is None:
-                        offered = SupplierProduct(
-                            product_id=record.product_id, purchase_price=record.cost
-                        )
-
-                        self.session.add(offered)
-
-                        self.session.flush()
-
-                        self.session.add(
-                            SupplierOffering(
-                                supplier_id=record.supplier_id,
-                                supplier_product_id=offered.supplier_product_id,
-                            )
-                        )
-
-                    elif "cost" in values:
-                        assert record.cost is not None
-                        offered.purchase_price = record.cost
 
                 audit(
                     self.session,

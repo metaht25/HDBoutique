@@ -9,12 +9,12 @@ from app.api.schemas import InputModel, OutputModel, PatchModel, require_exact_d
 
 
 class CategoryCreate(InputModel):
-    name: Annotated[str | None, Field(max_length=20, strict=True)] = None
+    name: Annotated[str, Field(min_length=1, max_length=20, strict=True)]
 
 
 class CategoryPatch(PatchModel):
-    required_fields = frozenset([])
-    name: Annotated[str | None, Field(max_length=20, strict=True)] = None
+    required_fields = frozenset(["name"])
+    name: Annotated[str | None, Field(min_length=1, max_length=20, strict=True)] = None
 
 
 class CategoryRead(OutputModel):
@@ -32,8 +32,9 @@ class SizePatch(PatchModel):
 
 
 class SizeRead(OutputModel):
+    is_permanent: bool = False
     size_id: int
-    name: Annotated[str, Field(max_length=20, min_length=1, strict=True)]
+    name: Annotated[str | None, Field(max_length=20, strict=True)]
 
 
 class ProductCreate(InputModel):
@@ -46,7 +47,6 @@ class ProductCreate(InputModel):
         BeforeValidator(require_exact_decimal),
     ]
     initial_stock: Annotated[int, Field(ge=0, le=2147483647, strict=True)] = 0
-    supplier_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     description: Annotated[str | None, Field(max_length=500)] = None
 
 
@@ -60,7 +60,6 @@ class ProductPatch(PatchModel):
         Field(gt=0, le=Decimal("86956521.73"), decimal_places=2),
         BeforeValidator(require_exact_decimal),
     ] = None
-    supplier_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     description: Annotated[str | None, Field(max_length=500)] = None
     is_active: Annotated[bool | None, Field(strict=True)] = None
 

@@ -33,7 +33,7 @@ def test_upgrade_downgrade_upgrade_and_metadata_drift(postgres_engine: Engine) -
         command.upgrade(config, "head")
         command.check(config)
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-            "0006_boutique_experience"
+            "0009_shiftless_payments"
         )
 
 

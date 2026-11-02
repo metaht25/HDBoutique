@@ -67,7 +67,7 @@ def test_late_identity_failure_rolls_back_whole_load(
     ):
         load(database_connection, tables)
     for item in MAPPINGS:
-        assert database_connection.execute(select(item.table)).first() is None
+        assert database_connection.execute(select(*item.columns)).first() is None
 
 
 def test_transfer_rejects_destination_with_identity_data(
@@ -86,3 +86,13 @@ def test_transfer_rejects_destination_with_identity_data(
     with pytest.raises(MigrationError, match="not empty"):
         load(database_connection, tables)
     assert all(not rows for rows in read_target(database_connection).values())
+
+
+@pytest.fixture(autouse=True)
+def historical_transfer_target(database_connection):
+    # Offline SQL Server tooling remains a 0006 historical contract.
+    from alembic import command
+
+    from tests.integration.conftest import migration_config
+
+    command.downgrade(migration_config(database_connection), "0006_boutique_experience")

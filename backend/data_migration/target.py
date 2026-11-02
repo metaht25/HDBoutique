@@ -4,7 +4,16 @@ import os
 
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
-from sqlalchemy import URL, Connection, Engine, create_engine, inspect, select, text
+from sqlalchemy import (
+    URL,
+    Connection,
+    Engine,
+    MetaData,
+    create_engine,
+    inspect,
+    select,
+    text,
+)
 
 from app.infrastructure.database.base import Base
 from data_migration.files import MigrationError, Tables
@@ -70,7 +79,16 @@ def load(connection: Connection, tables: Tables) -> dict[str, object]:
     connection.execute(text("SET LOCAL lock_timeout = '5s'"))
     names = ", ".join('"' + name + '"' for name in sorted(Base.metadata.tables))
     connection.execute(text(f"LOCK TABLE {names} IN ACCESS EXCLUSIVE MODE"))
-    if compare_metadata(MigrationContext.configure(connection), Base.metadata):
+    # This offline loader deliberately targets archived revision 0006 only.
+    archived = MetaData(naming_convention=Base.metadata.naming_convention)
+    for table in Base.metadata.sorted_tables:
+        table.to_metadata(archived)
+    for name in ("departments", "municipalities", "sizes"):
+        for column in ("is_permanent", "is_seeded"):
+            archived.tables[name]._columns.remove(archived.tables[name].c[column])
+    for name in ("sale_payments", "sale_voids"):
+        archived.tables[name].c.shift_id.nullable = False
+    if compare_metadata(MigrationContext.configure(connection), archived):
         raise MigrationError("Target schema drift; review Alembic revisions")
     if connection.scalar(
         text(
@@ -82,7 +100,7 @@ def load(connection: Connection, tables: Tables) -> dict[str, object]:
         raise MigrationError("Target has custom triggers requiring review")
     if any(
         connection.execute(select(table).limit(1)).first() is not None
-        for table in Base.metadata.sorted_tables
+        for table in archived.sorted_tables
     ):
         raise MigrationError("Target is not empty; nothing removed or overwritten")
     for item in MAPPINGS:

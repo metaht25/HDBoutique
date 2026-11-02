@@ -10,12 +10,12 @@ from app.modules.locations.composition import InlineAddress
 
 
 class CustomerTypeCreate(InputModel):
-    name: Annotated[str | None, Field(max_length=20, strict=True)] = None
+    name: Annotated[str, Field(min_length=1, max_length=20, strict=True)]
 
 
 class CustomerTypePatch(PatchModel):
-    required_fields = frozenset([])
-    name: Annotated[str | None, Field(max_length=20, strict=True)] = None
+    required_fields = frozenset(["name"])
+    name: Annotated[str | None, Field(min_length=1, max_length=20, strict=True)] = None
 
 
 class CustomerTypeRead(OutputModel):

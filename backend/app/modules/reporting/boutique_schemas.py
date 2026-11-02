@@ -8,6 +8,7 @@ from app.modules.reporting.schemas import ReportContext, ReportMoney
 
 
 class ProductRow(BaseModel):
+    suppliers: list[str] | None = None
     product_id: int
     name: str | None
     category_id: int
@@ -59,7 +60,6 @@ class EmployeeRow(AddressRow):
     first_names: str
     last_names: str
     phone_number: str
-    work_email: str | None
     job_title: str | None
     start_date: date | None
     end_date: date | None

@@ -17,6 +17,7 @@ from app.modules.staff.repository import StaffRepository
 from app.modules.staff.schemas import (
     EmployeeCreate,
     EmployeePatch,
+    validate_employee_phone,
 )
 
 
@@ -59,9 +60,12 @@ class StaffService:
 
                 values = payload.model_dump(exclude_unset=True)
 
+                if "phone_number" in values:
+                    validate_employee_phone(values["phone_number"])
+
                 username = values.pop("username", None)
 
-                values.pop("temporary_password", None)
+                values.pop("password", None)
 
                 values.pop("address", None)
 
@@ -115,12 +119,12 @@ class StaffService:
                     account = UserAccount(
                         username=str(username).strip().lower(),
                         password_hash=hash_password(
-                            payload.temporary_password.get_secret_value()
+                            payload.password.get_secret_value()
                         ),
                         employee_id=record.employee_id,
                         role="Cashier",
                         is_active=True,
-                        must_change_password=True,
+                        must_change_password=False,
                     )
 
                     self.session.add(account)
@@ -141,16 +145,16 @@ class StaffService:
 
                         identity.revoke_user_sessions(account.user_id)
 
-                    if payload.temporary_password is not None:
+                    if payload.password is not None:
                         account.password_hash = hash_password(
-                            payload.temporary_password.get_secret_value()
+                            payload.password.get_secret_value()
                         )
 
-                        account.must_change_password = True
+                        account.must_change_password = False
 
                         identity.revoke_user_sessions(account.user_id)
 
-                elif payload.temporary_password is not None:
+                elif payload.password is not None:
                     raise ApplicationError(
                         422,
                         "account_required",

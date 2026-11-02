@@ -33,7 +33,14 @@ def install_error_handlers(application: FastAPI) -> None:
             content={
                 "error": {
                     "code": "validation_error",
-                    "message": "Invalid request",
+                    "message": (
+                        "El teléfono debe tener ocho dígitos y comenzar con 7 u 8."
+                        if request.url.path.startswith("/api/v1/employees")
+                        and any(
+                            item["loc"][-1] == "phone_number" for item in error.errors()
+                        )
+                        else "Invalid request"
+                    ),
                     "fields": [
                         {"location": list(item["loc"]), "type": item["type"]}
                         for item in error.errors()

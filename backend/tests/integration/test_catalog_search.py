@@ -13,7 +13,7 @@ def test_product_search_is_literal_case_insensitive_and_paginated(
 ) -> None:
     client = business_client
     category = client.post("/api/v1/categories", json={"name": "Synthetic"}).json()
-    size = client.post("/api/v1/sizes", json={"name": "M"}).json()
+    size = next(row for row in client.get("/api/v1/sizes").json() if row["name"] == "M")
     identifiers = []
     for name in (
         "Summer first",

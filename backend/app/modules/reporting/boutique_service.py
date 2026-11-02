@@ -11,6 +11,7 @@ from app.modules.identity.service import Principal
 from app.modules.reporting.boutique_repository import BoutiqueReportingRepository
 from app.modules.reporting.schemas import DateRange
 from app.modules.reporting.service import report_context
+from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
 
 def summary_values(values: dict[str, Any]) -> dict[str, int | str | None]:
@@ -67,6 +68,35 @@ class BoutiqueReportingService:
                     offset,
                     limit,
                 )
+                if actor.role == "Administrator" and items:
+                    relations = self.session.execute(
+                        select(
+                            SupplierProduct.product_id,
+                            Supplier.company_name,
+                            SupplierProduct.purchase_price,
+                        )
+                        .join(
+                            SupplierOffering,
+                            SupplierOffering.supplier_product_id
+                            == SupplierProduct.supplier_product_id,
+                        )
+                        .join(
+                            Supplier,
+                            Supplier.supplier_id == SupplierOffering.supplier_id,
+                        )
+                        .where(
+                            SupplierProduct.product_id.in_(
+                                [row["product_id"] for row in items]
+                            )
+                        )
+                        .distinct()
+                    ).all()
+                    for row in items:
+                        row["suppliers"] = [
+                            f"{name}: C$ {cost:.2f}"
+                            for product_id, name, cost in relations
+                            if product_id == row["product_id"]
+                        ]
             elif resource == "customers":
                 summary, items = self.repository.customer_directory(
                     q,

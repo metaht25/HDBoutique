@@ -37,7 +37,11 @@ class CatalogRepository:
     def list_size(self, offset: int, limit: int) -> list[Size]:
         return list(
             self.session.scalars(
-                select(Size).order_by(Size.size_id).offset(offset).limit(limit)
+                select(Size)
+                .where(Size.is_permanent)
+                .order_by(Size.size_id)
+                .offset(offset)
+                .limit(limit)
             )
         )
 

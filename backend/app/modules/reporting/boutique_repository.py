@@ -215,7 +215,6 @@ class BoutiqueReportingRepository(ReportingRepository):
                 Employee.first_names,
                 Employee.last_names,
                 Employee.phone_number,
-                Employee.work_email,
                 Employee.job_title,
                 Employee.start_date,
                 Employee.end_date,
@@ -327,6 +326,7 @@ class BoutiqueReportingRepository(ReportingRepository):
                     name.icontains(q, autoescape=True),
                     sale_number.icontains(q, autoescape=True),
                     receipt_number.icontains(q, autoescape=True),
+                    cast(SalePayment.payment_id, String).icontains(q, autoescape=True),
                     cast(Sale.sale_id, String) == q,
                     cast(SalePayment.payment_id, String) == q,
                 )

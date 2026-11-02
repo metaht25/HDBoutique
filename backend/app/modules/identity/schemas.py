@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from app.api.schemas import OutputModel, PatchModel
 
 Role = Literal["Administrator", "Cashier"]
-Password = Annotated[SecretStr, Field(min_length=12, max_length=128)]
+Password = Annotated[SecretStr, Field(min_length=6, max_length=128)]
 
 
 def normalize_username(value: str) -> str:

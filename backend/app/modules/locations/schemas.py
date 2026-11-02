@@ -17,22 +17,24 @@ class DepartmentPatch(PatchModel):
 
 
 class DepartmentRead(OutputModel):
+    is_permanent: bool = False
     department_id: int
     name: Annotated[str, Field(max_length=40, min_length=1, strict=True)]
 
 
 class MunicipalityCreate(InputModel):
     department_id: Annotated[int, Field(gt=0, strict=True)]
-    name: Annotated[str | None, Field(max_length=40, strict=True)] = None
+    name: Annotated[str, Field(min_length=1, max_length=40, strict=True)]
 
 
 class MunicipalityPatch(PatchModel):
-    required_fields = frozenset(["department_id"])
+    required_fields = frozenset(["department_id", "name"])
     department_id: Annotated[int | None, Field(gt=0, strict=True)] = None
-    name: Annotated[str | None, Field(max_length=40, strict=True)] = None
+    name: Annotated[str | None, Field(min_length=1, max_length=40, strict=True)] = None
 
 
 class MunicipalityRead(OutputModel):
+    is_permanent: bool = False
     municipality_id: int
     department_id: Annotated[int, Field(gt=0, strict=True)]
     name: Annotated[str | None, Field(max_length=40, strict=True)]

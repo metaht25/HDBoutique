@@ -234,7 +234,7 @@ def test_invalid_purchase_never_leaves_partial_rows(
     elif mutation == "negative_shipping":
         payload["shipping_cost"] = "-1"
     elif mutation == "client_cost":
-        payload["items"][0]["unit_cost"] = "0.01"
+        payload["items"][0]["unexpected_cost"] = "0.01"
     response = purchase_client.post(
         "/api/v1/purchases",
         json=payload,

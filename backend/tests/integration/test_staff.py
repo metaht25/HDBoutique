@@ -19,18 +19,17 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
         "address_id": address["address_id"],
         "first_names": "Ana",
         "last_names": "Prueba",
-        "phone_number": "0012345678",
+        "phone_number": "80000000",
         "job_title": "Colaborador",
         "username": "synthetic-cashier",
-        "temporary_password": SYNTHETIC_PASSWORD,
-        "work_email": "ana@example.test",
+        "password": SYNTHETIC_PASSWORD,
         "start_date": "2026-01-01",
     }
     saved = client.post("/api/v1/employees", json=payload)
     assert saved.status_code == 201, saved.text
     row = saved.json()
     path = f"/api/v1/employees/{row['employee_id']}"
-    assert row["phone_number"] == "0012345678"
+    assert row["phone_number"] == "80000000"
     assert row["end_date"] is None
     assert client.get(path).json() == row
     for field, value in [
@@ -48,15 +47,14 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
     updated = client.patch(
         path,
         json={
-            "work_email": None,
             "job_title": None,
             "start_date": None,
             "end_date": "2026-01-02",
         },
     )
     assert updated.status_code == 200
-    assert updated.json()["work_email"] is None
-    assert updated.json()["phone_number"] == "0012345678"
+    assert "work_email" not in updated.json()
+    assert updated.json()["phone_number"] == "80000000"
     assert client.delete(path).status_code == 405
     assert client.get("/api/v1/employees/999999").status_code == 404
     assert (
@@ -69,7 +67,7 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
     )
     assert client.get("/api/v1/employees", params={"q": "%_"}).json() == []
     assert (
-        client.get("/api/v1/employees", params={"q": "001234"}).json()[0]["employee_id"]
+        client.get("/api/v1/employees", params={"q": "8000"}).json()[0]["employee_id"]
         == row["employee_id"]
     )
     assert client.get("/api/v1/employees", params={"offset": 1}).json() == []
@@ -104,9 +102,9 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
                 "new_password": "new-synthetic-password-42",
             },
         ).status_code
-        == 204
+        == 403
     )
-    login(client, "synthetic-cashier", "new-synthetic-password-42")
+    login(client, "synthetic-cashier")
     assert client.get("/api/v1/auth/me").json()["employee_id"] == row["employee_id"]
     assert client.get("/api/v1/employees").status_code == 403
     assert client.get(path).status_code == 403
@@ -120,7 +118,7 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
             "last_names": "Prueba",
         }
     ]
-    assert client.get("/api/v1/employee-options", params={"q": "001234"}).json() == []
+    assert client.get("/api/v1/employee-options", params={"q": "8000"}).json() == []
     client.cookies.clear()
     assert client.get("/api/v1/employee-options").status_code == 401
 

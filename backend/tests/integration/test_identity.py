@@ -144,6 +144,14 @@ def test_role_matrix_all_business_operations(
                     or (resource == "customers" and method in {"POST", "PUT", "PATCH"})
                 )
             )
+            if method != "GET" and (
+                resource == "customers"
+                or (resource == "suppliers" and method != "PATCH")
+            ):
+                allowed = False
+            if resource == "suppliers" and method == "PATCH":
+                # Only an explicit state patch is allowed; the matrix sends {}.
+                allowed = False
             path = "/api/v1/" + resource
             if method in {"PUT", "PATCH", "DELETE"}:
                 path += "/2147483647"
@@ -151,7 +159,7 @@ def test_role_matrix_all_business_operations(
                 method, path, json={} if method in {"POST", "PUT", "PATCH"} else None
             )
             if allowed:
-                assert response.status_code in {200, 201, 404, 422}, (
+                assert response.status_code in {200, 201, 404, 409, 422}, (
                     role,
                     method,
                     resource,
@@ -220,7 +228,9 @@ def test_csrf_origin_and_session_binding(identity_client: TestClient) -> None:
     rotated = client.get("/api/v1/auth/csrf").json()["csrf_token"]
     assert client.post("/api/v1/categories", json={}).status_code == 403
     client.headers["X-CSRF-Token"] = rotated
-    assert client.post("/api/v1/categories", json={}).status_code == 201
+    assert (
+        client.post("/api/v1/categories", json={"name": "CSRF test"}).status_code == 201
+    )
 
 
 @pytest.mark.parametrize("username", ["administrator", "unknown"])
