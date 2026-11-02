@@ -17,8 +17,13 @@ se integran en sus módulos. No se introducen semillas comerciales en desarrollo
 [Reglas vigentes](business-rules.md), [navegación](frontend-modules.md),
 [destino local y respaldos](cutover.md).
 
-El cierre del incremento se registra tras sus pruebas conectadas, revisión visual
-y migración verificada; [resultados](characterization.md). Las filas siguientes
+Incremento cerrado el 2 de noviembre de 2026: 273 pruebas backend/PostgreSQL,
+94.68% de cobertura, 91 Vitest, 20 E2E interceptadas y nueve conectadas aprobadas;
+calidad, revisión de 26 referencias/66 imágenes finales, restauración sintética y
+migración local 0005→0006 con respaldo final restaurado/conciliado. Runtime local
+saludable y login recuperado. [Resultados](characterization.md), [corte](cutover.md).
+El 100% se refiere al alcance local autorizado; no incluye publicación pública
+ni una impresora física. Las filas siguientes
 conservan los hitos históricos de cada fase, incluidos permisos y exclusiones
 vigentes en aquel momento. No son contratos operativos alternativos actuales.
 

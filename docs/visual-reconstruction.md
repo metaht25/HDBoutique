@@ -50,5 +50,49 @@ copian datos comerciales de las capturas.
 
 - Inicio: rama Cris-develop, arbol limpio; runtime local saludable 8080/8001/5433.
 - Inspeccion previa de solo lectura: head 0005_cash_checkout; cero cuentas Manager.
-- Implementacion, pruebas, comparacion final y migracion: en curso. Este documento
-  no certifica verificaciones pendientes.
+- Cierre verificado el 2 de noviembre de 2026: implementación, pruebas conectadas,
+  comparación visual y migración local completadas para el alcance autorizado.
+
+## Comparación final ejecutada
+
+Se volvieron a inspeccionar las 26 referencias y se compararon con 63 capturas
+finales conectadas y tres renders PDF (66 PNG en total), fuera de Git en
+`%TEMP%/hdb-boutique-connected-final-20261102`. La revisión se hizo con imágenes,
+incluidas hojas de contacto, no solo mediante nombres o assertions de overflow.
+
+| Referencias | Correspondencia y resultado |
+| --- | --- |
+| 23, 27 (1) | Dashboard/Inicio: indicadores, periodo, últimas ventas y bajo stock; dos paletas y turno contextual |
+| 23 (1), 24, 27 (2) | Nueva venta: catálogo/carrito, total/cambio, clientes y pago; columnas apiladas en móvil |
+| 24 (1) | Venta completada: número/total, cierre y acceso al recibo |
+| 24 (2), 24 (3) | Ventas: indicadores, filtros, tabla, medios y más vendidos; barras de medios en lugar del gráfico circular antiguo |
+| 24 (4) | Historial: filtros amplios, tabla, detalle/anulación e impresión |
+| 24 (5), 24 (6), 28 (1) | Recibos propios/globales: filtros, vista de ticket, impresión/PDF y estado anulado |
+| 25, 25 (1), 27 (3) | Productos/modal: indicadores, filtros y tabla; precio calculado y cantidad inicial; colaborador sin costos ni proveedor |
+| 25 (2), 25 (3) | Pérdidas se excluye expresamente; no se reproduce |
+| 25 (4), 25 (5) | Compras/modal: pendiente, líneas/envío, recepción única y estado recibido |
+| 25 (6), 26 | Proveedores/modal: métricas, filtros, domicilio, activación e historia |
+| 26 (1), 26 (2), 28 | Clientes/modal: métricas, recientes, regular/delivery y alta/edición autorizadas para colaborador |
+| 26 (3), 27 | Empleados/modal: directorio y cuenta temporal, domicilio y acceso contextual a cuentas |
+
+Las quince rutas (diez Dueña y cinco Colaborador) se inspeccionaron a 1440×1000
+y 390×844, además de ambos menús móviles desplegados. Los cinco formularios
+principales se revisaron en escritorio y móvil, incluidos sus botones inferiores
+después de desplazar el modal. Se revisaron tres ventas completadas, tres recibos,
+clientes inline, caja contextual y detalle anulado. Sin superposición material ni
+scroll horizontal global; las tablas anchas conservan desplazamiento local.
+Los contornos de foco visibles en títulos corresponden a navegación accesible.
+
+Se conserva identidad y organización, con adaptación al contrato vigente: catálogo
+en tarjetas, filtros de servidor, gráfico de medios en barras, caja contextual y
+ticket de 80 mm en modal. No es una réplica píxel a píxel ni copia datos comerciales
+de las imágenes. No se detectaron diferencias materiales que requirieran otro
+cambio de código en esta revisión.
+
+PDF: tres documentos renderizados con Poppler e inspeccionados. Mixto y anulado:
+226.772 puntos de ancho, una página cada uno, texto largo/acentos/escapado legibles,
+logo y desglose de reintegro. Impresión Chromium: 227.04 puntos (~80.1 mm), una
+página. Poppler emitió avisos sobre fuentes de sustitución Symbol/ArialUnicode;
+los renders no mostraron glifos perdidos. No se probó una impresora física.
+
+Pruebas y respaldo: [resultados finales](characterization.md), [corte](cutover.md).

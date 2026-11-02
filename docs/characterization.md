@@ -1,5 +1,49 @@
 # Pruebas de caracterizacion y regresion
 
+## Reconstrucción boutique: verificación final (2 de noviembre de 2026)
+
+El incremento autorizado el 31 de octubre incorpora dos perfiles, navegación
+contextual, clientes regular/delivery/general, pago mixto, precio costo × 1.15,
+existencia inicial auditada, activación y empleado/cuenta atómicos, perfil/logo,
+ticket PDF de 80 mm y anulación supervisada. Conserva transacciones e idempotencia.
+
+Ejecución final sobre el código de ac0277e:
+
+| Grupo | Resultado ejecutado |
+| --- | --- |
+| Backend Linux/Python 3.13.15 | 273 aprobadas, 0 omitidas, --run-postgres, 291.24 s |
+| Cobertura app | 94.68%, umbral 90% |
+| Ruff / formato | Aprobados; 161 archivos formateados |
+| mypy / bloqueo | 108 archivos sin errores; uv lock --check aprobado |
+| Frontend Node 24 | TypeScript, ESLint y build aprobados |
+| Vitest | 91 pruebas, 11 archivos, aprobadas |
+| E2E con API interceptada | 20 aprobadas, escritorio/móvil, 30.2 s |
+| E2E conectadas reales | 9 aprobadas, Nginx/FastAPI/PostgreSQL, 1.5 min |
+| Restauración sintética | 32 tablas con operaciones, hashes exactos, identidades y head conciliados con tests.rehearse_stabilization |
+| Revisión visual | 26 referencias, 63 capturas conectadas y tres renders PDF inspeccionados |
+| Desarrollo local | Diez rutas SPA HTTP 200, readiness 200; tres servicios saludables |
+| Datos locales | 0005→0006, sin drift; respaldo final restaurado y 33 tablas con Alembic conciliadas exactamente |
+
+La suite PostgreSQL verifica dinero inválido, autorización, CSRF, revocación,
+retiro de Manager, upgrade/downgrade seguro, conservación de historia,
+idempotencia, fallo parcial y concurrencia de venta/recepción/caja. No usa la base
+de desarrollo. Detalle de respaldo y excepciones de autenticación en [corte](cutover.md).
+
+Las nueve conectadas cubren perfil/logo persistido, producto y movimiento inicial,
+precio de 15%, ingresos/retiros y cierre/apertura visibles, tres medios de pago,
+tres tipos de cliente y alta inline, cambio, stock, PDF, compra/recepción única,
+anulación mixta sin devolución de mercancía, permisos propios/globales,
+identidad general estable, activación/desactivación/reactivación y operaciones
+bloqueadas, personal/cuenta, cambio temporal y revocación. Cada ruta principal
+tiene capturas escritorio y móvil; [comparación y límites](visual-reconstruction.md).
+Todas las escrituras sintéticas quedaron exclusivamente en hdboutique-test/tmpfs.
+
+No se repitió auditoría de vulnerabilidades de dependencias ni prueba de carga:
+los resultados históricos de esas auditorías no se presentan como actuales.
+La impresión se verificó por Chromium/PDF, no con equipo físico.
+
+Los apartados siguientes conservan resultados históricos de entregas anteriores.
+
 ## Configuracion inicial y cierre funcional de v1 (29 de octubre de 2026)
 
 [Configuracion inicial](initial-setup.md) completa las pantallas solicitadas:
