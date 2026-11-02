@@ -15,7 +15,7 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   Completar sus tareas normales y verificaciones sin pedir confirmaciones repetidas.
 - Terminar al cerrar la fase e informar resultado, limites y commits; no comenzar
   automaticamente la siguiente.
-- Si una decision B01-B14 afecta el trabajo, consultar
+- Si una decision B01-B21 afecta el trabajo, consultar
   [docs/business-rules.md](docs/business-rules.md). No inventar su respuesta;
   avanzar en lo independiente y pedir solo la decision necesaria.
 - El proyecto lo desarrolla una sola persona. No delegar ni crear otros chats o
@@ -97,6 +97,11 @@ del usuario prevalecen sobre estas convenciones del proyecto.
 - data_migration mantiene herramientas y ensayos offline historicos sin drivers
   SQL Server distribuidos. Un origen futuro requiere inventario/ensayo autorizado;
   no presentar los ensayos sinteticos como traslado de datos reales.
+- Fase 16 autorizada y pendiente: [contrato](docs/phase-16-usability.md).
+  B15-B21 todavía no describen el runtime implementado. Solo al ejecutar y cerrar
+  esa fase sustituyen contraseña temporal/correo de empleado, edición de
+  directorios, tallas administrables, recibos con prefijo y caja/turnos. No mezclar
+  el plan futuro con afirmaciones sobre el estado vigente.
 
 ## Implementacion
 

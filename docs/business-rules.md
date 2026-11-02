@@ -36,3 +36,21 @@ de stock y caja forman una transacción. Reintentos usan la misma clave/cuerpo.
 [personal](employees.md), [navegación](frontend-modules.md).
 No se agregan tarjetas, pérdidas de inventario, descuentos, recepción parcial,
 despliegue público ni datos ficticios al desarrollo.
+
+## Decisiones aprobadas para la Fase 16
+
+El propietario confirmó el 2 de noviembre de 2026 las decisiones B15-B21 para
+la [Fase 16](phase-16-usability.md). Están autorizadas y sustituyen los fragmentos
+incompatibles de B07, B09, B10 y B13 cuando la fase se implemente, migre y cierre.
+Mientras la fase figure pendiente, la tabla B01-B14 anterior describe el runtime
+existente; no afirmar que las decisiones siguientes ya están construidas.
+
+| ID | Decisión aprobada pendiente de implementación |
+| --- | --- |
+| B15 | Empleado: teléfono canónico de ocho dígitos con prefijo 7 u 8 y presentación `####-####`; sin correo laboral nuevo. Dueña asigna y modifica contraseñas de 6..128 caracteres con control mostrar/ocultar; sin contraseña temporal ni cambio obligatorio para Colaborador. |
+| B16 | Managua, Masaya y León y sus 28 municipios oficiales se cargan como registros permanentes. Dueña puede ampliar ubicaciones. Selectores buscables y municipio dependiente del departamento. |
+| B17 | Clientes queda en consulta, sin edición ni desactivación; alta solo desde Nueva venta. Proveedores queda en consulta, puede desactivarse/reactivarse y se crea solo desde Compras. Elegir registros existentes rellena sin modificarlos. |
+| B18 | Catálogos nuevos no admiten vacíos. Tallas fijas para altas: S, M, L, XL y XXL; no editables. Valores históricos se conservan sin ofrecerse como nuevas opciones. |
+| B19 | Producto conserva costo principal y precio servidor costo × 1.15. Relación muchos a muchos con proveedores; cada relación guarda su costo de compra histórico sin recalcular automáticamente el precio de venta. |
+| B20 | Recibo visible decimal desde 1, sin prefijo ni relleno; se permiten saltos por fallos o rollbacks y nunca se renumera historia. Venta mantiene identificador separado. |
+| B21 | Se retiran caja y turnos del comportamiento operativo. Venta/anulación no requieren turno ni generan movimientos de caja. Pagos completos e historia de caja se conservan; tablas y filas anteriores no se borran. |

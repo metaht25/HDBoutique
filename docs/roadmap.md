@@ -27,6 +27,12 @@ ni una impresora física. Las filas siguientes
 conservan los hitos históricos de cada fase, incluidos permisos y exclusiones
 vigentes en aquel momento. No son contratos operativos alternativos actuales.
 
+La Fase 16 fue autorizada el 2 de noviembre de 2026 y está pendiente de
+implementación. Simplifica empleados, ubicaciones, directorios, catálogo,
+proveedores por producto y recibos, y retira caja/turnos del comportamiento
+operativo preservando su historia. Su contrato cerrado y orden de trabajo están
+en [Fase 16](phase-16-usability.md). No se ha implementado ni migrado todavía.
+
 | Fase | Objetivo y entregable principal | Estado |
 | --- | --- | --- |
 | 0 | Rama y saneamiento de README | Completada: 9bc044c; punto de partida f67910b |
@@ -45,6 +51,7 @@ vigentes en aquel momento. No son contratos operativos alternativos actuales.
 | 13 | Dashboard y reportes; caja segun alcance | Dashboard/reportes completados: agregaciones y filtros de servidor, fecha Managua, B14 y permisos confirmados; caja excluida por el usuario, pendiente B10 con [propuesta](cash-register-proposal.md). Ver [contrato](reporting.md) |
 | 14 | Integracion, seguridad y estabilizacion | Completada para el alcance disponible: 222 pruebas backend/PostgreSQL, 80 E2E simuladas y 4 conectadas, auditorias, volumen y restauracion de 24 tablas. Sin origen SQL Server disponible ni corte operativo. Ver [informe y riesgos](stabilization.md) |
 | 15 | Corte de datos y retirada de Django | Corte local autorizado completado: hdboutique a head 0004, respaldo previo/final restaurados y conciliados; Django/DRF/drivers/adaptadores retirados; web Nginx/FastAPI/PostgreSQL en loopback. Sin origen SQL Server ni carga comercial, B11 confirmado. Ver [resultado y limites](cutover.md) |
+| 16 | Simplificación operativa y datos maestros | Autorizada y pendiente: teléfono/contraseña de empleados, ubicaciones permanentes, directorios de consulta, tallas fijas, proveedores por producto, recibos decimales y retirada operativa de caja/turnos. Ver [contrato](phase-16-usability.md) |
 
 Este documento registra el estado, sin sustituir los resultados detallados de
 [characterization.md](characterization.md). Actualizar cada fila al cerrar su fase.
@@ -70,6 +77,7 @@ No presentar una propuesta documental como una herramienta ya implementada.
 | 13 | Agregaciones/filtros de servidor y fecha comercial coherente; caja solo tras resolver B10 |
 | 14 | Regresion, E2E, concurrencia, permisos, dependencias, restauracion y ensayos de migracion; sin defectos criticos/altos abiertos |
 | 15 | Ventana y respaldo, escrituras controladas, carga final y conciliacion; retirar Django/adaptadores al verificar consumidores y preservar origen segun acuerdo |
+| 16 | Caracterizar consumidores; migración posterior a 0006 sin pérdida histórica; simplificar backend/frontend; regresión completa y visual; respaldo, ensayo, migración/conciliación local y documentación final según [Fase 16](phase-16-usability.md) |
 
 ## Dependencias y limites
 
