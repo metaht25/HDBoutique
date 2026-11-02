@@ -24,10 +24,12 @@ compose.test.yaml, base tmpfs y datos sinteticos; no apuntarla a desarrollo.
 app/modules/ agrupa catalogo, ubicaciones, clientes, proveedores, identidad,
 compras, ventas, caja, inventario y reportes por capas. Servicios controlan transacciones;
 repositorios no confirman por su cuenta. Dinero Decimal y salida textual exacta.
-Empleados conserva su modelo y relaciones; CRUD pendiente. Abonos/credito quedan
-excluidos permanentemente. [Caja y cobros completos](../docs/cash-register.md).
+Empleados gestiona personal y cuenta de Colaborador en una transacción; boutique
+gestiona perfil/logo y recibos PDF de 80 mm. Solo Dueña y Colaborador pueden
+iniciar sesión. Abonos/crédito quedan excluidos permanentemente.
+[Caja y cobros completos](../docs/cash-register.md).
 
-30 modelos/tablas, Alembic head 0005_cash_checkout. Revisiones anteriores intactas.
+32 modelos/tablas, Alembic head 0006_boutique_experience. Revisiones anteriores intactas.
 La base local hdboutique se actualizo desde 0001 tras respaldo restaurado y
 conciliacion, sin carga comercial: no existe origen/historicos SQL Server.
 No se ejecutan migraciones ni bootstrap al arrancar la API.

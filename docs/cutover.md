@@ -146,3 +146,43 @@ anteriores; seis tablas nuevas vacias. Respaldo final restaurado y conciliado en
 hdboutique_cash_final_verify: 30 tablas. Evidencia privada en la subcarpeta
 cash-checkout del respaldo original; sin eliminar las evidencias previas.
 [Reglas, operacion, verificaciones y limites](cash-register.md).
+
+## Reconstrucción boutique: recuperación y cierre local (2 de noviembre de 2026)
+
+La recuperación de acceso solicitada detectó código 0006 con base aún en 0005:
+el login devolvía 503 por la columna must_change_password ausente. Se detuvieron
+web/backend, se respaldó y ensayó 0006 en una restauración separada antes de
+aplicarla expresamente a hdboutique. Alembic current confirmó
+0006_boutique_experience y check no detectó drift. Los servicios se reconstruyeron
+y quedaron saludables en 8080/8001/5433; login real HTTP 200. No se repitió bootstrap.
+El propietario solicitó restablecer su credencial; se revocaron sesiones. La copia
+inicial de credenciales del corte histórico ya no representa la contraseña vigente.
+
+Evidencia privada, ignorada y con ACL del propietario:
+backups/login-recovery-20261102-075813/. Se conservan ambos dumps custom:
+
+| Archivo | SHA-256 |
+| --- | --- |
+| before-0006.dump | CCD18B80EEC2B475554366807176144C7896F9694BC110C92B6C621C5E7E0AF2 |
+| final-0006.dump | E946C51A46C2B5673ED5E5B7998070AEB04CE8D5B24EDB2DB88F15CE92272EA5 |
+
+Bases separadas conservadas: hdboutique_login_verify_20261102075838 (ensayo de
+migración), hdboutique_before_verify_20261102 (restauración de 0005) y
+hdboutique_final_verify_20261102 (restauración final de 0006). La primera tentativa
+de ensayo detectó propiedad incorrecta de objetos restaurados; se corrigió en
+esa base de ensayo antes de migrar desarrollo. No se restauró --clean en desarrollo.
+
+La conciliación posterior, con escritores detenidos, verificó las columnas
+anteriores de 28 tablas por hashes exactos, incluida la cuenta existente. Se
+excluyeron explícitamente alembic_version (revisión cambiada), web_sessions y
+login_throttles (actividad de autenticación de la recuperación). No se presenta
+esa exclusión como igualdad de sesiones. Cero cuentas Manager en desarrollo.
+La restauración final coincidió exactamente en las 32 tablas más alembic_version,
+columnas, conteos, hashes y estado de todas las secuencias con el origen final.
+Snapshots y resultado agregado permanecen privados junto a los dumps.
+
+La comprobación de continuidad se completó después de la recuperación urgente;
+no se afirma que hubiera sido ejecutada antes de aplicar 0006. Ningún dato
+comercial sintético fue insertado por estas operaciones. El volumen y .env.docker
+se conservaron. El retorno sigue siendo una restauración separada y conciliada;
+el downgrade de 0006 protege contra pérdida de nuevos datos operativos.

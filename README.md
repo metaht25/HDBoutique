@@ -6,8 +6,9 @@ en fase 15; historial y contratos anteriores conservados como referencia.
 
 ## Aplicacion local
 
-Web activa: http://127.0.0.1:8080. Usuario inicial administrador; credenciales en
-el archivo privado de la carpeta de respaldo del corte, nunca versionadas.
+Web activa: http://127.0.0.1:8080. Usuario inicial administrador; contraseña
+restablecida por solicitud del propietario el 2 de noviembre. La copia inicial
+del corte ya no representa la credencial vigente. No guardar claves en Git.
 [Resultado, ubicacion privada y retorno](docs/cutover.md).
 
 ```powershell
