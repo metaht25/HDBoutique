@@ -14,8 +14,8 @@ import type { Party, PartyKind } from './party'
 
 export function AddressFields({ values, update, required }: { values: Record<string, string>; update: (field: string, value: string) => void; required: boolean }) {
   const departments = useChoices('departments'), municipalities = useChoices('municipalities')
-  return <><DataState result={departments}><SelectField label="Departamento" required={required} value={values.department_id ?? ''} onChange={e => { update('department_id', e.target.value); update('municipality_id', '') }}><option value="">Selecciona departamento</option>{departments?.data?.map(row => <option key={row.id} value={row.id}>{row.label}</option>)}</SelectField></DataState>
-    <DataState result={municipalities}><SelectField label="Municipio" required={required} disabled={!values.department_id} value={values.municipality_id ?? ''} onChange={e => update('municipality_id', e.target.value)}><option value="">Selecciona municipio</option>{municipalities?.data?.filter(row => row.department_id === Number(values.department_id)).map(row => <option key={row.id} value={row.id}>{row.label}</option>)}</SelectField></DataState>
+  return <><DataState result={departments}><SelectField label="Departamento" required={required} value={values.department_id ?? ''} onChange={e => { update('department_id', e.target.value); update('department_name', departments?.data?.find(row => row.id === Number(e.target.value))?.label ?? ''); update('municipality_id', ''); update('municipality_name', '') }}><option value="">Selecciona departamento</option>{departments?.data?.map(row => <option key={row.id} value={row.id}>{row.label}</option>)}</SelectField></DataState>
+    <DataState result={municipalities}><SelectField label="Municipio" required={required} disabled={!values.department_id} value={values.municipality_id ?? ''} onChange={e => { update('municipality_id', e.target.value); update('municipality_name', municipalities?.data?.find(row => row.id === Number(e.target.value))?.label ?? '') }}><option value="">Selecciona municipio</option>{municipalities?.data?.filter(row => row.department_id === Number(values.department_id)).map(row => <option key={row.id} value={row.id}>{row.label}</option>)}</SelectField></DataState>
     <div className={styles.full}><TextField label="Dirección exacta" required={required} maxLength={100} value={values.address_line ?? ''} onChange={e => update('address_line', e.target.value)} /></div>
   </>
 }
@@ -40,7 +40,7 @@ export function PartyForm({ kind, row, initialKind, onSaved, onClose }: { kind: 
       if (values.temporary_password) body.temporary_password = values.temporary_password
     }
     submitting.current = true; setBusy(true); setError('')
-    try { const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved({ ...saved, ...(hasAddress ? { department_id: Number(values.department_id), municipality_id: Number(values.municipality_id), address_line: values.address_line } : {}) }) }
+    try { const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved({ ...saved, ...(hasAddress ? { department_id: Number(values.department_id), department_name: values.department_name, municipality_id: Number(values.municipality_id), municipality_name: values.municipality_name, address_line: values.address_line?.trim() ?? null } : {}) }) }
     catch (error) { setError(getErrorMessage(error, `No se pudo guardar el ${partyLabels[kind]}.`)) }
     finally { submitting.current = false; setBusy(false); update('temporary_password', '') }
   }

@@ -72,6 +72,7 @@ test('cash, transfer and mixed delivery sales produce real 80 mm receipts', asyn
     await page.getByLabel('Método de pago').selectOption(method)
     if (method !== 'cash') await customerFromSale(page, method === 'mixed', info)
     if (method === 'mixed') {
+      await expect(page.getByText('0000000000 · Synthetic purchasing, Municipio sintético · Domicilio sintético para prueba aislada', { exact: true })).toBeVisible()
       await page.getByLabel('Costo del delivery (NIO)').fill('25.00')
       await page.getByLabel('Notas (opcional)').fill('Texto sintético <etiqueta> & caracteres especiales. Dirección y observaciones largas deben ajustarse al ancho del ticket sin perder información.')
     }
