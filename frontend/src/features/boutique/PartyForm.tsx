@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../shared/api/errors'
 import { Message } from '../../shared/ui/Feedback'
 import { TextField } from '../../shared/ui/TextField'
 import { SelectField } from '../../shared/ui/SelectField'
+import { useCashCommand } from '../cash-register/useCashCommand'
 import { SearchSelect } from './SearchSelect'
 import { commercialDate, useChoices } from './api'
 import { DataState, Modal } from './ui'
@@ -20,8 +21,9 @@ export function AddressFields({ values, update, required }: { values: Record<str
     <div className={styles.full}><TextField label="Dirección exacta" required={required} maxLength={100} value={values.address_line ?? ''} onChange={e => update('address_line', e.target.value)} /></div>
   </>
 }
-export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose }: { kind: PartyKind; row?: Party; initialKind?: string; onDraft?: (body: Record<string, unknown>, display: Record<string, string>) => void; onSaved: (row: Party) => void; onClose: () => void }) {
+export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, userId }: { userId?: number; kind: PartyKind; row?: Party; initialKind?: string; onDraft?: (body: Record<string, unknown>, display: Record<string, string>) => void; onSaved: (row: Party) => void; onClose: () => void }) {
   const [values, setValues] = useState<Record<string, string>>(() => row ? Object.fromEntries(Object.entries(row).map(([key, value]) => [key, value == null ? '' : key === 'phone_number' && kind === 'employees' ? String(value).replace(/^([78][0-9]{3})([0-9]{4})$/, '$1-$2') : String(value)])) : { kind: initialKind ?? 'regular', start_date: commercialDate() })
+  const supplierCommand = useCashCommand<Party>(userId ?? 0, 'supplier', onSaved)
   const [showPassword, setShowPassword] = useState(false)
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), submitting = useRef(false)
   const customer = kind === 'customers', employee = kind === 'employees', delivery = values.kind === 'delivery', addressRequired = !customer || delivery
@@ -29,9 +31,11 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose }:
   const input = (field: string, label: string, required = true, maxLength = 40, type = 'text') => <TextField label={label} required={required} maxLength={maxLength} type={type} value={values[field] ?? ''} onChange={e => update(field, e.target.value)} />
   async function submit(event: FormEvent) {
     event.preventDefault(); if (submitting.current) return
+    if (kind === 'suppliers' && supplierCommand.pending) { await supplierCommand.send('', {}); return }
     const body: Record<string, unknown> = {}
     const fields = customer ? ['first_names', 'last_names', 'phone_number', 'kind'] : employee ? ['first_names', 'last_names', 'phone_number', 'job_title', 'start_date'] : ['company_name', 'contact_first_names', 'contact_last_names', 'phone_number', 'work_email']
     fields.forEach(field => { body[field] = field === 'kind' ? values[field] || 'regular' : values[field]?.trim() || null })
+    if (!employee && body.phone_number !== null && !/^[0-9]{1,10}$/.test(String(body.phone_number))) { setError('El teléfono debe contener únicamente dígitos, hasta un máximo de diez.'); return }
     if (employee) {
       body.phone_number = (values.phone_number ?? '').replace(/-/g, '')
       if (!/^[78][0-9]{7}$/.test(String(body.phone_number))) { setError('El teléfono debe tener ocho dígitos y comenzar con 7 u 8.'); return }
@@ -46,12 +50,14 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose }:
       if (values.password) body.password = values.password
     }
     if (onDraft) { onDraft(body, values); return }
+    if (kind === 'suppliers' && !row) { await supplierCommand.send('/api/v1/purchases/suppliers', body); return }
     submitting.current = true; setBusy(true); setError('')
-    try { const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved({ ...saved, ...(hasAddress ? { department_id: Number(values.department_id), department_name: values.department_name, municipality_id: Number(values.municipality_id), municipality_name: values.municipality_name, address_line: values.address_line?.trim() ?? null } : {}) }) }
+    try {
+      const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved({ ...saved, ...(hasAddress ? { department_id: Number(values.department_id), department_name: values.department_name, municipality_id: Number(values.municipality_id), municipality_name: values.municipality_name, address_line: values.address_line?.trim() ?? null } : {}) }) }
     catch (error) { setError(getErrorMessage(error, `No se pudo guardar el ${partyLabels[kind]}.`)) }
     finally { submitting.current = false; setBusy(false); update('password', '') }
   }
-  return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={busy}>
+  return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy && !supplierCommand.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={busy || (kind === 'suppliers' && supplierCommand.locked)}>
     <div className={styles.formGrid}>
       {customer && <div className={styles.full}><SelectField label="Tipo de cliente" value={values.kind || 'regular'} onChange={e => update('kind', e.target.value)}><option value="regular">Cliente</option><option value="delivery">Cliente delivery</option></SelectField></div>}
       {kind === 'suppliers' && <div className={styles.full}>{input('company_name', 'Empresa', true, 50)}</div>}
@@ -74,14 +80,14 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose }:
         const digits = input.value.replace(/[^0-9]/g, '').slice(0, 8)
         update('phone_number', digits.length > 4 ? digits.slice(0, 4) + '-' + digits.slice(4) : digits)
         requestAnimationFrame(() => { const caret = before + (before > 4 ? 1 : 0); input.setSelectionRange(caret, caret) })
-      }} /> : input('phone_number', 'Teléfono', !customer || delivery, 10, 'tel')}
+      }} /> : <TextField label="Teléfono" required={!customer || delivery} type="tel" inputMode="numeric" pattern="[0-9]{1,10}" maxLength={10} value={values.phone_number ?? ''} onChange={e => { if (/^[0-9]*$/.test(e.target.value)) update('phone_number', e.target.value) }} />}
       {!customer && !employee && input('work_email', 'Correo', false, employee ? 100 : 40, 'email')}
-      {employee && <>{input('job_title', 'Cargo', false, 20)}{input('start_date', 'Fecha de ingreso', false, 10, 'date')}
+      {employee && <>{<SelectField label="Cargo" value={values.job_title ?? ''} onChange={e => update('job_title', e.target.value)}><option value="">Sin cargo asignado</option><option value="Vendedor">Vendedor</option>{row && values.job_title && values.job_title !== 'Vendedor' && <option value={values.job_title}>{values.job_title} (histórico)</option>}</SelectField>}{input('start_date', 'Fecha de ingreso', false, 10, 'date')}
         {!row ? input('username', 'Usuario de acceso', true, 64) : <p>Usuario de acceso: <b>{'username' in row ? row.username ?? 'Sin cuenta vinculada' : ''}</b></p>}
         <TextField label={row ? 'Nueva contraseña (opcional)' : 'Contraseña'} required={!row} type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={6} maxLength={128} value={values.password ?? ''} onChange={e => update('password', e.target.value)} /><button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button></>}
       <AddressFields values={values} update={update} required={addressRequired} />
     </div>
     {employee && <p className={styles.hint}>La cuenta tendrá acceso como Colaborador. Solo Dueña puede reemplazar su contraseña. Usa de 6 a 128 caracteres.</p>}
-    {error && <Message>{error}</Message>}<div className={styles.actions}><button type="button" className="secondary" onClick={onClose}>Cancelar</button><button type="submit">{busy ? 'Guardando…' : row ? 'Guardar cambios' : onDraft ? `Usar ${partyLabels[kind]} en esta operación` : `Guardar ${partyLabels[kind]}`}</button></div>
-  </fieldset></form></Modal>
+    </fieldset>{(error || (kind === 'suppliers' && supplierCommand.error)) && <Message>{error || supplierCommand.error}</Message>}{kind === 'suppliers' && supplierCommand.pending && <Message variant="info">Proveedor pendiente de confirmación. Reintenta la misma solicitud.</Message>}<div className={styles.actions}><button type="button" className="secondary" disabled={busy || supplierCommand.busy} onClick={onClose}>Cancelar</button><button type="submit" disabled={busy || (kind === 'suppliers' && (supplierCommand.busy || supplierCommand.blocked))}>{kind === 'suppliers' && supplierCommand.pending ? 'Reintentar mismo proveedor' : busy ? 'Guardando…' : row ? 'Guardar cambios' : onDraft ? `Usar ${partyLabels[kind]} en esta operación` : `Guardar ${partyLabels[kind]}`}</button></div>
+  </form></Modal>
 }

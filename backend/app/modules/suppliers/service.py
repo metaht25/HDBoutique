@@ -2,12 +2,15 @@
 
 from contextlib import nullcontext
 from datetime import UTC, datetime
+from hashlib import sha256
 
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApplicationError
 from app.modules.boutique.audit import audit
+from app.modules.boutique.models import ManagementEvent
 from app.modules.locations.composition import save_inline_address
 from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 from app.modules.suppliers.repository import SuppliersRepository
@@ -22,6 +25,46 @@ from app.modules.suppliers.schemas import (
 
 
 class SuppliersService:
+    def register_contextual(
+        self, payload: SupplierCreate, actor_id: int, key: str
+    ) -> Supplier:
+        key_hash = sha256(f"supplier:{actor_id}:{key}".encode()).hexdigest()
+        fingerprint = sha256(payload.model_dump_json().encode()).hexdigest()
+        with self.session.begin():
+            self.session.execute(
+                text("SELECT pg_advisory_xact_lock(:key)"),
+                {"key": int(key_hash[:15], 16)},
+            )
+            event = self.session.scalar(
+                select(ManagementEvent).where(
+                    ManagementEvent.resource == "suppliers",
+                    ManagementEvent.action == "contextual_created",
+                    ManagementEvent.actor_id == actor_id,
+                    ManagementEvent.detail.startswith(key_hash + ":"),
+                )
+            )
+            if event is not None:
+                if event.detail != key_hash + ":" + fingerprint:
+                    raise ApplicationError(
+                        409, "idempotency_conflict", "Reintenta con los mismos datos."
+                    )
+                existing = self.repository.get_supplier(event.record_id)
+                if existing is None:
+                    raise ApplicationError(
+                        409, "supplier_unavailable", "Proveedor no disponible."
+                    )
+                return existing
+            record = self.save_supplier(payload, actor_id=actor_id, in_transaction=True)
+            audit(
+                self.session,
+                "suppliers",
+                record.supplier_id,
+                "contextual_created",
+                actor_id,
+                key_hash + ":" + fingerprint,
+            )
+            return record
+
     def __init__(self, session: Session) -> None:
 
         self.session = session

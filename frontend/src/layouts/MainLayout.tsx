@@ -17,7 +17,7 @@ export function MainLayout() {
   useEffect(() => { document.title = title + ' | H&D Boutique'; heading.current?.focus(); window.scrollTo(0, 0) }, [title, location.pathname])
   useEffect(() => { document.body.dataset.role = account?.role ?? ''; return () => { delete document.body.dataset.role } }, [account?.role])
   async function signOut() { setBusy(true); setError(''); try { await logout() } catch (error) { setError(getErrorMessage(error, 'No se pudo cerrar la sesión.')) } finally { setBusy(false) } }
-  return <div className={styles.layout}>
+  return <div className={styles.layout} data-authenticated={!!account}>
     <a className={styles.skipLink} href="#main-content">Saltar al contenido</a>
     <aside className={styles.sidebar}>
       <div className={styles.brand}><strong>H&D Boutique</strong><small>{account ? owner ? 'Panel de dueña' : 'Panel de colaborador' : 'Gestión de tu boutique'}</small></div>

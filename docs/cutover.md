@@ -239,3 +239,32 @@ Retorno: detener escritores y restaurar en otra base autorizada; conciliar toda
 actividad posterior antes de cambiar destino. 0007 bloquea pérdida de auditoría,
 0008 protege referencias en uso y 0009 rechaza downgrade con pagos/anulaciones sin
 turno. No hacer downgrade en caliente, down -v ni restauración --clean en desarrollo.
+
+## Correcciones autorizadas del propietario del 2 de noviembre de 2026
+
+La auditoría posterior a Fase 16 está en [informe](owner-corrections-audit.md).
+Se mantuvo el destino hdboutique-dev/hdboutique y su volumen. Sin reiniciar la base,
+se detuvieron únicamente web/backend durante respaldo, ensayo y actualización.
+
+Respaldo privado: backups/owner-corrections-20261102-0d8baae8, ACL exclusiva.
+before.dump SHA-256 0C685489F2ACDA927FD4C7309C5AA8F242749877EA7153B0793622B77540CF6A.
+final.dump SHA-256 751EB3455DB10A3E6E192A2D735D49718384F85686F5A30BC2A0909CBF8E88E3.
+Ambos restaurados sin --clean, en bases nuevas conservadas
+hdboutique_audit_before_verify_0d8baae8 y hdboutique_audit_final_verify_0d8baae8.
+Las huellas completas de tablas, columnas, filas y secuencias coincidieron con
+los snapshots correspondientes.
+
+En la copia previa se ensayó 0009→0010_optional_profile_phone y se guardó el perfil
+solicitado; Alembic check sin drift. Tras aprobar 308 pruebas PostgreSQL, el mismo
+procedimiento se aplicó a desarrollo: teléfono de perfil nullable, alta del perfil 1
+con nombre H&D Boutique, dirección Milagro de Dios, teléfono NULL y logo NULL.
+Un evento de actualización por la Dueña existente; demás tablas/identidades/hashes
+intactos. No existía perfil previo. Siguen 32 tablas más Alembic.
+
+No hubo semillas comerciales, bootstrap ni cambios de credenciales. Web/backend
+recreados con imágenes actuales; los tres servicios saludables en 8080/8001/5433.
+Diez SPA y salud/readiness HTTP 200; rutas comerciales anónimas 401. La comprobación
+del perfil persistido devolvió coincidencia exacta de los cuatro valores autorizados.
+No se usó una contraseña histórica ni la contraseña personal del propietario.
+Conservar respaldos y copias de verificación; 0010 rechaza downgrade si un teléfono
+NULL no puede cumplir el esquema anterior. Nunca rellenarlo para forzar un retorno.

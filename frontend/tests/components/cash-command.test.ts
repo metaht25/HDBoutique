@@ -5,9 +5,9 @@ import { ApiError } from '../../src/shared/api/errors'
 import { useCashCommand } from '../../src/features/cash-register/useCashCommand'
 
 beforeEach(() => sessionStorage.clear())
-it('recovers an uncertain purchase operation across reload without changing its body or key', async () => {
+it.each(['/api/v1/purchases', '/api/v1/purchases/suppliers'])('recovers uncertain %s across reload without changing its body or key', async path => {
   const request = vi.spyOn(apiClient, 'request').mockRejectedValueOnce(new TypeError('Synthetic lost response')).mockResolvedValue({})
-  const saved = vi.fn(), path = '/api/v1/purchases', body = { employee_id: 1, supplier_id: 2, items: [{ product_id: 3, unit_cost: '1.00', quantity: 1 }] }
+  const saved = vi.fn(), body = { employee_id: 1, supplier_id: 2, items: [{ product_id: 3, unit_cost: '1.00', quantity: 1 }] }
   const first = renderHook(() => useCashCommand(3, 'register', saved))
   await act(async () => first.result.current.send(path, body))
   expect(first.result.current.pending?.body).toEqual(body)

@@ -1,8 +1,13 @@
 """Shared technical validation; business fields remain explicit per module."""
 
-from typing import ClassVar
+import re
+from typing import Annotated, ClassVar
 
-from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
+
+PhoneNumber = Annotated[
+    str, Field(strict=True, min_length=1, max_length=10, pattern=r"^[0-9]+$")
+]
 
 
 class InputModel(BaseModel):
@@ -40,6 +45,10 @@ class ErrorResponse(BaseModel):
 
 
 def require_exact_decimal(value: object) -> object:
+    if isinstance(value, str) and not re.fullmatch(r"-?[0-9]+(?:\.[0-9]{1,2})?", value):
+        raise ValueError(
+            "Usa un importe decimal sin exponentes y con hasta dos decimales"
+        )
     if isinstance(value, (float, bool)):
         raise ValueError("Send money as decimal text or integer")
     return value

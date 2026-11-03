@@ -32,7 +32,8 @@ def receipt_pdf(receipt: ReceiptRead) -> bytes:
 
     line(boutique.name or "H&D Boutique", title)
     if boutique.ready:
-        line(boutique.phone_number or "")
+        if boutique.phone_number:
+            line(boutique.phone_number)
         line(boutique.address_line or "")
     else:
         line("Datos de la boutique pendientes de completar")

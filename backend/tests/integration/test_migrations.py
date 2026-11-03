@@ -19,6 +19,34 @@ pytestmark = pytest.mark.postgres
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_optional_profile_phone_upgrade_preserves_existing_values(
+    database_connection,
+) -> None:
+    config = Config(str(BACKEND_ROOT / "alembic.ini"))
+    config.attributes["connection"] = database_connection
+    command.downgrade(config, "0009_shiftless_payments")
+    database_connection.execute(
+        text(
+            "INSERT INTO boutique_profiles(profile_id,name,phone_number,address_line) "
+            "VALUES (1,'Synthetic boutique','0012345678','Synthetic address')"
+        )
+    )
+    before = database_connection.execute(text("SELECT * FROM boutique_profiles")).one()
+    command.upgrade(config, "head")
+    assert (
+        database_connection.execute(text("SELECT * FROM boutique_profiles")).one()
+        == before
+    )
+    database_connection.execute(
+        text("UPDATE boutique_profiles SET phone_number=NULL WHERE profile_id=1")
+    )
+    assert (
+        database_connection.scalar(text("SELECT phone_number FROM boutique_profiles"))
+        is None
+    )
+    command.check(config)
+
+
 def test_upgrade_downgrade_upgrade_and_metadata_drift(postgres_engine: Engine) -> None:
     with postgres_engine.begin() as connection:
         config = Config(str(BACKEND_ROOT / "alembic.ini"))
@@ -33,7 +61,7 @@ def test_upgrade_downgrade_upgrade_and_metadata_drift(postgres_engine: Engine) -
         command.upgrade(config, "head")
         command.check(config)
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-            "0009_shiftless_payments"
+            "0010_optional_profile_phone"
         )
 
 

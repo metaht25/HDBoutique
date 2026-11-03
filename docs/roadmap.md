@@ -11,7 +11,11 @@ detiene al cerrar su alcance. El push es manual a cargo del propietario.
 
 ## Estado de avance
 
-La versión local está en 0009_shiftless_payments y conserva 32 tablas. Dueña dispone de
+Correcciones posteriores autorizadas: login, cargo, alta persistente de proveedores,
+validaciones y perfil sin teléfono/logo; ver [auditoría](owner-corrections-audit.md).
+No se crea una nueva fase.
+
+La versión local está en 0010_optional_profile_phone y conserva 32 tablas. Dueña dispone de
 diez pantallas y Colaborador de cinco; reportes/preparación se integran en sus módulos,
 sin caja/turnos operativos. No se introducen semillas comerciales en desarrollo. [Reglas
 vigentes](business-rules.md), [navegación](frontend-modules.md), [destino local y

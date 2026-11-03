@@ -6,14 +6,17 @@ productos y empleado activos; usa el vínculo de cuenta cuando existe.
 
 Registro con Idempotency-Key: varias líneas, cantidades positivas, costo de compra
 por proveedor/producto copiado por línea, envío y descripción opcional. Proveedor
-se selecciona en consulta o se registra dentro de la compra; fallo revierte también
-su domicilio y relaciones. Inactivo requiere reactivación en Proveedores. Total de servidor en
+se selecciona en consulta o se guarda desde el formulario contextual de Compras.
+POST /api/v1/purchases/suppliers exige Dueña, CSRF y clave idempotente; confirma
+proveedor/domicilio/auditoría juntos y lo deja disponible antes de guardar una compra.
+Un fallo de compra posterior no elimina ese proveedor ya confirmado. La compatibilidad
+con proveedor inline en POST /purchases conserva su transacción integral anterior. Inactivo requiere reactivación en Proveedores. Total de servidor en
 NIO/Decimal/dos decimales; envío separado, sin prorrateo. Siempre Pendiente
 (registered). Registrar no aumenta existencias. Fechas antiguas de revisión/relleno
 se conservan sin inferir recepción.
 
 Los costos de proveedor también exigen texto decimal o entero exacto; rechazan
-float, booleanos, valores no finitos, precisión excesiva y desbordamientos.
+exponentes, separadores ambiguos, float, booleanos, valores no finitos, precisión excesiva y desbordamientos.
 
 Recepción completa: confirmación explícita y empleado activo; registered → received
 una sola vez. Bloqueo transaccional de compra/productos; movimiento purchase_receipt

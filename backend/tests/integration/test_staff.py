@@ -20,7 +20,7 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
         "first_names": "Ana",
         "last_names": "Prueba",
         "phone_number": "80000000",
-        "job_title": "Colaborador",
+        "job_title": "Vendedor",
         "username": "synthetic-cashier",
         "password": SYNTHETIC_PASSWORD,
         "start_date": "2026-01-01",

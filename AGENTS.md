@@ -42,7 +42,7 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   supervisada, motivo, original conservado, devolucion del importe y reposicion
   solo de mercancia efectivamente devuelta. Implementados pago completo atomico obligatorio
   con venta y anulación auditada; caja/turnos retirados de la operación, historia
-  conservada. Head de código 0009_shiftless_payments, 32 tablas;
+  conservada. Head de código 0010_optional_profile_phone, 32 tablas;
   estado concreto de migración local y respaldos en docs/cutover.md.
   Historicos sin pago no se marcan como cobrados. Ver B04/B06/B10 y
   docs/cash-register.md. Empleados: docs/employees.md. Configuracion inicial

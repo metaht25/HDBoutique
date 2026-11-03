@@ -10,7 +10,7 @@ from app.modules.sales.schemas import SaleRead
 
 class ProfileWrite(InputModel):
     name: Annotated[str, Field(min_length=1, max_length=100)]
-    phone_number: Annotated[str, Field(min_length=1, max_length=30)]
+    phone_number: Annotated[str, Field(pattern=r"^[0-9]{1,30}$")] | None = None
     address_line: Annotated[str, Field(min_length=1, max_length=250)]
     logo_base64: Annotated[str | None, Field(max_length=2800000)] = None
     remove_logo: bool = False

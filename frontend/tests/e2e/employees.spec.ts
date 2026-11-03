@@ -5,7 +5,7 @@ test('employee creation includes credentials and direct municipality selection',
   const dialog = page.getByRole('dialog', { name: 'Nuevo empleado' })
   await expect(dialog.getByLabel('Usuario de acceso')).toBeVisible(); await expect(dialog.getByLabel('Contraseña', { exact: true })).toHaveAttribute('type', 'password')
   await expect(dialog.getByLabel('Municipio', { exact: true })).toBeDisabled()
-  await dialog.getByLabel('Departamento', { exact: true }).click(); await dialog.getByRole('option').first().click()
+  await dialog.getByLabel('Departamento', { exact: true }).click(); await dialog.getByRole('listbox', { name: 'Departamento' }).getByRole('option').first().click()
   await expect(dialog.getByLabel('Municipio', { exact: true })).toBeEnabled()
   const phone = dialog.getByLabel('Teléfono', { exact: true })
   await phone.fill('80000000'); await expect(phone).toHaveValue('8000-0000')

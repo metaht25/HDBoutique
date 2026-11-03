@@ -4,11 +4,12 @@ import { getErrorMessage } from '../../shared/api/errors'
 import { LoadingState, Message } from '../../shared/ui/Feedback'
 import { TextField } from '../../shared/ui/TextField'
 import { useSession } from './sessionContext'
-import styles from '../../shared/ui/Management.module.css'
+import styles from './SignIn.module.css'
 
 function SignIn() {
   const { login } = useSession()
   const [username, setUsername] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -23,12 +24,13 @@ function SignIn() {
       setError(getErrorMessage(error, 'No se pudo iniciar sesión.'))
     } finally { setPassword(''); setBusy(false); submitting.current = false }
   }
-  return <section className={styles.panel}><h2>Inicia sesión para continuar</h2>
+  return <section className={styles.panel} aria-labelledby="sign-in-title"><p className={styles.eyebrow}>TU BOUTIQUE, EN ORDEN</p><h2 id="sign-in-title">Inicia sesión para continuar</h2><p className={styles.intro}>Accede a tu espacio de trabajo con tu cuenta.</p>
     <form onSubmit={event => void submit(event)} className={styles.form}>
       <TextField label="Usuario" name="username" autoComplete="username" required maxLength={64}
         value={username} disabled={busy} onChange={event => setUsername(event.target.value)} />
-      <TextField label="Contraseña" name="password" type="password" autoComplete="current-password" required maxLength={128}
+      <TextField label="Contraseña" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required maxLength={128}
         value={password} disabled={busy} onChange={event => setPassword(event.target.value)} />
+<button className={styles.reveal} type="button" disabled={busy} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button>
       {error && <Message>{error}</Message>}
       <button disabled={busy} type="submit">{busy ? 'Iniciando sesión…' : 'Iniciar sesión'}</button>
     </form>

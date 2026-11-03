@@ -40,10 +40,11 @@ Nginx sirve dist y dirige /api/v1 a FastAPI manteniendo el origen. El despliegue
 local usa loopback/HTTP y cookies locales; production exige HTTPS/Secure y su
 propia infraestructura. No hay proxy ni servicio Django.
 
-32 tablas SQLAlchemy y nueve revisiones Alembic hasta 0009_shiftless_payments.
+32 tablas SQLAlchemy y diez revisiones Alembic hasta 0010_optional_profile_phone.
 0007 libera contraseñas asignadas con auditoría sin cambiar hashes; 0008 incorpora
 maestros permanentes protegidos y tallas fijas; 0009 admite pagos/anulaciones sin
-turno preservando toda la historia. No hay migración ni semillas al iniciar API.
+turno preservando toda la historia. 0010 permite teléfono ausente en el perfil, sin convertir valores históricos.
+No hay migración ni semillas al iniciar API.
 0006 incorpora boutique_profiles, management_events, municipio, activación,
 instantáneas de venta, componentes de pago mixto y movimientos initial_stock.
 El retiro del perfil Manager desactiva y audita sin elevar privilegios. Dueña y

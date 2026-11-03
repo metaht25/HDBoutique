@@ -26,5 +26,7 @@ cuentas/vínculos exclusivos existentes. Un empleado sin cuenta requiere vincula
 antes de asignar contraseña. No repetir bootstrap.
 
 0007 libera must_change_password con auditoría sin cambiar hashes. Manager sigue
-retirado, sin conversión automática. Cargo no concede permisos.
+retirado, sin conversión automática. Cargo no concede permisos. El selector admite Vendedor y ausencia de cargo;
+solo conserva otro valor si ya pertenece al empleado histórico que se edita.
+El servicio rechaza nuevos valores arbitrarios sin renombrar cargos antiguos.
 [Autenticación](authentication.md), [reglas](business-rules.md), [corte](cutover.md).

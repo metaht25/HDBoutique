@@ -2,7 +2,7 @@
 
 ## Esquema vigente
 
-32 modelos, head 0009_shiftless_payments. 0006 agregó boutique_profiles
+32 modelos, head 0010_optional_profile_phone. 0006 agregó boutique_profiles
 (perfil único y logo PNG binario durable) y management_events (actor, recurso,
 acción, fecha y detalle). El logo forma parte del respaldo PostgreSQL.
 

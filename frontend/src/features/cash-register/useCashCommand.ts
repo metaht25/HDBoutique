@@ -13,7 +13,7 @@ export function useCashCommand<T = unknown>(userId: number, operation: string, o
       const saved = sessionStorage.getItem(storageKey)
       if (!saved) return { intent: null, error: '' }
       const row = record(JSON.parse(saved)), path = requiredText(row.path), key = requiredText(row.key)
-      if (!/^\/api\/v1\/(sales(\/\d+\/void)?|purchases(\/\d+\/receive)?)$/.test(path) || !/^[A-Za-z0-9_-]{8,128}$/.test(key)) throw new Error('Invalid intent')
+      if (!/^\/api\/v1\/(sales(\/\d+\/void)?|purchases(\/suppliers|\/\d+\/receive)?)$/.test(path) || !/^[A-Za-z0-9_-]{8,128}$/.test(key)) throw new Error('Invalid intent')
       return { intent: { path, key, body: record(row.body) } as Intent, error: '' }
     } catch { return { intent: null, error: 'No se pudo recuperar la operación pendiente. Revisa el historial antes de registrar otra.' } }
   })

@@ -5,7 +5,13 @@ from typing import Annotated
 
 from pydantic import BeforeValidator, Field
 
-from app.api.schemas import InputModel, OutputModel, PatchModel, require_exact_decimal
+from app.api.schemas import (
+    InputModel,
+    OutputModel,
+    PatchModel,
+    PhoneNumber,
+    require_exact_decimal,
+)
 from app.modules.locations.composition import InlineAddress
 
 
@@ -15,7 +21,7 @@ class SupplierCreate(InputModel):
     company_name: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
     contact_first_names: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
     contact_last_names: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
-    phone_number: Annotated[str, Field(max_length=10, min_length=1, strict=True)]
+    phone_number: PhoneNumber
     work_email: Annotated[str | None, Field(max_length=40, strict=True)] = None
 
 

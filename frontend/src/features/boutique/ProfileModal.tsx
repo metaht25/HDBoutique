@@ -22,14 +22,14 @@ function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => vo
   async function save(event: FormEvent) {
     event.preventDefault(); if (sending.current) return
     sending.current = true; setBusy(true); setError('')
-    try { await apiClient.request('/api/v1/boutique-profile', { method: 'PUT', body: { name: name.trim(), phone_number: phone.trim(), address_line: address.trim(), logo_base64: logo, remove_logo: remove } }); onSaved() }
+    try { await apiClient.request('/api/v1/boutique-profile', { method: 'PUT', body: { name: name.trim(), phone_number: phone.trim() || null, address_line: address.trim(), logo_base64: logo, remove_logo: remove } }); onSaved() }
     catch (error) { setError(getErrorMessage(error, 'No se pudieron guardar los datos de la boutique.')) }
     finally { sending.current = false; setBusy(false) }
   }
   return <form className={styles.form} onSubmit={event => void save(event)}>
     {!profile.ready && <Message variant="info">Completa estos datos para preparar los recibos de la boutique.</Message>}
     <TextField label="Nombre de la boutique" required maxLength={100} value={name} onChange={e => setName(e.target.value)} />
-    <TextField label="Teléfono" required maxLength={30} value={phone} onChange={e => setPhone(e.target.value)} />
+    <TextField label="Teléfono (opcional)" type="tel" inputMode="numeric" pattern="[0-9]{1,30}" maxLength={30} value={phone} onChange={e => { if (/^[0-9]*$/.test(e.target.value)) setPhone(e.target.value) }} />
     <TextField label="Dirección" required maxLength={250} value={address} onChange={e => setAddress(e.target.value)} />
     <TextField label="Logo" type="file" accept="image/png,image/jpeg,image/webp" onChange={e => void upload(e.target.files?.[0])} />
     <p className={styles.hint}>PNG, JPEG o WebP. Máximo 2 MB y 3000 píxeles por lado.</p>

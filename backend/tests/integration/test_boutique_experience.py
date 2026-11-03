@@ -247,7 +247,7 @@ def test_direct_addresses_and_atomic_employee_access(boutique):
         "first_names": "Synthetic",
         "last_names": "Colleague",
         "phone_number": "80000000",
-        "job_title": "Ventas",
+        "job_title": "Vendedor",
         "address": inline,
         "username": "synthetic-new-colleague",
         "password": SYNTHETIC_PASSWORD,

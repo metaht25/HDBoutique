@@ -13,7 +13,7 @@ class BoutiqueProfile(Base):
 
     profile_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
-    phone_number: Mapped[str] = mapped_column(String(30))
+    phone_number: Mapped[str | None] = mapped_column(String(30))
     address_line: Mapped[str] = mapped_column(String(250))
     logo: Mapped[bytes | None] = mapped_column(LargeBinary)
 

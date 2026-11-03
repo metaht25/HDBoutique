@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from app.api.schemas import InputModel, OutputModel, PatchModel
+from app.api.schemas import InputModel, OutputModel, PatchModel, PhoneNumber
 from app.modules.locations.composition import InlineAddress
 
 
@@ -30,7 +30,7 @@ class CustomerCreate(InputModel):
     kind: Literal["regular", "delivery"] = "regular"
     first_names: Annotated[str, Field(max_length=40, min_length=1)]
     last_names: Annotated[str, Field(max_length=40, min_length=1)]
-    phone_number: Annotated[str | None, Field(max_length=10, min_length=1)] = None
+    phone_number: PhoneNumber | None = None
 
 
 class CustomerPatch(PatchModel):
@@ -41,7 +41,7 @@ class CustomerPatch(PatchModel):
     kind: Literal["regular", "delivery"] | None = None
     first_names: Annotated[str | None, Field(max_length=40, min_length=1)] = None
     last_names: Annotated[str | None, Field(max_length=40, min_length=1)] = None
-    phone_number: Annotated[str | None, Field(max_length=10, min_length=1)] = None
+    phone_number: PhoneNumber | None = None
     is_active: Annotated[bool | None, Field(strict=True)] = None
 
 

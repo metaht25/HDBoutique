@@ -28,7 +28,7 @@ Dos perfiles: Dueña (Administrator) y Colaborador (Cashier). La preparación se
 realiza desde el perfil del encabezado, Productos y los directorios;
 [guía contextual](docs/initial-setup.md), sin Configuración en el menú.
 
-32 modelos SQLAlchemy y Alembic head 0009_shiftless_payments. El corte local autorizado
+32 modelos SQLAlchemy y Alembic head 0010_optional_profile_phone. El corte local autorizado
 actualizo hdboutique desde 0001 despues de respaldo restaurado y conciliacion;
 no existe origen/historicos SQL Server y no se cargaron datos comerciales.
 Administrador inicial sin empleado inventado. [Empleados](docs/employees.md)

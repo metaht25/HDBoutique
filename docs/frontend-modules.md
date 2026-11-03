@@ -1,5 +1,10 @@
 # Interfaz vigente
 
+Correcciones posteriores a Fase 16: login centrado responsive; Cargo seleccionable;
+proveedor guardado inmediatamente desde Compras, con selección y reintento seguro;
+teléfonos y entradas numéricas controlados; perfil admite teléfono ausente.
+Ver [diagnóstico y verificación](owner-corrections-audit.md).
+
 React/Vite/TypeScript conserva cliente HTTP compartido, sesión, CSRF y recuperación
 de comandos idempotentes. La reconstrucción usa las 26 capturas inventariadas en
 [referencias visuales](visual-reconstruction.md). Variables y componentes

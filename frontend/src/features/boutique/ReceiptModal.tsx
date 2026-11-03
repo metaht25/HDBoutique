@@ -13,7 +13,7 @@ export function Ticket({ receipt }: { receipt: Receipt }) {
   return <article className={styles.ticket} aria-label="Ticket de 80 mm"><header>
     {boutique.logo_base64 && <img src={'data:image/png;base64,' + boutique.logo_base64} alt="Logo de la boutique" />}
     <h3>{boutique.name ?? 'H&D Boutique'}</h3>
-    {boutique.ready ? <><p>{boutique.phone_number}</p><p>{boutique.address_line}</p></> : <p>Datos de la boutique pendientes de completar</p>}
+    {boutique.ready ? <>{boutique.phone_number && <p>{boutique.phone_number}</p>}<p>{boutique.address_line}</p></> : <p>Datos de la boutique pendientes de completar</p>}
     <p><b>{receipt.receipt_number} · {receipt.sale_number}</b></p><p>{dateText(sale.sale_date)} · {timeText(sale.created_at)}</p>
   </header><hr /><p>Cliente: {sale.customer_name ?? 'Identidad histórica no registrada'}</p>
     {sale.customer_phone && <p>Teléfono: {sale.customer_phone}</p>}{sale.customer_address && <p>{sale.customer_address}</p>}

@@ -19,7 +19,7 @@ permanecen en el historial Git; no son reglas operativas alternativas.
 | B10 | Pago completo en efectivo, transferencia o mixto, con componentes separados. Caja y turnos retirados de la operación (B21), conservando su historia. |
 | B11 | No se utiliza /admin/ ni existe backend Django. Empleados y cuentas se gestionan desde la interfaz vigente. |
 | B12 | Sin origen SQL Server. Destino local autorizado hdboutique-dev/hdboutique; respaldos previo/final restaurados en bases separadas y conciliados. No se borran historias ni evidencias. Nuevos orígenes requieren alcance propio. |
-| B13 | Teléfono textual hasta 10 caracteres para clientes/proveedores; empleado canónico de ocho dígitos con prefijo 7 u 8 (B15). Cliente regular: nombre y apellido, teléfono opcional. Delivery: teléfono y domicilio completos obligatorios. Cliente general: identidad técnica única, sin datos personales. |
+| B13 | Teléfono textual de 1–10 dígitos ASCII para altas de clientes/proveedores; empleado canónico de ocho dígitos con prefijo 7 u 8 (B15). Cliente regular: nombre y apellido, teléfono opcional. Delivery: teléfono y domicilio completos obligatorios. Cliente general: identidad técnica única, sin datos personales. |
 | B14 | Stock 0 agotado; 1–5 bajo; >5 suficiente. Nulo y negativo separados. Sin fallback al campo legado. |
 
 Cliente general no genera una persona por venta. Cliente regular y delivery se registran
@@ -47,7 +47,7 @@ Verificación y destino migrado en [resultados](characterization.md) y [corte](c
 | --- | --- |
 | B15 | Empleado: teléfono canónico de ocho dígitos con prefijo 7 u 8 y presentación `####-####`; sin correo laboral nuevo. Dueña asigna y modifica contraseñas de 6..128 caracteres con control mostrar/ocultar; sin contraseña temporal ni cambio obligatorio para Colaborador. |
 | B16 | Managua, Masaya y León y sus 28 municipios oficiales se cargan como registros permanentes. Dueña puede ampliar ubicaciones. Selectores buscables y municipio dependiente del departamento. |
-| B17 | Clientes queda en consulta, sin edición ni desactivación; alta solo desde Nueva venta. Proveedores queda en consulta, puede desactivarse/reactivarse y se crea solo desde Compras. Elegir registros existentes rellena sin modificarlos. |
+| B17 | Clientes queda en consulta, sin edición ni desactivación; alta solo desde Nueva venta. Proveedores queda en consulta, puede desactivarse/reactivarse y se crea solo desde Compras. El alta contextual guarda inmediatamente con idempotencia antes de seleccionar el proveedor; las compras posteriores usan su ID. Elegir registros existentes rellena sin modificarlos. |
 | B18 | Catálogos nuevos no admiten vacíos. Tallas fijas para altas: S, M, L, XL y XXL; no editables. Valores históricos se conservan sin ofrecerse como nuevas opciones. |
 | B19 | Producto conserva costo principal y precio servidor costo × 1.15. Relación muchos a muchos con proveedores; cada relación guarda su costo de compra histórico sin recalcular automáticamente el precio de venta. |
 | B20 | Recibo visible decimal desde 1, sin prefijo ni relleno; se permiten saltos por fallos o rollbacks y nunca se renumera historia. Venta mantiene identificador separado. |

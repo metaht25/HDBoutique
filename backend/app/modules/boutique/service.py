@@ -61,7 +61,7 @@ def profile_read(profile: BoutiqueProfile | None) -> ProfileRead:
         phone_number=profile.phone_number,
         address_line=profile.address_line,
         logo_base64=base64.b64encode(profile.logo).decode() if profile.logo else None,
-        ready=bool(profile.name and profile.phone_number and profile.address_line),
+        ready=bool(profile.name and profile.address_line),
     )
 
 

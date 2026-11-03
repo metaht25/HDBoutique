@@ -52,9 +52,7 @@ class PurchaseCreate(InputModel):
     @field_validator("shipping_cost", mode="before")
     @classmethod
     def require_exact_money(cls, value: object) -> object:
-        if isinstance(value, (float, bool)):
-            raise ValueError("Send money as decimal text or integer")
-        return value
+        return require_exact_decimal(value)
 
     @field_validator("shipping_cost")
     @classmethod

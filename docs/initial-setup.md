@@ -3,7 +3,7 @@
 La preparación se realiza desde los módulos operativos, sin Configuración en el
 menú ni carga automática de datos comerciales:
 
-1. Dueña abre su perfil en encabezado para nombre, teléfono, dirección y logo.
+1. Dueña abre su perfil en encabezado para nombre y dirección; teléfono y logo son opcionales.
 2. Productos administra categorías/costo principal; tallas S/M/L/XL/XXL son fijas.
 3. Los directorios permiten ampliar departamentos y municipios; los 3 departamentos
    y 28 municipios iniciales son permanentes. Las direcciones se
@@ -22,6 +22,8 @@ al confirmar una venta, con identidad técnica estable. No es una semilla comerc
 El logo se guarda como PNG saneado en PostgreSQL, incluido en pg_dump: entrada
 raster PNG/JPEG/WebP de hasta 2 MB, máximo 3000 px por lado y 4 millones de píxeles,
 reducida a 600 px. SVG, contenido inválido y rutas arbitrarias no se aceptan.
+Un perfil con nombre y dirección está completo aunque no tenga teléfono ni logo.
+Teléfono ausente se guarda como NULL y no reserva una línea en HTML, impresión ni PDF.
 Sin perfil completo, el recibo indica preparación pendiente sin inventar datos.
 Solo Dueña puede leer/editar el perfil; el recibo autorizado incluye los datos
 necesarios para emitir el ticket.

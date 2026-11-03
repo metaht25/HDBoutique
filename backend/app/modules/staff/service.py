@@ -103,6 +103,14 @@ class StaffService:
                     )
 
                 for field, value in values.items():
+                    if (
+                        field == "job_title"
+                        and value not in {None, "Vendedor"}
+                        and (record_id is None or value != record.job_title)
+                    ):
+                        raise ApplicationError(
+                            422, "invalid_job_title", "Selecciona un cargo válido."
+                        )
                     setattr(record, field, value)
 
                 self.repository.add_employee(record)
