@@ -35,8 +35,7 @@ def install_error_handlers(application: FastAPI) -> None:
                     "code": "validation_error",
                     "message": (
                         "El teléfono debe tener ocho dígitos y comenzar con 7 u 8."
-                        if request.url.path.startswith("/api/v1/employees")
-                        and any(
+                        if any(
                             item["loc"][-1] == "phone_number" for item in error.errors()
                         )
                         else "Invalid request"

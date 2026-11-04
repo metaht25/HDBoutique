@@ -2,7 +2,7 @@ import { expect } from '@playwright/test'
 import type { Page, Route } from '@playwright/test'
 export const context = { business_date: '2026-11-01', timezone: 'America/Managua' }
 export const product = { product_id: 1, name: 'Prenda de prueba', category_id: 1, category_name: 'Ropa', size_id: 1, size_name: 'M', unit_price: '115.00', cost: '100.00', supplier_id: 1, supplier_name: 'Proveedor de prueba', legacy_stock: 2, legacy_stock_quantity: null, is_active: true, status: 'low_stock', description: null }
-export const customer = { customer_id: 1, first_names: 'Cliente', last_names: 'Prueba', phone_number: '00000000', kind: 'regular', is_active: true, created_at: null, address_id: 1, address_line: 'Domicilio de prueba', department_id: 1, department_name: 'Departamento de prueba', municipality_id: 1, municipality_name: 'Municipio de prueba' }
+export const customer = { customer_id: 1, first_names: 'Cliente', last_names: 'Prueba', phone_number: '80000000', kind: 'regular', is_active: true, created_at: null, address_id: 1, address_line: 'Domicilio de prueba', department_id: 1, department_name: 'Departamento de prueba', municipality_id: 1, municipality_name: 'Municipio de prueba' }
 export const sale = { sale_id: 1, customer_id: 1, employee_id: 1, customer_kind: 'general', customer_name: 'Cliente general', customer_phone: null, customer_address: null, seller_name: 'Persona de prueba', sale_date: '2026-11-01', created_at: '2026-11-01T15:30:00Z', delivery_cost: '0.00', notes: null, total: '115.00', currency: 'NIO', status: 'confirmed', created_by_user_id: 1, items: [{ sale_item_id: 1, product_id: 1, product_name: product.name, size_name: 'M', quantity: 1, unit_price: '115.00', subtotal: '115.00' }], payment: { payment_id: 1, shift_id: null, method: 'cash', amount: '115.00', cash_amount: '115.00', transfer_amount: '0.00', received_amount: '200.00', change_amount: '85.00', reference: null }, annulment: null }
 export const saleRow = { sale_id: 1, receipt_id: 1, sale_date: sale.sale_date, created_at: sale.created_at, customer_name: sale.customer_name, seller_name: sale.seller_name, units: 1, products: product.name, method: 'cash', total: '115.00', status: 'confirmed' }
 export async function json(route: Route, body: unknown, status = 200) { await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) }) }
@@ -16,6 +16,7 @@ export async function mockBoutique(page: Page, role = 'Administrator', temporary
     if (path.startsWith('reports/')) {
       let rows: object[] = []
       if (path.endsWith('product-catalog')) { const publicProduct = Object.fromEntries(Object.entries(product).filter(([key]) => !['cost', 'supplier_id', 'supplier_name'].includes(key))); rows = [role === 'Cashier' ? publicProduct : product] }
+      if (path.endsWith('supplier-directory')) rows = [{ supplier_id: 1, company_name: 'Proveedor de prueba', phone_number: '80000000', is_active: true }]
       if (path.endsWith('customer-directory')) rows = [customer]
       if (path.endsWith('sales-ledger')) rows = [saleRow]
       const summary = { total_count: rows.length, active_count: rows.length, low_stock: 1, out_of_stock: 0, total_amount: '115.00', units: 1, average: '115.00', today_count: 1, month_count: 1, ...(role === 'Administrator' ? { inventory_value: '200.00' } : {}) }

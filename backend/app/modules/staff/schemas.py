@@ -1,25 +1,17 @@
 """Employee contracts preserving existing field limits and nullable dates."""
 
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BeforeValidator, ConfigDict, Field, ValidationInfo, field_validator
 
-from app.api.schemas import InputModel, OutputModel, PatchModel
+from app.api.schemas import InputModel, OutputModel, PatchModel, validate_mobile_phone
 from app.modules.identity.schemas import Password
 from app.modules.locations.composition import InlineAddress
 
 
 def validate_employee_phone(value: object) -> object:
-    if (
-        not isinstance(value, str)
-        or len(value) != 8
-        or not value.isascii()
-        or not value.isdigit()
-        or value[0] not in "78"
-    ):
-        raise ValueError("El teléfono debe tener ocho dígitos y comenzar con 7 u 8.")
-    return value
+    return validate_mobile_phone(value)
 
 
 EmployeePhone = Annotated[str, BeforeValidator(validate_employee_phone)]
@@ -50,7 +42,7 @@ class EmployeeCreate(EmployeeInput):
     last_names: Annotated[str, Field(max_length=40, min_length=1, strict=True)]
     phone_number: EmployeePhone
 
-    job_title: Annotated[str | None, Field(max_length=20, strict=True)] = None
+    job_title: Literal["Vendedor"] = "Vendedor"
     start_date: date | None = None
     end_date: date | None = None
 

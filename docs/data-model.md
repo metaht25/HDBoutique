@@ -1,8 +1,14 @@
 # Modelo de datos: referencia, esquema inicial y limites
 
+## Incremento RF-01 a RF-18
+
+Head de código 0012_optional_transfer_reference. 32 tablas comerciales/técnicas más alembic_version; sin tablas nuevas. 0011 permite suppliers.address_id NULL y añade suppliers.address_line opcional; 0012 admite referencia ausente en el CHECK de pago completo. Filas, FK, ofertas, movimientos y snapshots anteriores se conservan. El destino real no se migra automáticamente; ver integral-improvements.md.
+
 ## Esquema vigente
 
-32 modelos, head 0010_optional_profile_phone. 0006 agregó boutique_profiles
+32 modelos, head 0012_optional_transfer_reference aplicado a la base local.
+0010 permitió teléfono de perfil NULL; 0011/0012 se describen arriba.
+0006 agregó boutique_profiles
 (perfil único y logo PNG binario durable) y management_events (actor, recurso,
 acción, fecha y detalle). El logo forma parte del respaldo PostgreSQL.
 

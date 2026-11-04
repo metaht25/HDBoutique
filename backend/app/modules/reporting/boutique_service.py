@@ -55,6 +55,7 @@ class BoutiqueReportingService:
         reference_id: int | None,
         offset: int,
         limit: int,
+        supplier_id: int | None = None,
     ) -> dict[str, Any]:
         context = report_context(DateRange())
         with self.session.begin():
@@ -67,6 +68,7 @@ class BoutiqueReportingService:
                     status,
                     offset,
                     limit,
+                    supplier_id,
                 )
                 if actor.role == "Administrator" and items:
                     relations = self.session.execute(
@@ -206,7 +208,7 @@ class BoutiqueReportingService:
             base = self.repository.sales_base(
                 actor.user_id if actor.role == "Cashier" else None
             )
-            valid = base.c.status != "voided"
+            valid = base.c.status == "confirmed"
             aggregate = select(
                 func.coalesce(
                     func.sum(base.c.total).filter(valid & (base.c.sale_date == today)),
@@ -257,10 +259,33 @@ class BoutiqueReportingService:
                     .limit(5)
                 ).mappings()
             ]
+            series = []
+            if actor.role == "Administrator":
+                rows = self.session.execute(
+                    select(
+                        base.c.sale_date,
+                        func.sum(base.c.total).label("amount"),
+                        func.count().label("count"),
+                    )
+                    .where(valid, base.c.sale_date.between(start, today))
+                    .group_by(base.c.sale_date)
+                ).mappings()
+                by_date = {row["sale_date"]: row for row in rows}
+                for index in range((today - start).days + 1):
+                    day = start + timedelta(days=index)
+                    row = by_date.get(day)
+                    series.append(
+                        {
+                            "date": day,
+                            "amount": format(row["amount"], ".2f") if row else "0.00",
+                            "count": row["count"] if row else 0,
+                        }
+                    )
             return {
                 "context": context,
                 "summary": summary_values(summary),
                 "recent_sales": recent,
                 "low_stock": low_stock,
                 "period": period,
+                "series": series,
             }

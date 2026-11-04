@@ -1,5 +1,9 @@
 # Plan de refactorizacion por fases
 
+## Mejoras integrales autorizadas el 3 de noviembre de 2026
+
+La solicitud RF-01..RF-18 y Puntos a mejorar.docx autorizan este incremento completo, sin iniciar una fase adicional del roadmap histórico. Estado, matriz y verificaciones en [informe integral](integral-improvements.md). Se conservan los cambios sin commit para revisión; sin remoto. Estado de migración real explícito en el informe.
+
 Incremento visual y funcional autorizado el 31 de octubre de 2026; reconstrucción
 basada en 26 referencias. Estado y revisión en [reconstrucción](visual-reconstruction.md).
 Dos perfiles, nueva navegación, delivery/pago mixto, PDF, precio automático,
@@ -15,7 +19,11 @@ Correcciones posteriores autorizadas: login, cargo, alta persistente de proveedo
 validaciones y perfil sin teléfono/logo; ver [auditoría](owner-corrections-audit.md).
 No se crea una nueva fase.
 
-La versión local está en 0010_optional_profile_phone y conserva 32 tablas. Dueña dispone de
+La versión local está en 0012_optional_transfer_reference y conserva 32 tablas más Alembic.
+RF-01..18 completados, migración autorizada con respaldos previo/final restaurados
+y conciliados; cuenta administrador vinculada al empleado #2 por indicación expresa.
+324 pruebas backend (92.26 %), 102 Vitest, 22 E2E interceptadas y 13 conectadas
+aprobadas; runtime saludable y humo real de solo lectura aprobado. Dueña dispone de
 diez pantallas y Colaborador de cinco; reportes/preparación se integran en sus módulos,
 sin caja/turnos operativos. No se introducen semillas comerciales en desarrollo. [Reglas
 vigentes](business-rules.md), [navegación](frontend-modules.md), [destino local y

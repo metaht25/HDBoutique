@@ -3,12 +3,15 @@
 POST /api/v1/sales registra una venta completa con Idempotency-Key y sesión/CSRF.
 No permite editar ni borrar originales. Fecha comercial: hoy del servidor en
 America/Managua; una fecha enviada por navegador no modifica esta decisión.
-Cuenta y empleado activo quedan auditados; se respeta el vínculo de cuenta.
+Cuenta y empleado activo quedan auditados; se exige el vínculo de la cuenta de sesión, sin selector ni identidad arbitraria.
 
 Cliente general usa identidad técnica única sin datos personales. Regular exige
-nombre/apellido y admite teléfono opcional. El alta se envía dentro de la venta,
+nombre/apellido; la interfaz solo solicita esos dos datos y el modelo conserva
+teléfono/domicilio opcionales. El alta se envía dentro de la venta,
 reutiliza el servicio de clientes y se revierte si falla cualquier paso. Un cliente
-existente se selecciona en consulta; no se modifica. Delivery requiere teléfono y domicilio
+existente se selecciona con búsqueda paginada. Para Delivery puede enviarse
+delivery_details (teléfono móvil y domicilio completo), que se guarda con la venta
+en la misma transacción y sin duplicar al cliente. Los directorios siguen de consulta. Delivery requiere teléfono y domicilio
 coherente, más costo manual no negativo. Los datos de cliente, vendedor, producto,
 talla y precios se guardan como instantáneas de la venta nueva; no se reconstruyen
 ni inventan instantáneas de históricos.
@@ -22,7 +25,7 @@ movimientos de caja. Límites monetarios vigentes
 y dos decimales; no precios manuales, crédito, abonos, tarjetas ni descuentos.
 
 Efectivo admite recibido >= total y cambio; transferencia exige importe exacto,
-referencia y confirmación manual; mixto conserva efectivo aplicado y transferencia
+confirmación manual, con referencia opcional; mixto conserva efectivo aplicado y transferencia
 separados, con cambio solo sobre efectivo recibido. [Caja](cash-register.md).
 
 GET /api/v1/sales y /sales/{id}, /receipts/{id} y /receipts/{id}/pdf:
@@ -33,6 +36,11 @@ Número visible de recibo: identidad del pago en decimal, sin R- ni relleno.
 Venta mantiene su identificador separado. Listado/modal/impresión/PDF son coherentes.
 Se permiten saltos; no se renumera ni se reutiliza historia. Búsqueda decimal y
 compatibilidad con R- histórico.
+
+La UI calcula ambos componentes mixtos automáticamente con centavos BigInt:
+el campo editado conserva su texto y el otro se deriva del total vigente. Efectivo
+aplicado y recibido son distintos; el cambio procede solo del recibido en exceso.
+El servidor calcula y valida los importes finales con Decimal.
 
 Ticket real PDF vectorial/texto de 80 mm con altura calculada, logo durable,
 datos boutique, números, fecha/hora Managua, cliente, vendedor, líneas, delivery,

@@ -89,6 +89,10 @@ def load(connection: Connection, tables: Tables) -> dict[str, object]:
     for name in ("sale_payments", "sale_voids"):
         archived.tables[name].c.shift_id.nullable = False
     archived.tables["boutique_profiles"].c.phone_number.nullable = False
+    archived.tables["suppliers"]._columns.remove(
+        archived.tables["suppliers"].c.address_line
+    )
+    archived.tables["suppliers"].c.address_id.nullable = False
     if compare_metadata(MigrationContext.configure(connection), archived):
         raise MigrationError("Target schema drift; review Alembic revisions")
     if connection.scalar(

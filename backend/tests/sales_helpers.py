@@ -96,7 +96,6 @@ def cleanup_sales(session: Session, graph: dict[str, int]) -> None:
 def sale_payload(graph: dict[str, int]) -> dict:
     return {
         "customer_id": graph["customer"],
-        "employee_id": graph["employee1"],
         "sale_date": "2026-10-28",
         "payment": {
             "method": "cash",

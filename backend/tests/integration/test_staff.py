@@ -47,7 +47,6 @@ def test_employee_lifecycle_and_validation(business_client: TestClient) -> None:
     updated = client.patch(
         path,
         json={
-            "job_title": None,
             "start_date": None,
             "end_date": "2026-01-02",
         },

@@ -122,7 +122,7 @@ def test_complete_sale_history_and_retry(sales_context, database_connection) -> 
     [
         ("customer", 422),
         ("employee", 422),
-        ("no_employee", 422),
+        ("no_linked_employee", 422),
         ("product", 422),
         ("price_null", 422),
         ("price_zero", 422),
@@ -140,8 +140,12 @@ def test_invalid_sale_has_no_side_effects(
     payload = sale_payload(graph)
     if mutation in {"customer", "employee"}:
         payload[mutation + "_id"] = 2147483647
-    elif mutation == "no_employee":
-        payload.pop("employee_id")
+    elif mutation == "no_linked_employee":
+        database_connection.execute(
+            update(UserAccount)
+            .where(UserAccount.user_id == graph["admin"])
+            .values(employee_id=None)
+        )
     elif mutation == "product":
         payload["items"][1]["product_id"] = 2147483647
     else:
@@ -222,16 +226,19 @@ def test_roles_and_employee_attribution(sales_context, role) -> None:
         login(client, "purchasing-" + role.lower())
         assert client.get("/api/v1/sales").status_code == 200
         payload = sale_payload(graph)
-        payload.pop("employee_id")
-        if role == "Manager":
-            mismatched = {**payload, "employee_id": graph["employee2"]}
-            assert register(client, graph, payload=mismatched).status_code == 422
-        else:
-            assert register(client, graph, payload=payload).status_code == 422
-            payload["employee_id"] = graph["employee1"]
+        expected_employee = graph[
+            "employee1" if role == "Administrator" else "employee2"
+        ]
+        wrong_employee = graph["employee2" if role == "Administrator" else "employee1"]
+        assert (
+            register(
+                client, graph, payload={**payload, "employee_id": wrong_employee}
+            ).status_code
+            == 422
+        )
         result = register(client, graph, payload=payload)
         assert result.status_code == 201, result.text
-        assert result.json()["employee_id"] == graph["employee1"]
+        assert result.json()["employee_id"] == expected_employee
         assert (
             result.json()["created_by_user_id"]
             == graph[

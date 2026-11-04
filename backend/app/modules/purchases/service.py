@@ -11,7 +11,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApplicationError
-from app.modules.catalog.models import Product
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
@@ -35,11 +34,14 @@ def request_digest(payload: PurchaseCreate) -> str:
     values = payload.model_dump(mode="json")
 
     values["shipping_cost"] = format(payload.shipping_cost, ".2f")
+
     if payload.supplier is None:
         values.pop("supplier")
+
     for line in values["items"]:
         if line["product_id"] is None:
             line.pop("product_id")
+
             line.pop("unit_cost")
 
     return sha256(
@@ -67,19 +69,19 @@ class PurchaseService:
         ):
             raise ApplicationError(403, "permission_denied", "Permission denied")
 
-        if account.employee_id is not None and requested not in (
+        if requested not in (
             None,
             account.employee_id,
         ):
             raise ApplicationError(422, "employee_mismatch", "Use the account employee")
 
-        employee_id = (
-            account.employee_id if account.employee_id is not None else requested
-        )
+        employee_id = account.employee_id
 
         if employee_id is None or not self.repository.employee_exists(employee_id):
             raise ApplicationError(
-                422, "employee_required", "An existing employee is required"
+                422,
+                "employee_required",
+                "Vincula la cuenta a un empleado activo antes de operar.",
             )
 
         return employee_id
@@ -187,6 +189,7 @@ class PurchaseService:
                 employee_id = self._employee(actor, payload.employee_id)
 
                 supplier_id = payload.supplier_id
+
                 if payload.supplier is not None:
                     if supplier_id is not None:
                         raise ApplicationError(
@@ -194,6 +197,7 @@ class PurchaseService:
                             "ambiguous_supplier",
                             "Selecciona o registra un proveedor.",
                         )
+
                     supplier_id = (
                         SuppliersService(self.session)
                         .save_supplier(
@@ -203,25 +207,56 @@ class PurchaseService:
                         )
                         .supplier_id
                     )
+
                 if supplier_id is None or not self.repository.supplier_exists(
                     supplier_id
                 ):
                     raise ApplicationError(
                         422, "invalid_reference", "Selecciona un proveedor activo."
                     )
+
                 self.session.execute(text("SELECT pg_advisory_xact_lock(671443120622)"))
+
                 resolved = []
+
+                products = {}
+
+                product_ids = []
+
                 for line in payload.items:
-                    if line.product_id is None:
+                    if line.product_id is not None:
+                        product_ids.append(line.product_id)
+
+                    else:
                         assert line.supplier_product_id is not None
-                        resolved.append((line.supplier_product_id, line.quantity))
-                        continue
-                    catalog_entry = self.session.get(Product, line.product_id)
+                        relation = self.repository.offered_product(
+                            supplier_id, line.supplier_product_id
+                        )
+
+                        if relation is None:
+                            raise ApplicationError(
+                                422,
+                                "invalid_offering",
+                                "El producto no pertenece al proveedor.",
+                            )
+
+                        product_ids.append(relation.product_id)
+
+                if len(set(product_ids)) != len(product_ids):
+                    raise ApplicationError(
+                        422, "duplicate_product", "No repitas productos en la compra."
+                    )
+
+                locked = self.inventory.lock_products(set(product_ids))
+
+                for line, product_id in zip(payload.items, product_ids, strict=True):
+                    catalog_entry = locked.get(product_id)
+
                     if catalog_entry is None or not catalog_entry.is_active:
                         raise ApplicationError(
                             422, "inactive_product", "Selecciona un producto activo."
                         )
-                    assert line.unit_cost is not None
+
                     relation = self.session.scalar(
                         select(SupplierProduct)
                         .join(
@@ -231,58 +266,42 @@ class PurchaseService:
                         )
                         .where(
                             SupplierOffering.supplier_id == supplier_id,
-                            SupplierProduct.product_id == line.product_id,
-                            SupplierProduct.purchase_price == line.unit_cost,
+                            SupplierProduct.product_id == product_id,
                         )
                         .order_by(SupplierProduct.supplier_product_id)
                         .limit(1)
                     )
+
                     if relation is None:
-                        relation = SupplierProduct(
-                            product_id=line.product_id, purchase_price=line.unit_cost
-                        )
-                        self.session.add(relation)
-                        self.session.flush()
-                        self.session.add(
-                            SupplierOffering(
-                                supplier_id=supplier_id,
-                                supplier_product_id=relation.supplier_product_id,
-                            )
-                        )
-                        self.session.flush()
-                    resolved.append((relation.supplier_product_id, line.quantity))
-                if len({identifier for identifier, _ in resolved}) != len(resolved):
-                    raise ApplicationError(
-                        422, "duplicate_product", "No repitas productos en la compra."
-                    )
-
-                # Orden global tambien para precios/ofertas compartidos por compras.
-
-                products = {}
-
-                for identifier, _quantity in sorted(resolved):
-                    product = self.repository.offered_product(supplier_id, identifier)
-
-                    if product is None:
                         raise ApplicationError(
                             422,
                             "invalid_offering",
-                            "Supplier product is not offered by this supplier",
+                            "El producto no pertenece al proveedor.",
                         )
 
-                    catalog_product = self.session.get(Product, product.product_id)
-
-                    if catalog_product is None or not catalog_product.is_active:
+                    if catalog_entry.cost is None or catalog_entry.cost <= 0:
                         raise ApplicationError(
-                            422, "inactive_product", "El producto está desactivado."
+                            422,
+                            "invalid_cost",
+                            "Registra primero el costo del producto en Inventario.",
                         )
 
-                    if product.purchase_price < 0:
+                    if (
+                        line.unit_cost is not None
+                        and line.unit_cost != catalog_entry.cost
+                    ):
                         raise ApplicationError(
-                            422, "invalid_cost", "Purchase cost cannot be negative"
+                            422,
+                            "server_owned_cost",
+                            "El costo de Inventario no se puede sobrescribir.",
                         )
 
-                    products[identifier] = product
+                    resolved.append((relation.supplier_product_id, line.quantity))
+
+                    products[relation.supplier_product_id] = (
+                        product_id,
+                        catalog_entry.cost,
+                    )
 
                 purchase = Purchase(
                     supplier_id=supplier_id,
@@ -310,8 +329,8 @@ class PurchaseService:
                     self.repository.add_cost(
                         PurchaseItemCost(
                             purchase_item_id=item.purchase_item_id,
-                            product_id=product.product_id,
-                            unit_cost=product.purchase_price,
+                            product_id=product[0],
+                            unit_cost=product[1],
                         )
                     )
 
@@ -354,10 +373,10 @@ class PurchaseService:
                         "Legacy purchase requires reconciliation",
                     )
 
+                employee_id = self._employee(actor, payload.employee_id)
+
                 if workflow.status == "received":
                     return self._detail(purchase_id)
-
-                employee_id = self._employee(actor, payload.employee_id)
 
                 rows = self.repository.lines(purchase_id)
 

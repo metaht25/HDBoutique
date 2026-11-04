@@ -18,21 +18,21 @@ it('rejects letters, exponents and excess money decimals while permitting cleari
   await user.clear(quantity); expect((quantity as HTMLInputElement).value).toBe('')
 })
 
-it('offers Vendedor and preserves only the current historical job title', async () => {
+it('shows the immutable historical job title', async () => {
   vi.stubGlobal('fetch', vi.fn(async () => Response.json([])))
   const row = { employee_id: 1, first_names: 'Prueba', last_names: 'Sintética', job_title: 'Cargo antiguo', phone_number: '80000000' } as Employee
   render(<PartyForm kind="employees" row={row} onSaved={vi.fn()} onClose={vi.fn()} />)
-  const select = screen.getByRole('combobox', { name: 'Cargo' }) as HTMLSelectElement
-  expect(select.value).toBe('Cargo antiguo')
-  expect(screen.getByRole('option', { name: 'Vendedor' })).toBeTruthy()
-  await userEvent.selectOptions(select, 'Vendedor'); expect(select.value).toBe('Vendedor')
+  const field = screen.getByRole('textbox', { name: 'Cargo' }) as HTMLInputElement
+  expect(field.value).toBe('Cargo antiguo')
+  expect(field.readOnly).toBe(true)
+  expect(screen.queryByRole('combobox', { name: 'Cargo' })).toBeNull()
 })
 
 it('blocks letters in customer phones and keeps addresses textual', async () => {
   vi.stubGlobal('fetch', vi.fn(async () => Response.json([])))
-  render(<PartyForm kind="customers" onDraft={vi.fn()} onSaved={vi.fn()} onClose={vi.fn()} />)
+  render(<PartyForm kind="customers" initialKind="delivery" onDraft={vi.fn()} onSaved={vi.fn()} onClose={vi.fn()} />)
   const user = userEvent.setup(), phone = screen.getByLabelText('Teléfono') as HTMLInputElement
-  await user.type(phone, 'abc00123456'); expect(phone.value).toBe('00123456')
+  await user.type(phone, 'abc81234567'); expect(phone.value).toBe('8123-4567')
   const address = screen.getByLabelText('Dirección exacta') as HTMLInputElement
   await user.type(address, 'Milagro de Dios, casa 4'); expect(address.value).toBe('Milagro de Dios, casa 4')
 })

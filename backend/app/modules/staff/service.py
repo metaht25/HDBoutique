@@ -59,6 +59,8 @@ class StaffService:
                 identity.lock_administration()
 
                 values = payload.model_dump(exclude_unset=True)
+                if record_id is None:
+                    values["job_title"] = "Vendedor"
 
                 if "phone_number" in values:
                     validate_employee_phone(values["phone_number"])
@@ -105,11 +107,11 @@ class StaffService:
                 for field, value in values.items():
                     if (
                         field == "job_title"
-                        and value not in {None, "Vendedor"}
-                        and (record_id is None or value != record.job_title)
+                        and record_id is not None
+                        and value != record.job_title
                     ):
                         raise ApplicationError(
-                            422, "invalid_job_title", "Selecciona un cargo válido."
+                            422, "invalid_job_title", "El cargo no se puede modificar."
                         )
                     setattr(record, field, value)
 

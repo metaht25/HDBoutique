@@ -12,7 +12,6 @@ from app.modules.staff.schemas import EmployeeCreate, EmployeePatch
         "8000000",
         "800000000",
         "60000000",
-        "8000-0000",
         " 80000000",
         "80000000 ",
         "áéíóúüñ?",

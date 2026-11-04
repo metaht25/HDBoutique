@@ -10,7 +10,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api.schemas import validate_mobile_phone
 from app.core.errors import ApplicationError
+from app.modules.boutique.audit import audit
 from app.modules.cash.models import SalePayment
 from app.modules.cash.schemas import PaymentRead
 from app.modules.cash.service import CashService
@@ -20,7 +22,7 @@ from app.modules.customers.service import CustomersService, general_customer
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
-from app.modules.locations.composition import address_text
+from app.modules.locations.composition import address_text, save_inline_address
 from app.modules.locations.models import Address
 from app.modules.sales.models import Sale, SaleItem
 from app.modules.sales.repository import SaleRepository
@@ -35,6 +37,8 @@ def request_digest(payload: SaleCreate) -> str:
     values = payload.model_dump(mode="json")
     if payload.customer is None:
         values.pop("customer")
+    if payload.delivery_details is None:
+        values.pop("delivery_details")
     if values["payment"]["shift_id"] is None:
         values["payment"].pop("shift_id")
     return sha256(
@@ -65,17 +69,17 @@ class SaleService:
             or account.role not in {"Administrator", "Cashier"}
         ):
             raise ApplicationError(403, "permission_denied", "Permission denied")
-        if account.employee_id is not None and requested not in (
+        if requested not in (
             None,
             account.employee_id,
         ):
             raise ApplicationError(422, "employee_mismatch", "Use the account employee")
-        employee_id = (
-            account.employee_id if account.employee_id is not None else requested
-        )
+        employee_id = account.employee_id
         if employee_id is None or not self.repository.employee_exists(employee_id):
             raise ApplicationError(
-                422, "employee_required", "An existing employee is required"
+                422,
+                "employee_required",
+                "Vincula la cuenta a un empleado activo antes de operar.",
             )
         return employee_id
 
@@ -180,7 +184,11 @@ class SaleService:
                     customer = (
                         general_customer(self.session)
                         if payload.customer_kind == "general"
-                        else self.session.get(Customer, payload.customer_id)
+                        else self.session.scalar(
+                            select(Customer)
+                            .where(Customer.customer_id == payload.customer_id)
+                            .with_for_update()
+                        )
                         if payload.customer_id
                         else None
                     )
@@ -204,11 +212,38 @@ class SaleService:
                         "Cliente general no requiere seleccionar una persona.",
                     )
                 if payload.customer_kind == "delivery":
+                    if payload.delivery_details is not None:
+                        if payload.customer_id is None or payload.customer is not None:
+                            raise ApplicationError(
+                                422,
+                                "invalid_delivery",
+                                "Selecciona un cliente para completar sus datos.",
+                            )
+                        customer.phone_number = payload.delivery_details.phone_number
+                        customer.address_id = save_inline_address(
+                            self.session, payload.delivery_details.address
+                        )
+                        audit(
+                            self.session,
+                            "customers",
+                            customer.customer_id,
+                            "delivery_updated",
+                            actor.user_id,
+                            "phone_number,address_id",
+                        )
                     address = (
                         self.session.get(Address, customer.address_id)
                         if customer.address_id
                         else None
                     )
+                    try:
+                        validate_mobile_phone(customer.phone_number)
+                    except ValueError as error:
+                        raise ApplicationError(
+                            422,
+                            "delivery_details_required",
+                            "Completa un teléfono móvil válido para delivery.",
+                        ) from error
                     if (
                         not customer.phone_number
                         or address is None
@@ -221,7 +256,7 @@ class SaleService:
                             "Completa teléfono, departamento, municipio "
                             "y dirección para delivery.",
                         )
-                elif payload.delivery_cost != 0:
+                elif payload.delivery_cost != 0 or payload.delivery_details is not None:
                     raise ApplicationError(
                         422,
                         "invalid_delivery",

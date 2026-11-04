@@ -85,7 +85,6 @@ def address(client, graph):
 def general_sale(graph, **changes):
     return {
         "customer_kind": "general",
-        "employee_id": graph["employee1"],
         "items": [{"product_id": graph["product1"], "quantity": 1}],
         "payment": {
             "method": "cash",
@@ -102,7 +101,8 @@ def test_initial_stock_automatic_markup_and_deactivation(boutique):
         "category_id": graph["category"],
         "size_id": client.get("/api/v1/sizes").json()[0]["size_id"],
         "cost": "100.10",
-        "initial_stock": 5,
+        "initial_stock": 0,
+        "supplier_ids": [graph["supplier1"]],
     }
     product = post(client, "products", body)
     assert product["unit_price"] == "115.12"
@@ -114,9 +114,9 @@ def test_initial_stock_automatic_markup_and_deactivation(boutique):
         )
         assert movement.movement_type == "initial_stock"
         assert (movement.quantity, movement.stock_before, movement.stock_after) == (
-            5,
             0,
-            5,
+            0,
+            0,
         )
         assert movement.performed_by_user_id == graph["admin"]
     assert (
@@ -125,7 +125,7 @@ def test_initial_stock_automatic_markup_and_deactivation(boutique):
         ).status_code
         == 422
     )
-    report = client.get("/api/v1/reports/product-catalog?status=low_stock").json()
+    report = client.get("/api/v1/reports/product-catalog?status=out_of_stock").json()
     assert report["summary"]["total_count"] == 1
     assert report["items"][0]["product_id"] == product["product_id"]
     assert (
@@ -186,7 +186,7 @@ def test_delivery_mixed_payment_receipt_pdf_and_partial_return(boutique):
         "first_names": "Synthetic",
         "last_names": "Delivery",
         "kind": "delivery",
-        "phone_number": "0000000000",
+        "phone_number": "80000000",
         "address": address(client, graph),
     }
     payload = general_sale(
@@ -479,7 +479,8 @@ def test_product_cost_rejects_inexact_or_overflow_values(boutique, value):
     body = {
         "name": "Rejected cost",
         "cost": value,
-        "initial_stock": 5,
+        "initial_stock": 0,
+        "supplier_ids": [graph["supplier1"]],
         "category_id": graph["category"],
         "size_id": client.get("/api/v1/sizes").json()[0]["size_id"],
     }

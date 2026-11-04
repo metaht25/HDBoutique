@@ -71,7 +71,7 @@ def test_contextual_supplier_persistence_retries_purchase_and_permissions(boutiq
         "company_name": "Synthetic contextual supplier",
         "contact_first_names": "Contacto",
         "contact_last_names": "Prueba",
-        "phone_number": "0012345678",
+        "phone_number": "81234567",
         "address": address(client, graph),
     }
     headers = {"Idempotency-Key": "supplier-persist-retry"}
@@ -88,7 +88,7 @@ def test_contextual_supplier_persistence_retries_purchase_and_permissions(boutiq
     supplier_id = saved.json()["supplier_id"]
     assert (
         client.get(f"/api/v1/suppliers/{supplier_id}").json()["phone_number"]
-        == "0012345678"
+        == "81234567"
     )
     assert (
         client.post(path, json=body, headers=headers).json()["supplier_id"]
@@ -104,6 +104,13 @@ def test_contextual_supplier_persistence_retries_purchase_and_permissions(boutiq
         "/api/v1/reports/supplier-directory?q=Synthetic%20contextual"
     ).json()
     assert [row["supplier_id"] for row in listed["items"]] == [supplier_id]
+    assert (
+        client.patch(
+            f"/api/v1/products/{graph['product1']}",
+            json={"supplier_ids": [supplier_id]},
+        ).status_code
+        == 200
+    )
     purchase = client.post(
         "/api/v1/purchases",
         headers={"Idempotency-Key": "purchase-new-supplier"},
@@ -112,7 +119,7 @@ def test_contextual_supplier_persistence_retries_purchase_and_permissions(boutiq
             "employee_id": graph["employee1"],
             "purchase_date": "2026-11-02",
             "items": [
-                {"product_id": graph["product1"], "unit_cost": "100.00", "quantity": 1}
+                {"product_id": graph["product1"], "unit_cost": "120.50", "quantity": 1}
             ],
         },
     )
@@ -160,7 +167,7 @@ def test_employee_job_title_preserves_history_but_blocks_new_arbitrary_values(bo
     path = f"/api/v1/employees/{graph['employee1']}"
     assert client.patch(path, json={"job_title": "Cargo histórico"}).status_code == 200
     assert client.patch(path, json={"job_title": "Inventado"}).status_code == 422
-    assert client.patch(path, json={"job_title": "Vendedor"}).status_code == 200
+    assert client.patch(path, json={"job_title": "Vendedor"}).status_code == 422
     with factory.begin() as session:
         assert (
             session.scalar(
@@ -168,5 +175,5 @@ def test_employee_job_title_preserves_history_but_blocks_new_arbitrary_values(bo
                     Employee.employee_id == graph["employee1"]
                 )
             )
-            == "Vendedor"
+            == "Cargo histórico"
         )

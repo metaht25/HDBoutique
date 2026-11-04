@@ -19,6 +19,64 @@ pytestmark = pytest.mark.postgres
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_supplier_address_upgrade_preserves_history_and_protects_downgrade(
+    database_connection,
+):
+    config = Config(str(BACKEND_ROOT / "alembic.ini"))
+    config.attributes["connection"] = database_connection
+    command.downgrade(config, "0010_optional_profile_phone")
+    department = database_connection.scalar(
+        text("SELECT department_id FROM departments LIMIT 1")
+    )
+    address = database_connection.scalar(
+        text(
+            "INSERT INTO addresses(department_id,address_line) VALUES "
+            "(:department,'Synthetic historical address') RETURNING address_id"
+        ),
+        {"department": department},
+    )
+    identifier = database_connection.scalar(
+        text(
+            "INSERT INTO "
+            "suppliers(address_id,company_name,contact_first_names,"
+            "contact_last_names,phone_number) "
+            "VALUES (:address,'Synthetic','Test','Supplier','80000000') RETURNING "
+            "supplier_id"
+        ),
+        {"address": address},
+    )
+    before = database_connection.execute(
+        text(
+            "SELECT address_id,company_name,phone_number FROM suppliers WHERE "
+            "supplier_id=:id"
+        ),
+        {"id": identifier},
+    ).one()
+    command.upgrade(config, "head")
+    assert (
+        database_connection.execute(
+            text(
+                "SELECT address_id,company_name,phone_number FROM suppliers WHERE "
+                "supplier_id=:id"
+            ),
+            {"id": identifier},
+        ).one()
+        == before
+    )
+    command.check(config)
+    database_connection.execute(
+        text(
+            "INSERT INTO "
+            "suppliers(company_name,contact_first_names,contact_last_names,"
+            "phone_number,address_line) "
+            "VALUES ('Synthetic new','Test','Supplier','80000000','Synthetic direct "
+            "address')"
+        )
+    )
+    with pytest.raises(RuntimeError, match="reconciliation"):
+        command.downgrade(config, "0010_optional_profile_phone")
+
+
 def test_optional_profile_phone_upgrade_preserves_existing_values(
     database_connection,
 ) -> None:
@@ -61,7 +119,7 @@ def test_upgrade_downgrade_upgrade_and_metadata_drift(postgres_engine: Engine) -
         command.upgrade(config, "head")
         command.check(config)
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-            "0010_optional_profile_phone"
+            "0012_optional_transfer_reference"
         )
 
 
@@ -129,6 +187,7 @@ def test_sales_upgrade_preserves_existing_receipt(
     ) as session:
         with session.begin():
             graph = seed_purchasing(session)
+            session.execute(text("UPDATE products SET cost=NULL"))
     command.downgrade(config, "0003_purchase_receipts")
     purchase_id = database_connection.scalar(
         models.Purchase.__table__.insert()

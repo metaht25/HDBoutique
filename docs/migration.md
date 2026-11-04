@@ -1,8 +1,13 @@
 # Migraciones de esquema y estrategia de datos
 
+## Migraciones de las mejoras integrales
+
+Nuevas revisiones 0011_supplier_addresses y 0012_optional_transfer_reference sobre 0010. No se editan revisiones anteriores. Upgrade no transforma filas históricas; downgrade se bloquea si existen proveedores sin ubicación normalizada/dirección textual o transferencias sin referencia. Aplicadas por autorización expresa a hdboutique-dev/hdboutique tras ensayo restaurado; respaldos previo/final restaurados y conciliados según cutover.md. Ensayos aislados en integral-improvements.md.
+
 ## Estado vigente y compatibilidad
 
-Head de código 0009_shiftless_payments, 32 tablas más alembic_version. 0001–0006 se
+Código y base local en 0012_optional_transfer_reference, 32 tablas más alembic_version.
+0010 permite teléfono NULL en perfil; 0011/0012 se describen arriba. 0001–0006 se
 conservan sin editar. 0007 libera must_change_password con auditoría sin cambiar hashes;
 0008 carga maestros permanentes protegidos y tallas fijas conservando coincidencias/IDs;
 0009 admite pago/anulación sin turno, conservando caja histórica. 0006 agrega

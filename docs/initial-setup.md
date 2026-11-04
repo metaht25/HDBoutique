@@ -3,17 +3,21 @@
 La preparación se realiza desde los módulos operativos, sin Configuración en el
 menú ni carga automática de datos comerciales:
 
-1. Dueña abre su perfil en encabezado para nombre y dirección; teléfono y logo son opcionales.
-2. Productos administra categorías/costo principal; tallas S/M/L/XL/XXL son fijas.
-3. Los directorios permiten ampliar departamentos y municipios; los 3 departamentos
-   y 28 municipios iniciales son permanentes. Las direcciones se
-   escriben directamente en los formularios.
-4. Empleados crea personal y acceso de colaborador; «Cuentas y accesos» administra
-   cuentas existentes. Una operación requiere empleado activo.
-5. Compras registra proveedores contextualmente y costos por producto; Proveedores
-   consulta y activa/desactiva. Productos registra cantidad inicial auditada;
-   recepción de compras incorpora inventario adicional.
-6. Nueva venta registra clientes contextualmente y cobra el pago completo, sin turno.
+1. El encabezado identifica a la Dueña, sin formulario de edición. El perfil existente
+   permanece disponible para recibos; su API administrativa conserva permisos.
+2. Productos administra categorías, costo principal y proveedores asociados; tallas
+   S/M/L/XL/XXL son fijas. Alta inicial sin existencias y movimiento cero auditado.
+3. Solo Empleados permite ampliar departamentos/municipios; los 3 departamentos y
+   28 municipios iniciales son permanentes. Delivery sigue seleccionándolos.
+4. Empleados crea personal/cuenta con cargo Vendedor fijo; Editar empleado conserva
+   reemplazo de contraseña. No hay formulario separado de Cuentas y accesos.
+   Compras/ventas requieren la cuenta real vinculada a un empleado activo.
+5. Compras guarda proveedores; Proveedores consulta y activa/desactiva. Se elige el
+   proveedor, productos asociados y cantidades, usando costos de Inventario.
+   La recepción completa incorpora todas las existencias una sola vez.
+6. Nueva venta registra clientes solo con nombre/apellido; Delivery completa
+   teléfono/domicilio cuando corresponde, incluso para un cliente existente.
+   Siempre pago completo y sin turno. Referencia opcional, confirmación obligatoria.
 
 No se inventan referencias ni se afirma preparación completa por existir una fila.
 Los estados vacíos indican qué falta. Cliente general se materializa únicamente

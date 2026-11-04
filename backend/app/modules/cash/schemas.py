@@ -4,7 +4,13 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal, Self
 
-from pydantic import BeforeValidator, Field, PlainSerializer, model_validator
+from pydantic import (
+    BeforeValidator,
+    Field,
+    PlainSerializer,
+    field_validator,
+    model_validator,
+)
 
 from app.api.schemas import InputModel, OutputModel, require_exact_decimal
 
@@ -35,6 +41,11 @@ class PaymentCreate(InputModel):
     reference: Reference | None = None
     transfer_confirmed: Annotated[bool, Field(strict=True)] = False
 
+    @field_validator("reference", mode="before")
+    @classmethod
+    def empty_reference(cls, value: object) -> object:
+        return None if isinstance(value, str) and not value.strip() else value
+
     @model_validator(mode="after")
     def validate_method(self) -> Self:
         if self.method == "cash":
@@ -44,8 +55,8 @@ class PaymentCreate(InputModel):
                 or self.transfer_amount is not None
             ):
                 raise ValueError("Cash requires received amount only")
-        elif not self.reference or not self.transfer_confirmed:
-            raise ValueError("Confirm the transfer manually and provide its reference")
+        elif not self.transfer_confirmed:
+            raise ValueError("Confirma manualmente la recepción de la transferencia")
         if self.method == "mixed" and (
             self.transfer_amount is None or self.transfer_amount <= 0
         ):

@@ -4,13 +4,17 @@ Agregaciones, filtros inclusivos y paginación se calculan en PostgreSQL, con
 transacciones de lectura REPEATABLE READ para que indicadores y filas concuerden.
 Fecha comercial y contexto provienen del servidor en America/Managua.
 
-Dashboard: vendido hoy/mes, productos vendidos, bajo stock, resumen semana/mes/año,
+Dashboard: vendido hoy/mes, productos vendidos, bajo stock, resumen semanal/mensual y dos gráficos diarios (ingresos/cantidad),
 total y cantidad del periodo y últimas ventas; sin turno ni consultas de caja. Colaborador recibe
 solo su actividad; el catálogo permitido muestra stock, sin costo ni proveedor.
 
 API /api/v1:
-- /dashboard/overview: periodo week/month/year.
-- /reports/product-catalog: nombre/categoría/estado y métricas; columnas y valor
+- /dashboard/overview: la UI ofrece week/month; year se conserva por compatibilidad.
+  series diaria solo para Dueña; importes/cantidades de ventas confirmadas, sin
+  anuladas ni históricos sin confirmación. Días sin ventas representan cero agregado
+  real. Colaborador recibe serie vacía y únicamente su actividad.
+- /reports/product-catalog: nombre/categoría/estado y métricas; filtro supplier_id solo Dueña y
+  status=sellable para productos activos con precio/stock positivos; columnas y valor
   al costo únicamente para Dueña.
 - /reports/customer-directory: búsqueda/departamento/estado, totales y domicilios.
 - /reports/supplier-directory y /employee-directory: solo Dueña.

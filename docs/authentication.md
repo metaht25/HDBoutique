@@ -25,11 +25,17 @@ No puede seleccionarse, crearse ni editarse desde los formularios actuales.
 | Cambiar contraseña | Sí, propia y administradas | No |
 
 Las cuentas se deshabilitan, no se borran. Un vínculo cuenta/empleado es opcional,
-exclusivo y protegido por FK RESTRICT. El empleado debe estar activo para operar;
+exclusivo y protegido por FK RESTRICT. Para nuevas compras, recepciones y ventas se exige el vínculo de esa cuenta
+a un empleado activo, sin identidad enviada como fallback;
 el cargo no concede permisos. Alta de empleado y cuenta Cashier en una transacción.
 Desactivar empleado revoca sesiones y bloquea el login. La interfaz bloquea rutas
 administrativas antes de montar sus consultas; la API vuelve a autorizar cada llamada.
 [Personal](employees.md), [ventas](sales.md), [caja](cash-register.md).
+
+La UI elimina Cuentas y accesos y la edición de perfil en el encabezado. Los
+servicios de cuentas/sesiones/perfil y los datos persistidos se conservan. Recuperar
+contraseña de empleado vinculado sigue disponible en Editar empleado; para cuentas
+sin vínculo no se introduce un nuevo módulo de recuperación.
 
 ## Contrato HTTP
 

@@ -1,9 +1,10 @@
 # Interfaz vigente
 
-Correcciones posteriores a Fase 16: login centrado responsive; Cargo seleccionable;
+Correcciones posteriores a Fase 16: login centrado responsive; cargo Vendedor fijo;
 proveedor guardado inmediatamente desde Compras, con selección y reintento seguro;
 teléfonos y entradas numéricas controlados; perfil admite teléfono ausente.
-Ver [diagnóstico y verificación](owner-corrections-audit.md).
+Ver [mejoras RF-01..18](integral-improvements.md) y el
+[diagnóstico anterior](owner-corrections-audit.md).
 
 React/Vite/TypeScript conserva cliente HTTP compartido, sesión, CSRF y recuperación
 de comandos idempotentes. La reconstrucción usa las 26 capturas inventariadas en
@@ -30,12 +31,14 @@ Las rutas administrativas se rechazan antes de cargar consultas restringidas.
 
 Caja/turnos se retiran de Dashboard/Nueva venta y de la API viva. Reportes están
 en Ventas e Historial; categorías en Productos; departamentos
-y municipios en directorios; cuentas en Empleados. Datos de la boutique en
-«Dueña · Mi perfil» del encabezado. No hay entradas Caja, Reportes, Configuración
+y municipios se administran únicamente en Empleados; sin formulario independiente
+de cuentas. Encabezado Dueña de solo lectura; datos boutique conservados internamente
+para recibos. No hay entradas Caja, Reportes, Configuración
 ni Pérdidas. Las URLs antiguas redirigen a su módulo de destino.
 
 Clientes solo consulta/busca, con alta desde Nueva venta. Proveedores consulta y
-activa/desactiva, con alta desde Compras. Los datos existentes se rellenan sin editar.
+activa/desactiva, con alta desde Compras. Los proveedores existentes se rellenan sin editar; clientes completan datos
+Delivery dentro de Nueva venta sin duplicar identidad.
 Empleados usa teléfono 8000-0000, sin correo laboral, y contraseña asignada por Dueña
 con mostrar/ocultar. Ubicaciones usa combobox buscables sin distinguir acentos,
 municipio dependiente y limpieza al cambiar departamento. Tallas fijas sin pestaña
@@ -46,8 +49,9 @@ En móvil se pliegan menú y columnas; el desplazamiento horizontal se limita a
 tablas. Vacío, carga, error, confirmación y reintento tienen estados visibles.
 Operaciones inciertas conservan cuerpo/clave por cuenta y pestaña al recargar.
 
-Nueva venta usa fecha de servidor, cliente general/regular/delivery, catálogo,
-carrito limitado por stock, cambio y pago completo. Modal de éxito abre recibo,
+Nueva venta usa fecha de servidor, cliente general/regular/delivery,
+catálogo paginado con stock positivo, búsqueda única de clientes, formularios
+condicionales, carrito limitado por stock, pago mixto bidireccional y cambio. Modal de éxito abre recibo,
 impresión y descarga PDF. El servidor sigue siendo autoridad del dinero/stock.
 
 Los contratos antiguos se conservan solo donde hay consumidores de compatibilidad.

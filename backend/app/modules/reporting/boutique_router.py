@@ -24,7 +24,14 @@ Search = Annotated[str | None, Query(max_length=100)]
 Reference = Annotated[int | None, Query(gt=0)]
 Active = Literal["active", "inactive"]
 Stock = Literal[
-    "active", "inactive", "low_stock", "out_of_stock", "available", "unknown", "invalid"
+    "active",
+    "inactive",
+    "low_stock",
+    "out_of_stock",
+    "available",
+    "unknown",
+    "invalid",
+    "sellable",
 ]
 Method = Literal["cash", "transfer", "mixed"]
 Status = Literal["confirmed", "voided", "legacy"]
@@ -40,12 +47,19 @@ def products(
     actor: SalesIdentity,
     q: Search = None,
     category_id: Reference = None,
+    supplier_id: Reference = None,
     status: Stock | None = None,
     offset: Offset = 0,
     limit: Limit = 20,
 ) -> object:
+    if supplier_id is not None and actor.role != "Administrator":
+        from app.core.errors import ApplicationError
+
+        raise ApplicationError(
+            403, "permission_denied", "Solo Dueña consulta proveedores."
+        )
     return BoutiqueReportingService(session).directory(
-        "products", actor, q, status, category_id, offset, limit
+        "products", actor, q, status, category_id, offset, limit, supplier_id
     )
 
 

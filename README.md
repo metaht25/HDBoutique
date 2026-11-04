@@ -6,7 +6,7 @@ en fase 15; historial y contratos anteriores conservados como referencia.
 
 ## Aplicacion local
 
-Web activa: http://127.0.0.1:8080. Usuario inicial administrador; contraseña
+Dirección web local (requiere servicios iniciados): http://127.0.0.1:8080. Usuario inicial administrador; contraseña
 restablecida por solicitud del propietario el 2 de noviembre. La copia inicial
 del corte ya no representa la credencial vigente. No guardar claves en Git.
 [Resultado, ubicacion privada y retorno](docs/cutover.md).
@@ -25,13 +25,17 @@ Ningun servicio migra ni crea cuentas al arrancar.
 
 Reconstrucción visual y funcional basada en las 26 capturas del sistema anterior.
 Dos perfiles: Dueña (Administrator) y Colaborador (Cashier). La preparación se
-realiza desde el perfil del encabezado, Productos y los directorios;
+realiza desde Productos, Compras y Empleados; el encabezado identifica a la Dueña
+sin abrir edición. Ver [mejoras integrales RF-01..18](docs/integral-improvements.md) y la
 [guía contextual](docs/initial-setup.md), sin Configuración en el menú.
 
-32 modelos SQLAlchemy y Alembic head 0010_optional_profile_phone. El corte local autorizado
+32 modelos SQLAlchemy. Código y base local en 0012_optional_transfer_reference;
+0010→0012 aplicado con autorización expresa y respaldos previo/final restaurados
+y conciliados. Cuenta administrador vinculada al empleado #2 por indicación del
+propietario, sin cambios de credenciales. El corte local autorizado
 actualizo hdboutique desde 0001 despues de respaldo restaurado y conciliacion;
 no existe origen/historicos SQL Server y no se cargaron datos comerciales.
-Administrador inicial sin empleado inventado. [Empleados](docs/employees.md)
+Sin empleados inventados. [Empleados](docs/employees.md)
 implementado y [Configuracion inicial](docs/initial-setup.md) completada. [Pagos](docs/cash-register.md) conserva cobros completos y correcciones supervisadas,
 sin caja ni turnos operativos. Abonos/credito excluidos permanentemente.
 Una compra/venta requiere previamente sus referencias validas, incluido empleado.
@@ -44,7 +48,8 @@ en Ventas/Historial; Dashboard/Nueva venta no requieren turno.
 Ventas atómicas con pago completo en efectivo, transferencia o mixto; cliente general
 estable, regular o delivery. Recibos decimales sin prefijo/relleno; ticket imprimible y
 PDF real de 80 mm con perfil/logo durable. Producto con precio costo × 1.15 y existencia
-inicial auditada; stock bajo 1–5. Clientes de consulta/alta en Nueva venta; proveedores
+inicial cero auditada, proveedores múltiples y compras al costo principal; stock bajo
+1–5. Clientes de consulta/alta en Nueva venta; proveedores
 de consulta/activación y alta en Compras. Alta empleado/cuenta atómica, teléfono
 8000-0000 y contraseña asignada por Dueña. Ubicaciones iniciales permanentes y tallas
 fijas S/M/L/XL/XXL. Anulación total auditada. Operaciones idempotentes, compra/recepcion

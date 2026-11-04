@@ -22,6 +22,7 @@ from app.modules.catalog.schemas import (
 )
 from app.modules.identity.service import Principal
 from app.modules.inventory.models import InventoryMovement
+from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
 
 class CatalogService:
@@ -160,6 +161,24 @@ class CatalogService:
                 values = payload.model_dump(exclude_unset=True)
 
                 initial = values.pop("initial_stock", 0)
+                supplier_ids = values.pop("supplier_ids", None)
+                if supplier_ids is not None:
+                    if len(set(supplier_ids)) != len(supplier_ids):
+                        raise ApplicationError(
+                            422, "duplicate_supplier", "No repitas proveedores."
+                        )
+                    for supplier_id in sorted(supplier_ids):
+                        supplier = self.session.scalar(
+                            select(Supplier)
+                            .where(Supplier.supplier_id == supplier_id)
+                            .with_for_update()
+                        )
+                        if supplier is None or not supplier.is_active:
+                            raise ApplicationError(
+                                422,
+                                "invalid_supplier",
+                                "Selecciona proveedores activos.",
+                            )
 
                 if record_id is None:
                     record = Product(
@@ -204,6 +223,34 @@ class CatalogService:
                     )
 
                 self.repository.add_product(record)
+                for supplier_id in supplier_ids or []:
+                    existing_relation = self.session.scalar(
+                        select(SupplierOffering.offering_id)
+                        .join(SupplierProduct)
+                        .where(
+                            SupplierOffering.supplier_id == supplier_id,
+                            SupplierProduct.product_id == record.product_id,
+                        )
+                        .limit(1)
+                    )
+                    if existing_relation is None:
+                        if record.cost is None:
+                            raise ApplicationError(
+                                422,
+                                "cost_required",
+                                "Registra el costo antes de asociar un proveedor.",
+                            )
+                        relation = SupplierProduct(
+                            product_id=record.product_id, purchase_price=record.cost
+                        )
+                        self.session.add(relation)
+                        self.session.flush()
+                        self.session.add(
+                            SupplierOffering(
+                                supplier_id=supplier_id,
+                                supplier_product_id=relation.supplier_product_id,
+                            )
+                        )
 
                 if record_id is None:
                     self.session.add(

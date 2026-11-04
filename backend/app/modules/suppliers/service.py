@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import ApplicationError
 from app.modules.boutique.audit import audit
 from app.modules.boutique.models import ManagementEvent
+from app.modules.catalog.models import Product
 from app.modules.locations.composition import save_inline_address
 from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 from app.modules.suppliers.repository import SuppliersRepository
@@ -117,13 +118,6 @@ class SuppliersService:
 
                     values["address_id"] = save_inline_address(
                         self.session, payload.address
-                    )
-
-                if record_id is None and not values.get("address_id"):
-                    raise ApplicationError(
-                        422,
-                        "address_required",
-                        "Indica departamento, municipio y dirección exacta.",
                     )
 
                 if record_id is None:
@@ -291,6 +285,44 @@ class SuppliersService:
                 if not self.repository.validate_supplier_offering_references(values):
                     raise ApplicationError(
                         422, "invalid_reference", "Related record not found"
+                    )
+
+                supplier_id = values.get("supplier_id", record.supplier_id)
+                relation_id = values.get(
+                    "supplier_product_id", record.supplier_product_id
+                )
+                supplier = self.session.scalar(
+                    select(Supplier)
+                    .where(Supplier.supplier_id == supplier_id)
+                    .with_for_update()
+                )
+                relation = self.session.get(SupplierProduct, relation_id)
+                product = (
+                    self.session.get(Product, relation.product_id) if relation else None
+                )
+                if (
+                    supplier is None
+                    or not supplier.is_active
+                    or product is None
+                    or not product.is_active
+                ):
+                    raise ApplicationError(
+                        422,
+                        "invalid_reference",
+                        "Selecciona proveedor y producto activos.",
+                    )
+                duplicate = self.session.scalar(
+                    select(SupplierOffering.offering_id)
+                    .where(
+                        SupplierOffering.supplier_id == supplier_id,
+                        SupplierOffering.supplier_product_id == relation_id,
+                        SupplierOffering.offering_id != (record_id or 0),
+                    )
+                    .limit(1)
+                )
+                if duplicate is not None:
+                    raise ApplicationError(
+                        409, "duplicate_offering", "La asociación ya existe."
                     )
 
                 for field, value in values.items():

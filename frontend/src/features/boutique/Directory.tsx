@@ -17,7 +17,7 @@ import styles from './Boutique.module.css'
 export default function Directory({ kind }: { kind: PartyKind }) {
   const owner = useSession().state.account?.role === 'Administrator'
   const [q, setQ] = useState(''), [status, setStatus] = useState(''), [department, setDepartment] = useState(''), [filters, setFilters] = useState(''), [page, setPage] = useState(1), [revision, setRevision] = useState(0)
-  const [editing, setEditing] = useState<Party | 'new' | null>(null), [changing, setChanging] = useState<Party | null>(null), [reference, setReference] = useState<'locations' | 'accounts' | null>(null), [error, setError] = useState(''), [notice, setNotice] = useState(''), [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState<Party | 'new' | null>(null), [changing, setChanging] = useState<Party | null>(null), [reference, setReference] = useState<'locations' | null>(null), [error, setError] = useState(''), [notice, setNotice] = useState(''), [busy, setBusy] = useState(false)
   const departments = useChoices('departments', revision)
   const names = { customers: 'customer', suppliers: 'supplier', employees: 'employee' }
   const result = useQuery<Page<Party>>(`reports/${names[kind]}-directory?${filters}&offset=${(page - 1) * 20}&limit=20`, revision), data = result?.data, summary = data?.summary ?? {}, rows = data?.items ?? []
@@ -30,7 +30,7 @@ export default function Directory({ kind }: { kind: PartyKind }) {
   }
   return <div className={styles.page}>
     <div className={styles.intro}><p>{kind === 'customers' ? 'Consulta tus clientes y sus domicilios' : kind === 'suppliers' ? 'Contactos y proveedores de H&D Boutique' : 'Personal de la boutique y cuentas de acceso'}</p><div className={styles.actions}>
-      {owner && <button className="secondary" onClick={() => setReference('locations')}>Departamentos y municipios</button>}{kind === 'employees' && <button className="secondary" onClick={() => setReference('accounts')}>Cuentas y accesos</button>}
+      {owner && kind === 'employees' && <button className="secondary" onClick={() => setReference('locations')}>Departamentos y municipios</button>}
       {kind === 'employees' && <button onClick={() => setEditing('new')}>+ Nuevo empleado</button>}</div></div>
     {notice && <Message variant="success">{notice}</Message>}
     <DataState result={result}><Stats items={stats.map(([label, field]) => ({ label: label!, value: summary[field!] ?? '—' }))} /></DataState>

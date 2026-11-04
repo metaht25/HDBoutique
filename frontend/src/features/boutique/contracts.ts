@@ -14,7 +14,8 @@ export interface Supplier extends Address { supplier_id: number; company_name: s
 export interface Employee extends Address { employee_id: number; first_names: string; last_names: string; phone_number: string; job_title: string | null; start_date: string | null; end_date: string | null; is_active: boolean; username: string | null; user_id: number | null }
 export interface SaleRow { sale_id: number; receipt_id: number | null; sale_date: string; created_at: string | null; customer_name: string; seller_name: string; units: number; products: string | null; method: string | null; total: string; status: string }
 export interface Ledger extends Page<SaleRow> { methods: { method: string | null; total: string; count: number }[]; best_products: { product_id: number; name: string | null; quantity: number; total: string }[] }
-export interface Overview { context: Context; summary: Page<never>['summary']; recent_sales: SaleRow[]; low_stock: Product[]; period: string }
+export interface SalesPoint { date: string; amount: string; count: number }
+export interface Overview { context: Context; summary: Page<never>['summary']; recent_sales: SaleRow[]; low_stock: Product[]; period: string; series: SalesPoint[] }
 export interface Sale {
   sale_id: number; customer_id: number; employee_id: number; sale_date: string; created_at: string | null;
   customer_kind: string | null; customer_name: string | null; customer_phone: string | null; customer_address: string | null; seller_name: string | null;
@@ -26,4 +27,4 @@ export interface Sale {
 export interface Profile { name: string | null; phone_number: string | null; address_line: string | null; logo_base64: string | null; ready: boolean }
 export interface Receipt { receipt_number: string; sale_number: string; boutique: Profile; sale: Sale }
 export interface PurchaseRow { purchase_id: number; purchase_date: string; supplier_id: number; supplier_name: string; products: string | null; units: number | null; shipping_cost: string | null; total: string | null; status: string }
-export interface Choice { id: number; label: string; department_id?: number }
+export interface Choice { id: number; label: string; description?: string; department_id?: number }

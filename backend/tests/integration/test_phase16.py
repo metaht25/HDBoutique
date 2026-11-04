@@ -131,9 +131,22 @@ def test_purchase_supplier_cost_is_atomic_and_preserves_product_price(boutique):
     )
     with factory.begin() as session:
         assert session.scalar(select(func.count()).select_from(Supplier)) == before
+    saved_supplier = post(
+        client, "purchases/suppliers", supplier, "supplier-persistent"
+    )
+    assert (
+        client.patch(
+            f"/api/v1/products/{graph['product1']}",
+            json={"supplier_ids": [saved_supplier["supplier_id"]]},
+        ).status_code
+        == 200
+    )
+    payload.pop("supplier")
+    payload["supplier_id"] = saved_supplier["supplier_id"]
+    payload["items"][0]["unit_cost"] = "120.50"
     purchase = post(client, "purchases", payload, "supplier-atomic")
     assert post(client, "purchases", payload, "supplier-atomic") == purchase
-    assert purchase["items"][0]["unit_cost"] == "100.00"
+    assert purchase["items"][0]["unit_cost"] == "120.50"
     with factory.begin() as session:
         assert session.scalar(select(func.count()).select_from(Supplier)) == before + 1
         assert session.get(Product, graph["product1"]).unit_price == price
@@ -150,7 +163,7 @@ def test_purchase_supplier_cost_is_atomic_and_preserves_product_price(boutique):
         ).status_code
         == 200
     )
-    payload.pop("supplier")
+    payload.pop("supplier", None)
     payload["supplier_id"] = purchase["supplier_id"]
     assert (
         client.post(
@@ -210,6 +223,13 @@ def test_multiple_suppliers_keep_independent_purchase_costs(boutique):  # noqa: 
         (graph["supplier2"], "60.00"),
         (graph["supplier1"], "45.00"),
     ):
+        assert (
+            client.patch(
+                f"/api/v1/products/{graph['product1']}",
+                json={"supplier_ids": [supplier_id], "cost": cost},
+            ).status_code
+            == 200
+        )
         payload = {
             "supplier_id": supplier_id,
             "employee_id": graph["employee1"],
@@ -234,7 +254,7 @@ def test_multiple_suppliers_keep_independent_purchase_costs(boutique):  # noqa: 
         )
     catalog = client.get("/api/v1/reports/product-catalog").json()["items"]
     row = next(row for row in catalog if row["product_id"] == graph["product1"])
-    assert len(row["suppliers"]) >= 3
+    assert len(row["suppliers"]) >= 2
 
 
 def test_upgrade_reuses_masters_and_preserves_supplier_and_cash_history(

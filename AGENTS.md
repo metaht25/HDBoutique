@@ -1,5 +1,9 @@
 # Instrucciones de trabajo para HDBoutique
 
+## Incremento vigente RF-01 a RF-18
+
+Solicitud del propietario del 3 de noviembre de 2026: ver docs/integral-improvements.md. Sustituye acuerdos incompatibles de campos/costos/responsables/referencia; mantener reglas sin crédito ni caja. Cargo fijo Vendedor para altas, históricos inmutables; producto inicial cero y proveedores múltiples; compras con costo principal del servidor; responsable de sesión; completar Delivery atómicamente; referencia opcional con confirmación obligatoria. Sin formulario Cuentas y accesos ni perfil editable; ubicaciones administrativas solo en Empleados. Código y base local en 0012; respaldos previo/final restaurados y conciliados; administrador vinculado al empleado #2 por indicación expresa, con revocación y auditoría. Runtime saludable; detalles en informe y cutover. Sin commits automáticos en este incremento.
+
 Estas instrucciones se aplican al repositorio completo. Las instrucciones nuevas
 del usuario prevalecen sobre estas convenciones del proyecto.
 
@@ -42,7 +46,7 @@ del usuario prevalecen sobre estas convenciones del proyecto.
   supervisada, motivo, original conservado, devolucion del importe y reposicion
   solo de mercancia efectivamente devuelta. Implementados pago completo atomico obligatorio
   con venta y anulación auditada; caja/turnos retirados de la operación, historia
-  conservada. Head de código 0010_optional_profile_phone, 32 tablas;
+  conservada. Código y base local en 0012_optional_transfer_reference, 32 tablas más Alembic;
   estado concreto de migración local y respaldos en docs/cutover.md.
   Historicos sin pago no se marcan como cobrados. Ver B04/B06/B10 y
   docs/cash-register.md. Empleados: docs/employees.md. Configuracion inicial

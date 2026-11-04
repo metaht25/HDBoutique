@@ -4,7 +4,7 @@ Solo Dueña consulta y gestiona empleados/cuentas. El selector operativo devuelv
 ID y nombre de empleados activos, sin datos privados para Colaborador.
 
 POST /api/v1/employees crea empleado, domicilio y cuenta Cashier atómicamente:
-nombres, apellidos, teléfono, cargo, fecha de ingreso, usuario, contraseña asignada
+nombres, apellidos, teléfono, cargo fijo Vendedor asignado por servidor, fecha de ingreso, usuario, contraseña asignada
 y domicilio coherente departamento/municipio/dirección exacta. Un usuario duplicado
 revierte también empleado/domicilio.
 
@@ -21,12 +21,12 @@ Colaborador no puede cambiar su propia contraseña.
 
 PATCH edita datos, contraseña y estado; conserva usuario. Desactivar bloquea login/
 nuevas operaciones y revoca sesiones; reactivar conserva identidad e historia.
-La última Dueña activa está protegida. No hay borrado. «Cuentas y accesos» administra
-cuentas/vínculos exclusivos existentes. Un empleado sin cuenta requiere vincular una
+La última Dueña activa está protegida. No hay borrado. Se retiró el formulario
+Cuentas y accesos; la sustitución de contraseña sigue en Editar empleado. Un empleado sin cuenta requiere vincular una
 antes de asignar contraseña. No repetir bootstrap.
 
 0007 libera must_change_password con auditoría sin cambiar hashes. Manager sigue
-retirado, sin conversión automática. Cargo no concede permisos. El selector admite Vendedor y ausencia de cargo;
-solo conserva otro valor si ya pertenece al empleado histórico que se edita.
-El servicio rechaza nuevos valores arbitrarios sin renombrar cargos antiguos.
+retirado, sin conversión automática. Cargo no concede permisos. Se muestra sin selector: Vendedor para altas; el cargo
+histórico se conserva sin edición. API rechaza un cargo nuevo distinto de Vendedor
+y cualquier cambio del cargo existente. Ubicaciones se administran solo aquí.
 [Autenticación](authentication.md), [reglas](business-rules.md), [corte](cutover.md).

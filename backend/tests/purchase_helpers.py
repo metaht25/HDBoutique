@@ -42,6 +42,7 @@ def seed_purchasing(session: Session) -> dict[str, int]:
             legacy_stock=0,
             legacy_stock_quantity=12,
             unit_price=Decimal("199.50"),
+            cost=Decimal("120.50") if index == 1 else Decimal("35.25"),
         )
         for index in (1, 2)
     ]
@@ -82,7 +83,11 @@ def seed_purchasing(session: Session) -> dict[str, int]:
             password_hash=encoded,
             role=role,
             is_active=True,
-            employee_id=employees[0].employee_id if role == "Manager" else None,
+            employee_id=employees[0].employee_id
+            if role == "Administrator"
+            else employees[1].employee_id
+            if role == "Cashier"
+            else None,
         )
         for role in ("Administrator", "Manager", "Cashier")
     ]

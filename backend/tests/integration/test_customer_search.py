@@ -22,10 +22,10 @@ def test_customer_search_filters_before_paging_and_preserves_phone(
     ).json()
     identifiers = []
     for first, last, phone in (
-        ("Ana", "Primera", "0012345678"),
-        ("Other", "Name", "2000000000"),
-        ("ANA", "Segunda", "3000000000"),
-        ("Literal%_", "Name", "4000000000"),
+        ("Ana", "Primera", "81234567"),
+        ("Other", "Name", "71234567"),
+        ("ANA", "Segunda", "81234568"),
+        ("Literal%_", "Name", "81234569"),
     ):
         from app.modules.customers.schemas import CustomerCreate
         from app.modules.customers.service import CustomersService
@@ -48,7 +48,7 @@ def test_customer_search_filters_before_paging_and_preserves_phone(
     assert [row["customer_id"] for row in result] == [identifiers[2]]
     for query, expected in (
         ("Ana Primera", identifiers[0]),
-        ("001234", identifiers[0]),
+        ("81234567", identifiers[0]),
         ("%_", identifiers[3]),
     ):
         result = client.get("/api/v1/customers", params={"q": query}).json()

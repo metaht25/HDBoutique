@@ -45,7 +45,7 @@ export async function customerFromSale(page: Page, delivery = false, info?: Test
   const modal = page.getByRole('dialog', { name: 'Nuevo cliente' })
   await modal.getByLabel('Nombres', { exact: true }).fill('Prueba')
   await modal.getByLabel('Apellidos', { exact: true }).fill(delivery ? 'Delivery' : 'Regular')
-  if (delivery) { await modal.getByLabel('Teléfono', { exact: true }).fill('0000000000'); await selectAddress(page) }
+  if (delivery) { await modal.getByLabel('Teléfono', { exact: true }).fill('80000000'); await selectAddress(page) }
   if (info) {
     await capture(page, info, delivery ? 'customer-delivery-modal' : 'customer-regular-modal')
     await page.setViewportSize({ width: 390, height: 844 })

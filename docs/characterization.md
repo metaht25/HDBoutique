@@ -798,3 +798,30 @@ Al corregir un defecto, agregar su prueba real en la capa adecuada, actualizar
 fixture/documentacion si cambia el contrato y registrar la incompatibilidad
 intencionada. No volver todas las pruebas expectedFailure ni convertir todos los
 defectos en snapshots inmutables. Migrar la cobertura util junto con cada modulo.
+
+
+## Mejoras integrales RF-01 a RF-18 (3 de noviembre de 2026)
+
+[Contrato, matriz de 18 requisitos y comandos](integral-improvements.md).
+324 pruebas backend/PostgreSQL aprobadas, 92.26 % de cobertura (184.31 s).
+Ruff/formato de 174 archivos, mypy sobre 108 archivos y bloqueo uv aprobados.
+Head de código 0012_optional_transfer_reference; Alembic check aislado sin drift.
+Sin modificación de revisiones 0001–0010. Se conservan 32 tablas más Alembic.
+
+Frontend: TypeScript, ESLint y build aprobados; 102 Vitest, 22 E2E de escritorio/móvil,
+12 flujos conectados y una prueba focal conectada semanal/mensual aprobados.
+69 capturas finales y 3 renders PDF inspeccionados, además de las 16 capturas Word.
+Exportaciones API de 80 mm; impresión Chromium aproximadamente 80.1 mm.
+Se conservó el diseño de recibos y la impresora física no fue probada.
+
+Comercio sintético exclusivamente en hdboutique_test/tmpfs. Con autorización
+expresa posterior se respaldó y restauró hdboutique en una base nueva, se ensayó
+0010→0012 y se aplicó a desarrollo sin drift ni cambios de filas históricas.
+33 tablas/PK y 27 secuencias coinciden en cada restauración. Vínculo de empleado #2
+trasladado a administrador por indicación expresa: cuentas/roles/contraseñas
+conservados, 7 sesiones revocadas y 2 eventos de auditoría nuevos; otras 30 tablas
+intactas. Respaldo final restaurado y conciliado en una segunda base nueva.
+db/backend/web saludables; 22 comprobaciones HTTP de solo lectura aprobadas.
+Sin commits, remoto, cambios de claves, bootstrap ni comercio ficticio en desarrollo.
+Login con contraseña personal a cargo del propietario; impresora física no probada.
+Nombres de destinos y huellas de respaldos en [corte](cutover.md).

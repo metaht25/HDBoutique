@@ -268,3 +268,63 @@ del perfil persistido devolvió coincidencia exacta de los cuatro valores autori
 No se usó una contraseña histórica ni la contraseña personal del propietario.
 Conservar respaldos y copias de verificación; 0010 rechaza downgrade si un teléfono
 NULL no puede cumplir el esquema anterior. Nunca rellenarlo para forzar un retorno.
+
+
+## Corte autorizado RF-01 a RF-18 (3 de noviembre de 2026)
+
+Código y pruebas aisladas cerrados; [informe y evidencia](integral-improvements.md).
+El propietario autorizó expresamente aplicar 0011 y 0012 a
+hdboutique-dev/hdboutique y arrancar la versión verificada, conservando datos,
+volumen hdboutique-dev_postgres_data y credenciales, con respaldos previo/final
+restaurados y conciliados en dos bases nuevas separadas. Posteriormente identificó
+al empleado #2 (Alejandra) para trasladar su vínculo a la cuenta administrador.
+
+Desarrollo se encontró detenido. Se arrancó únicamente PostgreSQL para el respaldo;
+web/backend permanecieron detenidos durante el ensayo y la actualización.
+Se confirmó 0010_optional_profile_phone, 32 tablas más Alembic y 27 secuencias.
+
+Respaldo privado con ACL exclusiva:
+backups/integral-improvements-20261103-6f0fa328.
+before.dump SHA-256 7EC72DCA416D23D3C30AC19E09172735A2F945B8E050F9BDB9ED63A3A9278D91.
+final.dump SHA-256 9BD814E2B024AD444D4A03F959FB0661C6EC8CA9C429104E1A43C979357CD414.
+Ambos restaurados sin --clean y conservados en:
+hdboutique_integral_before_verify_6f0fa328 y
+hdboutique_integral_final_verify_6f0fa328.
+Las 33 tablas completas (esquema, conteos y SHA-256 de filas), claves primarias y
+27 secuencias coinciden exactamente con los snapshots correspondientes.
+
+En la copia previa se ensayó 0010→0011_supplier_addresses→0012_optional_transfer_reference.
+Alembic check sin operaciones nuevas. Se verificó la proyección de las columnas
+anteriores de las 32 tablas de negocio/técnicas: mismos conteos y hashes, PK y
+secuencias intactos; única evolución de columnas permitida en suppliers.
+Se repitió upgrade/check y la misma conciliación histórica en hdboutique.
+Las migraciones no transformaron filas ni se editaron revisiones anteriores.
+
+Tras el ensayo y la migración se ejecutó en una transacción el traslado autorizado
+del empleado #2 desde su cuenta anterior a administrador. Se mantuvieron ambas
+cuentas, contraseñas, roles, estados e historial; solo cambió employee_id de esas
+dos cuentas. Se revocaron 7 sesiones de las cuentas afectadas. Se añadieron dos
+eventos auditados con el actor administrador y motivo de autorización expresa,
+sin datos de contacto ni secretos. Eventos anteriores conservados, otras 30 tablas
+y secuencias ajenas intactas. La cuenta anterior queda sin vínculo y no puede
+registrar operaciones nuevas hasta contar con un empleado propio autorizado.
+No se reasignaron autores de ventas/compras anteriores ni se creó personal ficticio.
+Evidencia privada: link-evidence.json, snapshots y helpers del mismo directorio.
+
+El respaldo final incluye el esquema 0012 y el vínculo autorizado. Su segunda
+restauración coincidió íntegramente con final.json antes de arrancar los escritores.
+No hubo bootstrap, cambios de claves, productos/clientes/ventas/compras sintéticos,
+migración al arrancar, modificación de .env.docker ni eliminación de volúmenes.
+
+db/backend/web iniciados con las imágenes verificadas y saludables. Solo loopback:
+Nginx http://127.0.0.1:8080, API 127.0.0.1:8001, PostgreSQL 127.0.0.1:5433.
+22 comprobaciones HTTP de solo lectura aprobadas: diez rutas SPA, assets actuales,
+salud/readiness por proxy y API, rutas protegidas anónimas 401, caja retirada y
+/admin/ 404. Evidencia privada http-smoke.json. No se inició una sesión personal
+ni se usó la contraseña del propietario; login personal e impresora física a su cargo.
+
+Conservar ambos dumps, evidencia y las dos bases de verificación; no restaurar
+sobre desarrollo ni ejecutar down -v. 0011 protege el downgrade con direcciones
+nuevas/proveedores sin ubicación y 0012 con referencias ausentes. Un retorno de
+datos requiere otro destino autorizado y evaluación de operaciones posteriores.
+No rellenar históricos para forzar un downgrade. Sin remoto, staging ni commits.

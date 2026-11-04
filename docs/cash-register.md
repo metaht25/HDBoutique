@@ -8,7 +8,7 @@ Venta y anulación no requieren shift_id ni crean cash_movements.
 | Pago | Regla |
 | --- | --- |
 | Efectivo | recibido >= total; aplicado = total; cambio = recibido − total |
-| Transferencia | importe exacto = total; referencia y confirmación manual |
+| Transferencia | importe exacto = total; referencia opcional y confirmación manual obligatoria |
 | Mixto | 0 < transferencia < total; efectivo aplicado = total − transferencia; recibido >= aplicado; cambio = recibido − aplicado |
 
 Componentes cash_amount y transfer_amount separados. Venta/pago/salida de stock
@@ -28,3 +28,6 @@ para preservar huellas de reintentos; no enlazan las operaciones nuevas a caja.
 Las intenciones antiguas de turnos quedan bloqueadas conservando evidencia.
 Downgrade con actividad sin turno falla; el retorno seguro restaura en una base
 separada y concilia operaciones posteriores. [Corte](cutover.md), [ventas](sales.md).
+
+0012 permite referencia NULL en el CHECK de pago completo, conservando las demás
+restricciones e historia. No cambia el requisito de referencia para un reintegro.

@@ -17,7 +17,7 @@ from app.modules.reporting.repository import ReportingRepository, stock_status
 from app.modules.sales.models import Sale, SaleItem
 from app.modules.sales.workflow_models import SaleWorkflow
 from app.modules.staff.models import Employee
-from app.modules.suppliers.models import Supplier
+from app.modules.suppliers.models import Supplier, SupplierOffering, SupplierProduct
 
 
 def address_columns() -> list[Any]:
@@ -53,6 +53,7 @@ class BoutiqueReportingRepository(ReportingRepository):
         status: str | None,
         offset: int,
         limit: int,
+        supplier_id: int | None = None,
     ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         columns = [
             Product.product_id,
@@ -75,6 +76,16 @@ class BoutiqueReportingRepository(ReportingRepository):
                 Supplier.company_name.label("supplier_name"),
             ]
         query = select(*columns).select_from(Product).join(Category).join(Size)
+        if supplier_id is not None:
+            query = query.where(
+                select(SupplierOffering.offering_id)
+                .join(SupplierProduct)
+                .where(
+                    SupplierOffering.supplier_id == supplier_id,
+                    SupplierProduct.product_id == Product.product_id,
+                )
+                .exists()
+            )
         if owner:
             query = query.outerjoin(
                 Supplier, Supplier.supplier_id == Product.supplier_id
@@ -86,7 +97,14 @@ class BoutiqueReportingRepository(ReportingRepository):
         if status in {"active", "inactive"}:
             query = query.where(Product.is_active.is_(status == "active"))
         elif status:
-            query = query.where(stock_status() == status)
+            if status == "sellable":
+                query = query.where(
+                    Product.is_active.is_(True),
+                    Product.legacy_stock > 0,
+                    Product.unit_price > 0,
+                )
+            else:
+                query = query.where(stock_status() == status)
         base = query.subquery()
         aggregates = [
             func.count().label("total_count"),
@@ -186,7 +204,14 @@ class BoutiqueReportingRepository(ReportingRepository):
                 Supplier.phone_number,
                 Supplier.work_email,
                 Supplier.is_active,
-                *address_columns(),
+                *[
+                    column
+                    for column in address_columns()
+                    if column is not Address.address_line
+                ],
+                func.coalesce(Supplier.address_line, Address.address_line).label(
+                    "address_line"
+                ),
             ).select_from(Supplier),
             Supplier.address_id,
         )

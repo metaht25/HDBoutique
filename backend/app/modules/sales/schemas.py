@@ -6,9 +6,10 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, BeforeValidator, Field, model_validator
 
-from app.api.schemas import InputModel, require_exact_decimal
+from app.api.schemas import InputModel, PhoneNumber, require_exact_decimal
 from app.modules.cash.schemas import PaymentCreate, PaymentRead, VoidRead
 from app.modules.customers.schemas import CustomerCreate
+from app.modules.locations.composition import InlineAddress
 
 PositiveId = Annotated[int, Field(gt=0, strict=True)]
 
@@ -18,7 +19,13 @@ class SaleLineCreate(InputModel):
     quantity: Annotated[int, Field(gt=0, le=2147483647, strict=True)]
 
 
+class DeliveryDetails(InputModel):
+    phone_number: PhoneNumber
+    address: InlineAddress
+
+
 class SaleCreate(InputModel):
+    delivery_details: DeliveryDetails | None = None
     customer: CustomerCreate | None = None
     customer_id: PositiveId | None = None
     customer_kind: Literal["general", "regular", "delivery"] = "regular"

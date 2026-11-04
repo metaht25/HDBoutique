@@ -111,12 +111,22 @@ def records(
     category = create("categories", name="Synthetic")
     size = next(row for row in client.get("/api/v1/sizes").json() if row["name"] == "M")
     result["sizes"] = size
+    supplier = create(
+        "suppliers",
+        address_id=address["address_id"],
+        company_name="Synthetic",
+        contact_first_names="Contact",
+        contact_last_names="Synthetic",
+        phone_number="80000000",
+        work_email=None,
+    )
     product = create(
         "products",
         category_id=category["category_id"],
         size_id=size["size_id"],
         name="Synthetic product",
         cost="173.48",
+        supplier_ids=[supplier["supplier_id"]],
     )
     assert product["legacy_stock"] == 0
     assert product["legacy_stock_quantity"] is None
@@ -138,16 +148,7 @@ def records(
         customer_type_id=customer_type["customer_type_id"],
         first_names="Synthetic",
         last_names="Customer",
-        phone_number="0000000000",
-    )
-    supplier = create(
-        "suppliers",
-        address_id=address["address_id"],
-        company_name="Synthetic",
-        contact_first_names="Contact",
-        contact_last_names="Synthetic",
-        phone_number="00000000",
-        work_email=None,
+        phone_number="80000000",
     )
     supplier_product = create(
         "supplier-products", product_id=product["product_id"], purchase_price="120.50"
@@ -174,7 +175,13 @@ def test_resource_workflow(
     detail = path + "/" + str(original[key])
     assert client.get(detail).json() == original
     assert original in client.get(path).json()
-    if route not in {"departments", "municipalities", "sizes"}:
+    if route not in {
+        "departments",
+        "municipalities",
+        "sizes",
+        "supplier-products",
+        "supplier-offerings",
+    }:
         assert client.get(path, params={"offset": 0, "limit": 1}).json() == [original]
     if route in {"customers", "suppliers", "sizes"}:
         assert client.patch(detail, json={"name": "Edited"}).status_code in {
@@ -201,6 +208,8 @@ def test_resource_workflow(
             "supplier_id",
         ):
             payload.pop(field)
+    if route == "products":
+        payload["supplier_ids"] = [records["suppliers"]["supplier_id"]]
     assert client.put(detail, json=payload).json() == original
     assert client.patch(detail, json={}).json() == original
     if "name" in payload:
@@ -208,6 +217,9 @@ def test_resource_workflow(
         assert updated.status_code == 200
         assert updated.json()["name"] == "Updated"
     duplicate = client.post(path, json=payload)
+    if route == "supplier-offerings":
+        assert duplicate.status_code == 409
+        return
     assert duplicate.status_code == 201
     duplicate_path = path + "/" + str(duplicate.json()[key])
     preserved = route in {"products", "customers", "suppliers"}
@@ -241,7 +253,14 @@ def test_resource_workflow(
     assert database_connection.execute(
         text(f"SELECT count(*) FROM {table}")
     ).scalar_one() == (
-        2 if preserved else {"departments": 4, "municipalities": 29}.get(route, 1)
+        2
+        if preserved
+        else {
+            "departments": 4,
+            "municipalities": 29,
+            "supplier-products": 2,
+            "supplier-offerings": 2,
+        }.get(route, 1)
     )
 
 

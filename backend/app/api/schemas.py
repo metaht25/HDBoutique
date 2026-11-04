@@ -3,11 +3,22 @@
 import re
 from typing import Annotated, ClassVar
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    ValidationInfo,
+    field_validator,
+)
 
-PhoneNumber = Annotated[
-    str, Field(strict=True, min_length=1, max_length=10, pattern=r"^[0-9]+$")
-]
+
+def validate_mobile_phone(value: object) -> str:
+    if not isinstance(value, str) or not re.fullmatch(r"[78][0-9]{3}-?[0-9]{4}", value):
+        raise ValueError("El teléfono debe tener ocho dígitos y comenzar con 7 u 8.")
+    return value.replace("-", "")
+
+
+PhoneNumber = Annotated[str, BeforeValidator(validate_mobile_phone)]
 
 
 class InputModel(BaseModel):

@@ -9,19 +9,21 @@ import { TextField } from '../../shared/ui/TextField'
 import { SelectField } from '../../shared/ui/SelectField'
 import { useSession } from '../session/sessionContext'
 import { amount, cents, money, query, useChoices, useQuery } from './api'
-import type { Page, Product } from './contracts'
+import { SearchSelect } from './SearchSelect'
+import type { Page, Product, Supplier } from './contracts'
 import { Badge, DataState, Modal, Pager, Panel, Stats, Table } from './ui'
 import { ReferenceModal } from './ReferenceModal'
 import styles from './Boutique.module.css'
 
 function ProductForm({ row, date, onSaved, onClose }: { row?: Product; date: string; onSaved: () => void; onClose: () => void }) {
-  const [name, setName] = useState(row?.name ?? ''), [category, setCategory] = useState(String(row?.category_id ?? '')), [size, setSize] = useState(String(row?.size_id ?? '')), [cost, setCost] = useState(row?.cost ?? ''), [stock, setStock] = useState('0'), [description, setDescription] = useState(row?.description ?? ''), [busy, setBusy] = useState(false), [error, setError] = useState(''), sending = useRef(false)
+  const [name, setName] = useState(row?.name ?? ''), [category, setCategory] = useState(String(row?.category_id ?? '')), [size, setSize] = useState(String(row?.size_id ?? '')), [cost, setCost] = useState(row?.cost ?? ''), [supplier, setSupplier] = useState(''), [supplierQuery, setSupplierQuery] = useState(''), [selectedSuppliers, setSelectedSuppliers] = useState<{ id: number; label: string }[]>([]), [description, setDescription] = useState(row?.description ?? ''), [busy, setBusy] = useState(false), [error, setError] = useState(''), sending = useRef(false)
   const categories = useChoices('categories'), sizes = useChoices('sizes')
+  const suppliers = useQuery<Page<Supplier>>('reports/supplier-directory?' + query({ q: supplierQuery, status: 'active', limit: 20 }))
   const calculated = exactMoney(cost) && cents(cost) > 0n ? amount((cents(cost) * 115n + 50n) / 100n) : null
   async function submit(event: FormEvent) {
     event.preventDefault(); if (sending.current) return
-    if (!category || !size || (!row && (!calculated || !/^\d+$/.test(stock))) || (cost && !calculated)) { setError('Revisa categoría, talla, costo positivo y cantidad inicial entera.'); return }
-    const body = { name: name.trim(), category_id: Number(category), ...(!row || Number(size) !== row.size_id ? { size_id: Number(size) } : {}), description: description.trim() || null, ...(cost ? { cost: exactMoney(cost) } : {}), ...(!row ? { initial_stock: Number(stock) } : {}) }
+    if (!category || !size || (!row && (!calculated || !selectedSuppliers.length)) || (cost && !calculated)) { setError('Revisa categoría, talla, costo positivo y al menos un proveedor.'); return }
+    const body = { name: name.trim(), category_id: Number(category), ...(!row || Number(size) !== row.size_id ? { size_id: Number(size) } : {}), description: description.trim() || null, ...(cost ? { cost: exactMoney(cost) } : {}), ...(selectedSuppliers.length ? { supplier_ids: selectedSuppliers.map(item => item.id) } : {}) }
     sending.current = true; setBusy(true); setError('')
     try { await apiClient.request(`/api/v1/products${row ? '/' + row.product_id : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved() }
     catch (error) { setError(getErrorMessage(error, 'No se pudo guardar el producto.')) } finally { sending.current = false; setBusy(false) }
@@ -32,9 +34,10 @@ function ProductForm({ row, date, onSaved, onClose }: { row?: Product; date: str
     <DataState result={sizes}><SelectField label="Talla" required value={size} onChange={e => setSize(e.target.value)}><option value="">Selecciona</option>{row && !sizes?.data?.some(item => item.id === row.size_id) && <option value={row.size_id}>{row.size_name} (histórica)</option>}{sizes?.data?.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</SelectField></DataState>
     <TextField label="Costo (NIO)" required={!row} inputMode="decimal" value={cost} onChange={e => setCost(e.target.value)} />
     <TextField label="Precio de venta (+15 %)" readOnly value={money(calculated ?? row?.unit_price)} />
-    {!row && <TextField label="Cantidad inicial" inputMode="numeric" required value={stock} onChange={e => setStock(e.target.value)} />}
+    <div className={styles.full}><SearchSelect loading={!suppliers} label="Proveedor" value={supplier} options={suppliers?.data?.items.map(item => ({ id: item.supplier_id, label: item.company_name, description: `${item.contact_first_names ?? ''} ${item.contact_last_names ?? ''} · ${item.phone_number ?? ''} · #${item.supplier_id}` })) ?? []} onSearch={setSupplierQuery} onChange={value => { setSupplier(value); const item = suppliers?.data?.items.find(item => item.supplier_id === Number(value)); if (item) setSelectedSuppliers(current => current.some(row => row.id === item.supplier_id) ? current : [...current, { id: item.supplier_id, label: item.company_name }]) }} />
+    {selectedSuppliers.map(item => <p key={item.id}>{item.label} <button type="button" className="secondary" onClick={() => setSelectedSuppliers(current => current.filter(row => row.id !== item.id))}>Quitar selección</button></p>)}{row?.suppliers?.map(item => <p key={item}>{item}</p>)}</div>
     <div className={styles.full}><TextField label="Descripción (opcional)" maxLength={500} value={description} onChange={e => setDescription(e.target.value)} /></div>
-  </div><p className={styles.hint}>{row ? 'El stock cambia mediante ventas, recepciones y anulaciones autorizadas.' : 'La cantidad inicial se registra como un movimiento de inventario auditable.'} Nombre identifica la prenda; categoría la agrupa y talla indica su medida. El costo principal determina el precio (+15 %, redondeado a dos decimales). La cantidad inicial son las unidades disponibles al registrar el producto. La descripción permite añadir detalles. Los costos de compra por proveedor se registran en Compras y conservan su historia.</p>
+  </div><p className={styles.hint}>El producto comienza sin mercancía y registra un movimiento inicial de cero. Las existencias ingresan mediante Compras y recepción. El costo determina el precio de venta (+15 %). Puedes añadir varios proveedores; las asociaciones e importes históricos se conservan.</p>
     {error && <Message>{error}</Message>}<div className={styles.actions}><button type="button" className="secondary" onClick={onClose}>Cancelar</button><button>{busy ? 'Guardando…' : row ? 'Guardar cambios' : 'Guardar producto'}</button></div>
   </fieldset></form></Modal>
 }

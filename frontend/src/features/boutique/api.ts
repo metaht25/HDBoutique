@@ -16,7 +16,7 @@ export function money(value: string | number | null | undefined) {
   const [whole = '0', cents = '00'] = normalized.split('.')
   return `C$ ${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${cents}`
 }
-export function cents(value: string | null | undefined): bigint { return BigInt((exactMoney(value ?? '') ?? '0.00').replace('.', '')) }
+export function cents(value: string | null | undefined): bigint { return BigInt((exactMoney((value ?? '').replace(/\.$/, '')) ?? '0.00').replace('.', '')) }
 export function amount(value: bigint): string { return `${value < 0n ? '-' : ''}${(value < 0n ? -value : value) / 100n}.${String((value < 0n ? -value : value) % 100n).padStart(2, '0')}` }
 export function commercialDate() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Managua', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()) }
 export function dateText(value: string | null) { return value ? value.slice(0, 10).split('-').reverse().join('/') : 'No registrada' }

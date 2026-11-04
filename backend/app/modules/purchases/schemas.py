@@ -31,8 +31,6 @@ class PurchaseLineCreate(InputModel):
             raise ValueError("Indica un único producto")
         if self.supplier_product_id is not None and self.unit_cost is not None:
             raise ValueError("El costo explícito requiere seleccionar el producto")
-        if self.product_id is not None and self.unit_cost is None:
-            raise ValueError("Indica el costo de compra")
         return self
 
     quantity: Annotated[int, Field(gt=0, le=2147483647, strict=True)]

@@ -1,46 +1,46 @@
 # Compras e inventario
 
-Solo Dueña consulta/registra compras, proveedores, ofertas y costos. Colaborador
-no obtiene esos datos mediante API ni navegación. Compras requiere proveedor,
-productos y empleado activos; usa el vínculo de cuenta cuando existe.
+Contrato RF-05 a RF-09: [implementación y verificaciones](integral-improvements.md).
+Solo Dueña administra proveedores, asociaciones, productos y compras. Colaborador
+no recibe costos, proveedores ni informes administrativos.
 
-Registro con Idempotency-Key: varias líneas, cantidades positivas, costo de compra
-por proveedor/producto copiado por línea, envío y descripción opcional. Proveedor
-se selecciona en consulta o se guarda desde el formulario contextual de Compras.
-POST /api/v1/purchases/suppliers exige Dueña, CSRF y clave idempotente; confirma
-proveedor/domicilio/auditoría juntos y lo deja disponible antes de guardar una compra.
-Un fallo de compra posterior no elimina ese proveedor ya confirmado. La compatibilidad
-con proveedor inline en POST /purchases conserva su transacción integral anterior. Inactivo requiere reactivación en Proveedores. Total de servidor en
-NIO/Decimal/dos decimales; envío separado, sin prorrateo. Siempre Pendiente
-(registered). Registrar no aumenta existencias. Fechas antiguas de revisión/relleno
-se conservan sin inferir recepción.
+Nuevo producto exige nombre, categoría, talla fija, costo positivo y al menos un
+proveedor activo. El selector permite buscar y añadir varios proveedores. No se
+admiten IDs repetidos o inactivos. Se usan supplier_products/supplier_offerings;
+añadir un proveedor reutiliza asociaciones existentes y conserva todas las antiguas.
+Los productos históricos sin asociación requieren asignarla explícitamente. No se
+infieren proveedores ni costos. products.supplier_id histórico se conserva.
 
-Los costos de proveedor también exigen texto decimal o entero exacto; rechazan
-exponentes, separadores ambiguos, float, booleanos, valores no finitos, precisión excesiva y desbordamientos.
+El alta siempre comienza con stock cero y movimiento initial_stock cero auditado.
+No existe Cantidad inicial en UI; la API rechaza valores positivos, negativos o
+booleanos. legacy_stock_quantity permanece intacto. Precio de venta = costo × 1.15,
+Decimal/ROUND_HALF_UP a dos decimales, calculado por el servidor.
 
-Recepción completa: confirmación explícita y empleado activo; registered → received
-una sola vez. Bloqueo transaccional de compra/productos; movimiento purchase_receipt
-con stock antes/después y autor. Un reintento no duplica inventario. No recepción
-parcial. Inactivos no se usan en registro ni recepción hasta reactivar.
+Nuevo proveedor se guarda desde Compras con POST /api/v1/purchases/suppliers,
+Dueña/CSRF/Idempotency-Key. Ocho dígitos, prefijo 7/8 y teléfono canónico. Dirección
+textual opcional; no exige departamento/municipio. Los domicilios históricos y sus
+FK se conservan. Un proveedor guardado sobrevive al cierre o fallo de una compra.
 
-Productos nuevos: nombre, fecha actual, categoría, talla fija S/M/L/XL/XXL, costo
-principal, cantidad inicial y descripción opcional. Puede crearse sin proveedor. Costo positivo;
-precio calculado = costo × 1.15, ROUND_HALF_UP a dos decimales. No se acepta precio
-manual ni cambios directos de stock. Cantidad inicial genera movimiento
-initial_stock auditable incluso si es cero. Cuenta autora obligatoria, sin
-inventar empleado cuando el alta no requiere uno.
+Nueva compra usa un único combobox Proveedor. Solo ofrece productos asociados;
+el servidor también rechaza productos incompatibles. Responsable desde la cuenta
+autenticada vinculada a un empleado activo; nunca acepta otro empleado ni un
+fallback para cuentas sin vínculo. Fecha, envío y descripción se conservan.
 
-Ventas generan sale_issue; anulaciones reponen solo lo devuelto mediante sale_return.
-Movimientos preservan cantidad, stock anterior/posterior y relaciones históricas.
-Stock nulo/negativo no se transforma silenciosamente en cero. legacy_stock_quantity
-no se actualiza. Producto inactivo conserva todas sus relaciones y se reactiva
-explícitamente antes de nuevas operaciones. No borrar productos históricos.
+Costo de compra visible y de solo lectura: el servidor bloquea los productos,
+consulta su costo principal vigente y guarda PurchaseItemCost en la transacción.
+unit_cost omitido usa ese costo; si se envía uno distinto, devuelve 422. Las ofertas
+antiguas conservan sus costos. Subtotal y total del servidor, NIO/Decimal, envío
+separado. Cambios posteriores del costo no afectan compras registradas ni recepción.
 
-Un producto admite varios proveedores con costos propios. Compras crea/reutiliza
-supplier_products/supplier_offerings por proveedor/producto/costo; otro costo crea
-otra relación conservando las anteriores. Compras previas y costo principal/precio
-de venta permanecen intactos. products.supplier_id histórico se conserva como
-respaldo visual si no hay relaciones; no se inventan costos faltantes. Productos
-muestra proveedores/costos legibles solo a Dueña, sin un flujo separado de «ofertas».
+Registro Pendiente con Idempotency-Key; no incrementa stock. Ver compra es lectura.
+Marcar como recibida es una acción explícita, sin segundo selector de empleado ni
+confirmación redundante. Recibe todas las líneas bajo bloqueo transaccional,
+aumenta existencias, crea purchase_receipt y audita cuenta/empleado de sesión.
+Un reintento devuelve la misma recepción sin duplicar mercancía. Sin parcial.
+Stock desconocido/negativo o producto inactivo requiere resolver el estado antes.
+
+Ventas generan sale_issue; anulaciones reponen solo lo devuelto con sale_return.
+En Nueva venta el servidor pagina solo productos activos con precio y stock
+positivos: cero, nulo y negativo se excluyen. Una unidad sí puede venderse.
 
 [Reglas](business-rules.md), [ventas](sales.md), [reportes](reporting.md).

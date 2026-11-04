@@ -86,7 +86,6 @@ def test_transfer_payment_and_refund_without_shift(sales_context):
         "credit",
         "partial",
         "transfer_unconfirmed",
-        "transfer_missing_reference",
         "transfer_short",
         "transfer_over",
         "cash_reference",

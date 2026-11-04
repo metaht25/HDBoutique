@@ -120,7 +120,14 @@ class SaleLedger(ViewPage[SaleLedgerRow]):
     best_products: list[BestProduct]
 
 
+class SalesPoint(BaseModel):
+    date: date
+    amount: ReportMoney
+    count: int
+
+
 class Overview(BaseModel):
+    series: list[SalesPoint]
     context: ReportContext
     summary: dict[str, int | str | None]
     recent_sales: list[SaleLedgerRow]

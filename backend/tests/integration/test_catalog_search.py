@@ -15,6 +15,19 @@ def test_product_search_is_literal_case_insensitive_and_paginated(
     category = client.post("/api/v1/categories", json={"name": "Synthetic"}).json()
     size = next(row for row in client.get("/api/v1/sizes").json() if row["name"] == "M")
     identifiers = []
+    from app.modules.suppliers.schemas import SupplierCreate
+    from app.modules.suppliers.service import SuppliersService
+
+    with client.app.state.session_factory() as session:
+        saved_supplier = SuppliersService(session).save_supplier(
+            SupplierCreate(
+                company_name="Synthetic",
+                contact_first_names="Test",
+                contact_last_names="Contact",
+                phone_number="80000000",
+            )
+        )
+        supplier = {"supplier_id": saved_supplier.supplier_id}
     for name in (
         "Summer first",
         "Other",
@@ -29,6 +42,7 @@ def test_product_search_is_literal_case_insensitive_and_paginated(
                 "size_id": size["size_id"],
                 "name": name,
                 "cost": "173.48",
+                "supplier_ids": [supplier["supplier_id"]],
             },
         )
         assert response.status_code == 201

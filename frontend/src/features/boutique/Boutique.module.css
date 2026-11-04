@@ -66,3 +66,7 @@
 .recent small { display: block; color: var(--muted); margin-top: 4px; }
 @media (max-width: 1100px) { .columns { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .equalColumns, .formGrid { grid-template-columns: 1fr; } .panel { padding: 16px; } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .stat { padding: 16px; } .stat strong { font-size: 23px; } .modalBody { padding: 18px; } .modalHeader { padding: 16px 18px; } .filters { grid-template-columns: 1fr; } .intro { align-items: start; } }
+.chart { margin: 0; min-width: 0; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart summary { cursor: pointer; padding: .5rem 0; }
+.chart details { max-height: 18rem; overflow: auto; }

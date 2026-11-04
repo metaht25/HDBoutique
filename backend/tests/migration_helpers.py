@@ -20,6 +20,9 @@ def synthetic_source() -> Tables:
                 "customer_type_id",
                 "phone_number",
             }
+            originally_required = originally_required or (
+                item.target == "suppliers" and target == "address_id"
+            )
             if column.nullable and not originally_required:
                 value: object = None
             elif isinstance(column.type, Integer):

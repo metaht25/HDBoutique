@@ -16,6 +16,7 @@ from app.modules.locations.composition import InlineAddress
 
 
 class SupplierCreate(InputModel):
+    address_line: Annotated[str | None, Field(max_length=100)] = None
     address: InlineAddress | None = None
     address_id: Annotated[int | None, Field(gt=0, strict=True)] = None
     company_name: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
@@ -48,16 +49,15 @@ class SupplierPatch(PatchModel):
     contact_last_names: Annotated[
         str | None, Field(max_length=50, min_length=1, strict=True)
     ] = None
-    phone_number: Annotated[
-        str | None, Field(max_length=10, min_length=1, strict=True)
-    ] = None
+    phone_number: PhoneNumber | None = None
     work_email: Annotated[str | None, Field(max_length=40, strict=True)] = None
 
 
 class SupplierRead(OutputModel):
+    address_line: str | None = None
     is_active: bool
     supplier_id: int
-    address_id: Annotated[int, Field(gt=0, strict=True)]
+    address_id: int | None
     company_name: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
     contact_first_names: Annotated[str, Field(max_length=50, min_length=1, strict=True)]
     contact_last_names: Annotated[str, Field(max_length=50, min_length=1, strict=True)]

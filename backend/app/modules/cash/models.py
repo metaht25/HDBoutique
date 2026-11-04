@@ -80,13 +80,13 @@ class SalePayment(Base):
             "(method = 'cash' AND received_amount >= amount "
             "AND change_amount = received_amount - amount AND reference IS NULL) OR "
             "(method = 'transfer' AND received_amount = amount "
-            "AND change_amount = 0 AND reference IS NOT NULL AND "
-            "length(reference) > 0) OR "
+            "AND change_amount = 0 AND (reference IS NULL OR "
+            "length(reference) > 0)) OR "
             "(method = 'mixed' AND cash_amount > 0 AND transfer_amount > 0 "
             "AND cash_amount + transfer_amount = amount AND received_amount "
             ">= cash_amount "
             "AND change_amount = received_amount - cash_amount "
-            "AND reference IS NOT NULL AND length(reference) > 0)",
+            "AND (reference IS NULL OR length(reference) > 0))",
             name="full_payment",
         ),
     )

@@ -98,12 +98,12 @@ def test_registration_receipt_and_history(
         == 0
     )
     assert client.get("/api/v1/inventory/movements").json() == []
-    response = client.post(path + "/receive", json={"employee_id": graph["employee2"]})
+    response = client.post(path + "/receive", json={})
     assert response.status_code == 200, response.text
     received = response.json()
     assert received["status"] == "received"
     assert received["received_by_user_id"] == graph["admin"]
-    assert received["received_employee_id"] == graph["employee2"]
+    assert received["received_employee_id"] == graph["employee1"]
     assert received["employee_id"] == graph["employee1"]
     assert received["review_date"] is None and received["refill_date"] is None
     assert received["received_at"].endswith("Z")
@@ -397,29 +397,14 @@ def test_purchasing_permissions_and_employee_selection(
                 client.post("/api/v1/purchases/1/receive", json={}).status_code == 403
             )
             return
-        if role == "Administrator":
-            assert response.status_code == 422
-            payload["employee_id"] = graph["employee1"]
-            response = client.post(
-                "/api/v1/purchases",
-                json=payload,
-                headers={"Idempotency-Key": "role-purchase-01"},
-            )
         assert response.status_code == 201, response.text
         assert response.json()["employee_id"] == graph["employee1"]
         path = f"/api/v1/purchases/{response.json()['purchase_id']}/receive"
-        if role == "Manager":
-            assert (
-                client.post(path, json={"employee_id": graph["employee2"]}).status_code
-                == 422
-            )
-            assert client.post(path, json={}).status_code == 200
-        else:
-            assert client.post(path, json={}).status_code == 422
-            assert (
-                client.post(path, json={"employee_id": graph["employee1"]}).status_code
-                == 200
-            )
+        assert (
+            client.post(path, json={"employee_id": graph["employee2"]}).status_code
+            == 422
+        )
+        assert client.post(path, json={}).status_code == 200
 
 
 def test_csrf_validation_and_readonly_stock(

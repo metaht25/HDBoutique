@@ -16,7 +16,8 @@ class Supplier(Base):
     created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     supplier_id: Mapped[int] = mapped_column(Identity(), primary_key=True)
-    address_id: Mapped[int] = mapped_column(
+    address_line: Mapped[str | None] = mapped_column(String(100))
+    address_id: Mapped[int | None] = mapped_column(
         ForeignKey("addresses.address_id", ondelete="RESTRICT"), index=True
     )
     company_name: Mapped[str] = mapped_column(String(50))
