@@ -11,6 +11,72 @@ restablecida por solicitud del propietario el 2 de noviembre. La copia inicial
 del corte ya no representa la credencial vigente. No guardar claves en Git.
 [Resultado, ubicacion privada y retorno](docs/cutover.md).
 
+### Primer arranque para colaboradores
+
+Git contiene el codigo y las migraciones, pero no comparte `.env.docker`, el
+volumen PostgreSQL, respaldos ni credenciales. La cuenta y el vinculo
+administrativos del propietario existen solamente en su base local y no deben
+copiarse. Cada colaborador debe trabajar en `Cris-develop` y preparar su propio
+entorno:
+
+1. Instalar Git, Docker Desktop con Docker Compose y PowerShell. Comprobar que se
+   trabaja en la rama compartida:
+
+   ```powershell
+   git switch Cris-develop
+   git status --short --branch
+   ```
+
+2. Desde la raiz del repositorio, generar una configuracion privada nueva:
+
+   ```powershell
+   .\infra\scripts\Initialize-LocalEnvironment.ps1
+   ```
+
+   El script crea `.env.docker` con claves aleatorias solo si el archivo no
+   existe. Nunca compartirlo ni agregarlo a Git.
+
+3. Construir e iniciar PostgreSQL y el backend, y aplicar expresamente todas las
+   migraciones. Ningun servicio migra la base al arrancar:
+
+   ```powershell
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d db backend --wait --wait-timeout 180
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic upgrade head
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -T backend uv run --locked python -m alembic current
+   ```
+
+   El resultado esperado de `alembic current` es
+   `0012_optional_transfer_reference (head)`.
+
+4. Solo en una base nueva y vacia, crear el primer Administrator. La contrasena
+   se solicita de forma interactiva, debe tener al menos 12 caracteres y no debe
+   pasarse como argumento ni guardarse en archivos versionados:
+
+   ```powershell
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec backend uv run --locked python -m app.modules.identity.cli bootstrap-admin --database hdboutique --username administrador
+   ```
+
+   Este comando se ejecuta una sola vez. Cada colaborador usa su propia cuenta y
+   datos sinteticos; no debe restaurar respaldos del propietario ni reutilizar
+   identidades o contrasenas reales. Las compras y ventas requieren un empleado
+   activo vinculado, conforme a [configuracion inicial](docs/initial-setup.md).
+
+5. Iniciar la aplicacion completa y comprobar su estado:
+
+   ```powershell
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d --wait --wait-timeout 180
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml ps
+   ```
+
+   Abrir http://127.0.0.1:8080. Los servicios `db`, `backend` y `web` deben
+   aparecer como `healthy`.
+
+Para verificar cambios con escrituras, usar exclusivamente los proyectos de
+prueba aislados indicados en [Desarrollo y verificacion](#desarrollo-y-verificacion),
+no la base local del propietario.
+
+### Arranques posteriores
+
 ```powershell
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml up --build -d --wait --wait-timeout 180
 docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml ps
