@@ -1,5 +1,69 @@
 # Preparación contextual de la boutique
 
+## Primera instalación y recuperación de preparación incompleta (F06)
+
+Después de aplicar Alembic explícitamente en el destino autorizado, el operador
+prepara un JSON privado (fuera de Git) con `employee` y `boutique`. Debe contener
+la identidad real de la Dueña, no un empleado elegido automáticamente. No incluir
+usuario ni contraseña en ese archivo:
+
+```json
+{
+  "employee": {
+    "first_names": "Nombres reales",
+    "last_names": "Apellidos reales",
+    "phone_number": "80000000",
+    "address": {
+      "department_id": 1,
+      "municipality_id": 1,
+      "address_line": "Domicilio real confirmado"
+    }
+  },
+  "boutique": {
+    "name": "Nombre comercial confirmado",
+    "address_line": "Dirección comercial confirmada",
+    "phone_number": null
+  }
+}
+```
+
+El ejemplo es una plantilla: reemplazar teléfono/domicilio/nombres y verificar
+los IDs de departamento/municipio; no cargarlo literalmente. El logo es opcional,
+con las mismas validaciones de la API. Proteger la carpeta y no publicar el JSON.
+
+Desde `backend/`, con el entorno del destino autorizado ya configurado:
+
+```powershell
+uv run --locked python -m app.modules.identity.cli bootstrap-admin --database NOMBRE_EXACTO --username USUARIO_REAL --setup-file RUTA_PRIVADA
+uv run --locked python -m app.modules.identity.cli setup-status --database NOMBRE_EXACTO
+```
+
+La contraseña se solicita dos veces mediante entrada oculta, sin argumentos ni
+logs. Se crea empleado activo, administrador vinculado y perfil comercial en una
+sola transacción. Si falla algún paso, no queda una preparación parcial. No crea
+una cuenta Cashier auxiliar ni ejecuta migraciones o semillas automáticamente.
+Se niega si ya existen cuentas. `setup-status` no modifica datos y solo informa
+si hay administrador que puede acceder/operar y perfil comercial completo.
+
+Para una instalación antigua con administrador activo pero sin empleado:
+
+```powershell
+uv run --locked python -m app.modules.identity.cli complete-setup --database NOMBRE_EXACTO --username USUARIO_EXISTENTE --setup-file RUTA_PRIVADA
+```
+
+Se exige su contraseña actual, se conserva el hash y se revocan sus sesiones al
+establecer el vínculo. Se niega a sustituir un vínculo existente. No ejecutar
+estos comandos sobre la cuenta DEMO actual, ya vinculada.
+
+Si la identidad real ya existe como empleado activo **sin cuenta asignada**,
+`bootstrap-admin --employee-id ID_CONFIRMADO` permite seleccionarla explícitamente
+en una instalación sin cuentas. Completar el perfil mediante `PUT
+/api/v1/boutique-profile`, con sesión Administrator, Origin y CSRF válidos, y
+consultar `setup-status`. Esa API conserva nombre, dirección, teléfono opcional,
+logo opcional y las restricciones actuales; no se agrega una pantalla nueva.
+
+## Preparación desde módulos operativos
+
 La preparación se realiza desde los módulos operativos, sin Configuración en el
 menú ni carga automática de datos comerciales:
 

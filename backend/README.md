@@ -36,7 +36,11 @@ Fase 16 retira caja/turnos operativos, conserva su historia y admite ventas/anul
 sin turno. Contraseña asignada por Dueña, maestros permanentes y recibos decimales.
 No se ejecutan migraciones ni bootstrap al arrancar la API.
 
-La CLI identity bootstrap-admin exige destino exacto y contrasena mediante getpass;
+La CLI identity bootstrap-admin exige destino exacto, identidad real y perfil
+mediante --setup-file (o empleado activo explícito con --employee-id), y contraseña
+mediante getpass. complete-setup repara solo un administrador todavía sin vínculo,
+verificando su contraseña actual. setup-status informa preparación sin escribir.
+Ver [procedimiento completo](../docs/initial-setup.md);
 el corte actual ya creo el primer Administrator. Cuentas siguientes via /api/v1/users.
 app.operations.snapshot genera huellas de lectura para un destino explicito, sin
 exportar valores ni sobreescribir evidencia. data_migration conserva mapeos y

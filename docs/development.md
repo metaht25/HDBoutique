@@ -53,7 +53,10 @@ docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec -
 ```
 
 La creacion inicial de Administrator usa la CLI bootstrap-admin con --database y
---username, contrasena por getpass. No usar argumentos ni logs para contrasenas.
+--username y --setup-file con la identidad real y perfil, contrasena por getpass.
+Consultar [preparación atómica y verificación](initial-setup.md); --employee-id
+solo selecciona explícitamente una identidad activa existente sin cuenta.
+No usar argumentos ni logs para contrasenas.
 El corte actual ya creo su primera cuenta; no repetir bootstrap. Administracion
 de cuentas posterior via /api/v1/users, con sesion Administrator y CSRF.
 

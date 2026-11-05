@@ -493,6 +493,7 @@ def test_cli_bootstrap_uses_explicit_database_and_no_defaults(
     monkeypatch.setattr(cli, "build_engine", lambda config: engine)
     monkeypatch.setattr(cli, "create_session_factory", lambda configured: factory)
     monkeypatch.setattr(cli, "getpass", lambda prompt: SYNTHETIC_PASSWORD)
+    employee_id = synthetic_employee(factory, active=True)
     monkeypatch.setattr(
         "sys.argv",
         [
@@ -502,13 +503,15 @@ def test_cli_bootstrap_uses_explicit_database_and_no_defaults(
             "hdboutique_test",
             "--username",
             "first-admin",
+            "--employee-id",
+            str(employee_id),
         ],
     )
     cli.main()
     with factory() as session:
         user = session.scalar(select(UserAccount))
         assert user.username == "first-admin" and user.role == "Administrator"
-        assert user.employee_id is None and user.is_active
+        assert user.employee_id == employee_id and user.is_active
         assert verify_password(user.password_hash, SYNTHETIC_PASSWORD)
     engine.dispose.assert_called_once()
     with pytest.raises(SystemExit) as error:

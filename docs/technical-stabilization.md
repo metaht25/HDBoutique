@@ -19,3 +19,20 @@ revierten los cambios y la revocación de sesiones.
 Verificación: 58 pruebas PostgreSQL de identidad, personal y ventas aprobadas,
 incluidas siete regresiones F02, concurrencia y recuperación F01. Ruff, formato
 y mypy aprobados. No requiere migración ni altera cuentas existentes.
+
+## F06 — Preparación inicial completa
+
+`bootstrap-admin --setup-file` recibe identidad real y perfil comercial explícitos,
+sin contraseñas en el JSON. Guarda empleado, administrador vinculado y perfil en
+una transacción, reutilizando validadores, cuentas y perfil existentes. El modo
+`--employee-id` exige una identidad activa existente; se rechaza el bootstrap sin
+vínculo y se reserva a una instalación sin cuentas. No crea Cashier auxiliar.
+`complete-setup` exige la contraseña actual y una cuenta administradora todavía
+sin empleado; conserva su contraseña y rechaza sustituir un vínculo existente.
+`setup-status` es de lectura y distingue acceso, operación y perfil completo.
+README y guía inicial incluyen preparación, uso y verificación por operador.
+
+Verificación: 62 pruebas PostgreSQL aprobadas, incluidas seis de inicialización,
+compra/recepción/venta/recibo posterior, rollback completo por logo inválido,
+repetición, contraseña actual y prohibición del bootstrap desvinculado. Ruff,
+formato y mypy aprobados. No se ejecutó la preparación sobre la instalación DEMO.

@@ -3,6 +3,7 @@
 import base64
 import binascii
 import warnings
+from contextlib import nullcontext
 from io import BytesIO
 
 from PIL import Image, UnidentifiedImageError
@@ -73,9 +74,11 @@ class BoutiqueService:
         with self.session.begin():
             return profile_read(self.session.get(BoutiqueProfile, 1))
 
-    def save(self, payload: ProfileWrite, actor: Principal) -> ProfileRead:
+    def save(
+        self, payload: ProfileWrite, actor: Principal, *, in_transaction: bool = False
+    ) -> ProfileRead:
         logo = clean_logo(payload.logo_base64) if payload.logo_base64 else None
-        with self.session.begin():
+        with nullcontext() if in_transaction else self.session.begin():
             self.session.execute(text("SELECT pg_advisory_xact_lock(671443120621)"))
             profile = self.session.get(BoutiqueProfile, 1, with_for_update=True)
             if profile is None:

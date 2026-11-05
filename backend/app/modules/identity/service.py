@@ -1,6 +1,7 @@
 """Identity use cases: explicit transactions, revocation and fail-closed sessions."""
 
 import logging
+from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -313,14 +314,18 @@ class IdentityService:
             return self.repository.list_users(offset, limit)
 
     def create_user(
-        self, payload: AccountCreate, *, bootstrap: bool = False
+        self,
+        payload: AccountCreate,
+        *,
+        bootstrap: bool = False,
+        in_transaction: bool = False,
     ) -> UserAccount:
 
         try:
-            with self.session.begin():
+            with nullcontext() if in_transaction else self.session.begin():
                 self.repository.lock_administration()
 
-                if bootstrap and self.repository.active_administrators():
+                if bootstrap and self.repository.list_users(0, 1):
                     raise ApplicationError(
                         409, "bootstrap_unavailable", "Administrator already exists"
                     )
@@ -328,6 +333,13 @@ class IdentityService:
                 if bootstrap and payload.role != "Administrator":
                     raise ApplicationError(
                         422, "invalid_role", "Bootstrap requires Administrator"
+                    )
+
+                if bootstrap and payload.employee_id is None:
+                    raise ApplicationError(
+                        422,
+                        "bootstrap_employee_required",
+                        "La preparación inicial requiere un empleado activo explícito.",
                     )
 
                 if (
@@ -368,10 +380,12 @@ class IdentityService:
                 409, "account_conflict", "Username or employee already assigned"
             ) from error
 
-    def update_user(self, user_id: int, payload: AccountPatch) -> UserAccount:
+    def update_user(
+        self, user_id: int, payload: AccountPatch, *, in_transaction: bool = False
+    ) -> UserAccount:
 
         try:
-            with self.session.begin():
+            with nullcontext() if in_transaction else self.session.begin():
                 self.repository.lock_administration()
 
                 user = self.repository.user_by_id(user_id)
