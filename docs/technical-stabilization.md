@@ -109,3 +109,16 @@ identidad y ventas aprobadas, incluida F01. Regresiones prueban 6/11 rechazados,
 12/128 aceptados, CLI con contraseña corta sin valores en salida, rollback de
 empleado/cuenta/domicilio/perfil y conservación de seis caracteres en cuentas
 ordinarias y preparación de una cuenta antigua. No se rotaron credenciales DEMO.
+
+## F08 — Revisión de dependencias de desarrollo
+
+Bloqueado por ausencia de corrección dentro de los rangos publicados: ESLint
+10.14.0 y TypeScript ESLint 8.72.1 siguen exigiendo minimatch 10; el aviso exige
+11.0.1. La solución automática implica retrocesos incompatibles. Se conserva
+el bloqueo y se documentan versiones, riesgo y criterio para reabrir en
+[dependencias](dependency-security.md). No se afirma que el aviso esté resuelto.
+
+Verificación: audit completo devuelve diez nodos moderados de un solo aviso;
+audit sin dependencias de desarrollo devuelve cero. TypeScript, ESLint, las 120
+pruebas frontend completas y compilación aprobados con el bloqueo conservado.
+La limitación no impide revisar las mejoras independientes sin forzar upgrades.
