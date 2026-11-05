@@ -321,6 +321,14 @@ class IdentityService:
         in_transaction: bool = False,
     ) -> UserAccount:
 
+        if bootstrap and len(payload.password.get_secret_value()) < 12:
+            raise ApplicationError(
+                422,
+                "invalid_bootstrap_password",
+                "La contraseña del administrador inicial requiere "
+                "de 12 a 128 caracteres.",
+            )
+
         try:
             with nullcontext() if in_transaction else self.session.begin():
                 self.repository.lock_administration()

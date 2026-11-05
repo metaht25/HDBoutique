@@ -39,7 +39,11 @@ uv run --locked python -m app.modules.identity.cli setup-status --database NOMBR
 ```
 
 La contraseña se solicita dos veces mediante entrada oculta, sin argumentos ni
-logs. Se crea empleado activo, administrador vinculado y perfil comercial en una
+logs. El bootstrap exige de 12 a 128 caracteres, tanto con `--setup-file` como
+con `--employee-id`, también al invocar el servicio directamente. Esta política
+no modifica las contraseñas existentes ni el mínimo de 6 para colaboradores;
+`complete-setup` verifica la contraseña actual sin reemplazarla.
+Se crea empleado activo, administrador vinculado y perfil comercial en una
 sola transacción. Si falla algún paso, no queda una preparación parcial. No crea
 una cuenta Cashier auxiliar ni ejecuta migraciones o semillas automáticamente.
 Se niega si ya existen cuentas. `setup-status` no modifica datos y solo informa

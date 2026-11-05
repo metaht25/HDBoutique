@@ -266,6 +266,14 @@ def test_f06_cli_requires_explicit_configuration_and_reports_readiness(
         encoding="utf-8",
     )
     monkeypatch.setattr("sys.argv", [*args, "--setup-file", str(path)])
+    monkeypatch.setattr(cli, "getpass", lambda prompt: "x" * 11)
+    with pytest.raises(SystemExit) as weak_password:
+        cli.main()
+    assert weak_password.value.code == 1
+    with setup_factory() as session:
+        assert session.scalar(select(func.count()).select_from(UserAccount)) == 0
+        assert session.scalar(select(func.count()).select_from(Employee)) == 0
+    monkeypatch.setattr(cli, "getpass", lambda prompt: SYNTHETIC_PASSWORD)
     cli.main()
     monkeypatch.setattr(
         "sys.argv", ["identity", "setup-status", "--database", "hdboutique_test"]
@@ -274,3 +282,50 @@ def test_f06_cli_requires_explicit_configuration_and_reports_readiness(
     captured = capsys.readouterr()
     assert '"ready": true' in captured.out
     assert SYNTHETIC_PASSWORD not in captured.out + captured.err
+    assert "x" * 11 not in captured.out + captured.err
+
+
+@pytest.mark.parametrize("length", [6, 11, 12, 128])
+def test_f07_bootstrap_password_boundaries_and_atomic_rollback(setup_factory, length):
+    employee = identity_input().model_copy(update={"password": SecretStr("x" * length)})
+    with setup_factory() as session:
+        service = InitialSetupService(session)
+        if length < 12:
+            with pytest.raises(ApplicationError) as error:
+                service.configure(employee, profile_input())
+            assert error.value.code == "invalid_bootstrap_password"
+            assert error.value.status == 422
+            for model in (UserAccount, Employee, Address, BoutiqueProfile):
+                assert session.scalar(select(func.count()).select_from(model)) == 0
+        else:
+            user = service.configure(employee, profile_input())
+            from app.modules.identity.security import verify_password
+
+            assert verify_password(user.password_hash, "x" * length)
+            assert user.employee_id is not None
+
+
+def test_f07_regular_account_and_legacy_completion_still_accept_six_characters(
+    setup_factory,
+):
+    password = SecretStr("xxxxxx")
+    with setup_factory() as session:
+        legacy = IdentityService(session).create_user(
+            AccountCreate(
+                username="setup-owner", password=password, role="Administrator"
+            )
+        )
+        original_hash = legacy.password_hash
+        linked = InitialSetupService(session).configure(
+            identity_input().model_copy(update={"password": password}),
+            profile_input(),
+            existing_account=True,
+        )
+        assert linked.password_hash == original_hash
+        assert linked.employee_id is not None
+        cashier = IdentityService(session).create_user(
+            AccountCreate(
+                username="ordinary-cashier", password=password, role="Cashier"
+            )
+        )
+        assert cashier.role == "Cashier"

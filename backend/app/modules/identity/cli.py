@@ -51,7 +51,7 @@ def main() -> None:
         password = getpass(
             "Current Administrator password: "
             if args.command == "complete-setup"
-            else "New Administrator password: "
+            else "New Administrator password (12-128 characters): "
         )
         if args.command == "bootstrap-admin" and password != getpass(
             "Repeat password: "

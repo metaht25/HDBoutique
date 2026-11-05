@@ -95,3 +95,17 @@ séptima página, busca fuera de los primeros 100, comprueba separación de prov
 y registra la compra correcta. Cinco pruebas de selectores y las dos regresiones
 conectadas F04/F01 se repitieron tras ajustar el foco y aprobaron. Sin cambios API,
 cálculos ni lógica de idempotencia.
+
+## F07 — Contraseña del administrador inicial
+
+El servicio exige mínimo 12 caracteres únicamente cuando `bootstrap=True`;
+la validación general conserva 6–128. Abarca los dos modos oficiales del CLI y
+las llamadas directas, incluidos el flujo transaccional de F06 y su rollback.
+La confirmación interactiva indica el rango real. `complete-setup` sigue
+verificando y conservando contraseñas existentes, sin aplicarles la política nueva.
+
+Verificación: Ruff, formato y mypy aprobados; 67 pruebas PostgreSQL de preparación,
+identidad y ventas aprobadas, incluida F01. Regresiones prueban 6/11 rechazados,
+12/128 aceptados, CLI con contraseña corta sin valores en salida, rollback de
+empleado/cuenta/domicilio/perfil y conservación de seis caracteres en cuentas
+ordinarias y preparación de una cuenta antigua. No se rotaron credenciales DEMO.
