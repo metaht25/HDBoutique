@@ -493,6 +493,7 @@ def test_cli_bootstrap_uses_explicit_database_and_no_defaults(
     monkeypatch.setattr(cli, "build_engine", lambda config: engine)
     monkeypatch.setattr(cli, "create_session_factory", lambda configured: factory)
     monkeypatch.setattr(cli, "getpass", lambda prompt: SYNTHETIC_PASSWORD)
+    employee_id = synthetic_employee(factory, active=True)
     monkeypatch.setattr(
         "sys.argv",
         [
@@ -502,13 +503,15 @@ def test_cli_bootstrap_uses_explicit_database_and_no_defaults(
             "hdboutique_test",
             "--username",
             "first-admin",
+            "--employee-id",
+            str(employee_id),
         ],
     )
     cli.main()
     with factory() as session:
         user = session.scalar(select(UserAccount))
         assert user.username == "first-admin" and user.role == "Administrator"
-        assert user.employee_id is None and user.is_active
+        assert user.employee_id == employee_id and user.is_active
         assert verify_password(user.password_hash, SYNTHETIC_PASSWORD)
     engine.dispose.assert_called_once()
     with pytest.raises(SystemExit) as error:
@@ -655,3 +658,147 @@ def test_concurrent_demotions_preserve_one_administrator(postgres_engine) -> Non
     finally:
         with factory.begin() as session:
             session.execute(delete(UserAccount).where(UserAccount.user_id.in_(ids)))
+
+
+def synthetic_employee(factory, *, active: bool) -> int:
+    with factory.begin() as session:
+        department = Department(name="F02 synthetic")
+        session.add(department)
+        session.flush()
+        address = Address(department_id=department.department_id, address_line=None)
+        session.add(address)
+        session.flush()
+        employee = Employee(
+            address_id=address.address_id,
+            first_names="Synthetic",
+            last_names="F02",
+            phone_number="80000000",
+            is_active=active,
+        )
+        session.add(employee)
+        session.flush()
+        return employee.employee_id
+
+
+@pytest.mark.parametrize("action", ["create", "link", "reactivate", "promote"])
+def test_f02_active_account_requires_active_employee(
+    identity_client: TestClient, identity_app, action: str
+) -> None:
+    client, factory = identity_client, identity_app.state.session_factory
+    login(client, "administrator")
+    employee_id = synthetic_employee(factory, active=False)
+    if action == "create":
+        response = client.post(
+            "/api/v1/users",
+            json={
+                "username": "f02-new-admin",
+                "password": SYNTHETIC_PASSWORD,
+                "role": "Administrator",
+                "employee_id": employee_id,
+            },
+        )
+    elif action == "link":
+        user_id = client.get("/api/v1/auth/me").json()["user_id"]
+        response = client.patch(
+            f"/api/v1/users/{user_id}", json={"employee_id": employee_id}
+        )
+    else:
+        with factory.begin() as session:
+            user = UserAccount(
+                username="f02-legacy",
+                password_hash=hash_password(SYNTHETIC_PASSWORD),
+                role="Cashier" if action == "promote" else "Administrator",
+                is_active=action == "promote",
+                employee_id=employee_id,
+            )
+            session.add(user)
+            session.flush()
+            user_id = user.user_id
+        response = client.patch(
+            f"/api/v1/users/{user_id}",
+            json={"role": "Administrator"}
+            if action == "promote"
+            else {"is_active": True},
+        )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "employee_inactive"
+    assert client.get("/api/v1/auth/me").status_code == 200
+
+
+@pytest.mark.parametrize("mutation", [{"is_active": False}, {"role": "Cashier"}])
+def test_f02_unusable_legacy_admin_cannot_replace_last_accessible_admin(
+    identity_client: TestClient, identity_app, mutation: dict
+) -> None:
+    client, factory = identity_client, identity_app.state.session_factory
+    login(client, "administrator")
+    admin_id = client.get("/api/v1/auth/me").json()["user_id"]
+    employee_id = synthetic_employee(factory, active=False)
+    with factory.begin() as session:
+        session.add(
+            UserAccount(
+                username="f02-unusable",
+                password_hash=hash_password(SYNTHETIC_PASSWORD),
+                role="Administrator",
+                is_active=True,
+                employee_id=employee_id,
+            )
+        )
+    response = client.patch(f"/api/v1/users/{admin_id}", json=mutation)
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "last_administrator"
+    assert client.get("/api/v1/auth/me").status_code == 200
+
+
+def test_f02_employee_deactivation_rolls_back_and_reactivation_restores_access(
+    identity_client: TestClient, identity_app
+) -> None:
+    client, factory = identity_client, identity_app.state.session_factory
+    login(client, "administrator")
+    admin_id = client.get("/api/v1/auth/me").json()["user_id"]
+    active_id = synthetic_employee(factory, active=True)
+    inactive_id = synthetic_employee(factory, active=False)
+    assert (
+        client.patch(
+            f"/api/v1/users/{admin_id}", json={"employee_id": active_id}
+        ).status_code
+        == 200
+    )
+    login(client, "administrator")
+    with factory.begin() as session:
+        backup = UserAccount(
+            username="f02-backup",
+            password_hash=hash_password(SYNTHETIC_PASSWORD),
+            role="Administrator",
+            is_active=True,
+            employee_id=inactive_id,
+        )
+        session.add(backup)
+    assert (
+        client.patch(
+            f"/api/v1/employees/{active_id}", json={"is_active": False}
+        ).status_code
+        == 409
+    )
+    assert client.get("/api/v1/auth/me").status_code == 200
+    assert client.get(f"/api/v1/employees/{active_id}").json()["is_active"] is True
+    assert (
+        client.patch(
+            f"/api/v1/employees/{inactive_id}", json={"is_active": True}
+        ).status_code
+        == 200
+    )
+    # The repaired second administrator can now really log in, so removing the
+    # first is safe. All transitions still use the ordinary authenticated API.
+    with TestClient(
+        identity_app, base_url=TEST_ORIGIN, headers={"Origin": TEST_ORIGIN}
+    ) as other:
+        login(other, "f02-backup")
+        assert other.get("/api/v1/auth/me").status_code == 200
+        assert (
+            client.patch(
+                f"/api/v1/employees/{active_id}", json={"is_active": False}
+            ).status_code
+            == 200
+        )
+        assert client.get("/api/v1/auth/me").status_code == 401
+        assert other.get("/api/v1/auth/me").status_code == 200

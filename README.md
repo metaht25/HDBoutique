@@ -53,9 +53,15 @@ entorno:
    pasarse como argumento ni guardarse en archivos versionados:
 
    ```powershell
-   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec backend uv run --locked python -m app.modules.identity.cli bootstrap-admin --database hdboutique --username administrador
+   docker cp RUTA_PRIVADA_CONFIG hdboutique-dev-backend-1:/tmp/hdb-initial-setup.json
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec backend uv run --locked python -m app.modules.identity.cli bootstrap-admin --database hdboutique --username administrador --setup-file /tmp/hdb-initial-setup.json
+   docker compose --env-file .env.docker -f compose.yaml -f compose.dev.yaml exec backend uv run --locked python -m app.modules.identity.cli setup-status --database hdboutique
    ```
 
+   Preparar primero el JSON privado de [configuración inicial](docs/initial-setup.md),
+   con identidad real y perfil comercial, sin usuario ni contraseña. El comando
+   guarda empleado activo, administrador vinculado y perfil atómicamente; comprobar
+   `ready: true`. No repetir sobre la instalación DEMO ya preparada.
    Este comando se ejecuta una sola vez. Cada colaborador usa su propia cuenta y
    datos sinteticos; no debe restaurar respaldos del propietario ni reutilizar
    identidades o contrasenas reales. Las compras y ventas requieren un empleado

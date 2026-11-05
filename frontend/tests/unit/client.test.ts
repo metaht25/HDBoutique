@@ -191,17 +191,42 @@ describe('shared API client', () => {
 })
 
 describe('typed errors', () => {
+  it('preserves the proxy logo limit message and field without exposing HTML', () => {
+    const error = responseError(413, { error: { code: 'request_too_large', message: 'Usa una imagen de hasta 2 MB.', fields: [{ location: ['body', 'logo_base64'], type: 'file_too_large' }] } }, 'No se pudo guardar')
+    expect(error.status).toBe(413)
+    expect(getErrorMessage(error, 'Fallback')).toBe('Usa una imagen de hasta 2 MB.')
+    expect(error.fields[0]?.location).toEqual(['body', 'logo_base64'])
+  })
   it('preserves safe backend messages and validated field locations', () => {
     const error = responseError(422, { error: { code: 'validation_error', message: 'Datos inválidos', fields: [
       { location: ['body', 'items', 0, 'quantity'], type: 'greater_than' }, { type: 'invalid' },
     ] } }, 'Fallback')
     expect(error).toBeInstanceOf(ApiError)
     expect(error.fields).toEqual([{ location: ['body', 'items', 0, 'quantity'], type: 'greater_than' }])
-    expect(getErrorMessage(error, 'Fallback')).toBe('Datos inválidos')
+    expect(getErrorMessage(error, 'Fallback')).toContain('Datos inválidos')
+    expect(getErrorMessage(error, 'Fallback')).toContain('Línea 1 · Cantidad:')
+    expect(error.message).toBe('Datos inválidos')
   })
   it('uses a safe fallback for retired or unrecognized error formats', () => {
     expect(responseError(400, { nombre: ['Obligatorio'], nested: { price: ['Inválido'] } }, 'Fallback').message)
       .toBe('Fallback')
     expect(responseError(503, null, 'No disponible').message).toBe('No disponible')
   })
+})
+
+it.each([
+  ['invalid_credentials', 'Invalid credentials', 'El usuario o la contraseña no son correctos.'],
+  ['authentication_required', 'Authentication required', 'Tu sesión terminó. Inicia sesión para continuar.'],
+  ['permission_denied', 'Permission denied', 'Tu cuenta no tiene permiso para realizar esta acción.'],
+  ['not_found', 'Supplier not found', 'No se encontró el proveedor seleccionado.'],
+  ['database_unavailable', 'Database unavailable', 'El servicio no está disponible en este momento. Intenta de nuevo más tarde.'],
+])('translates %s for display while preserving diagnostic information', (code, message, translated) => {
+  const error = new ApiError(401, code, message)
+  expect(getErrorMessage(error, 'Fallback')).toBe(translated)
+  expect(error.message).toBe(message); expect(error.code).toBe(code); expect(error.status).toBe(401)
+})
+
+it('preserves unknown application messages rather than concealing their cause', () => {
+  const error = new ApiError(409, 'future_business_rule', 'Detalle de negocio específico')
+  expect(getErrorMessage(error, 'Fallback')).toBe(error.message)
 })

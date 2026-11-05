@@ -1,11 +1,11 @@
-import { ApiError } from '../api/errors'
+import { ApiError, validationMessage } from '../api/errors'
 
 export type FieldErrors = Record<string, string>
 export function serverFields(error: unknown): FieldErrors {
   if (!(error instanceof ApiError)) return {}
   return Object.fromEntries(error.fields.flatMap(field => {
     const name = field.location.at(-1)
-    return typeof name === 'string' ? [[name, 'Revisa este campo.']] : []
+    return typeof name === 'string' ? [[name, validationMessage(field.type)]] : []
   }))
 }
 export function inputId(value: string): number | null {
