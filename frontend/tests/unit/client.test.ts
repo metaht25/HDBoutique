@@ -191,6 +191,12 @@ describe('shared API client', () => {
 })
 
 describe('typed errors', () => {
+  it('preserves the proxy logo limit message and field without exposing HTML', () => {
+    const error = responseError(413, { error: { code: 'request_too_large', message: 'Usa una imagen de hasta 2 MB.', fields: [{ location: ['body', 'logo_base64'], type: 'file_too_large' }] } }, 'No se pudo guardar')
+    expect(error.status).toBe(413)
+    expect(getErrorMessage(error, 'Fallback')).toBe('Usa una imagen de hasta 2 MB.')
+    expect(error.fields[0]?.location).toEqual(['body', 'logo_base64'])
+  })
   it('preserves safe backend messages and validated field locations', () => {
     const error = responseError(422, { error: { code: 'validation_error', message: 'Datos inválidos', fields: [
       { location: ['body', 'items', 0, 'quantity'], type: 'greater_than' }, { type: 'invalid' },

@@ -62,3 +62,18 @@ inválidos, truncados, límites de bytes/dimensiones, alpha, PNG previamente san
 timeout y fallo nativo simulados), inicialización y ventas/F01. No se ejecutaron
 cargas de agotamiento. Ruff, formato y mypy aprobados. `pip-audit` del inventario
 instalado actualizado: cero vulnerabilidades conocidas al consultar los avisos.
+
+## F05 — Límite de transporte de logos
+
+Nginx ahora admite 3 MiB de JSON únicamente en `/api/v1/boutique-profile`:
+2 MiB de archivo requieren 2.796.204 caracteres base64 más los campos del perfil.
+Los demás endpoints conservan su límite anterior. El exceso de cuerpo del perfil
+devuelve 413 JSON, mensaje en español, campo `logo_base64` y `Cache-Control: no-store`.
+El backend conserva el límite real de 2 MiB y la validación de imagen.
+
+Verificación: TypeScript, ESLint, compilación y 21 pruebas del cliente aprobados.
+Dos pruebas conectadas contra Nginx/FastAPI/PostgreSQL aislados aprobadas:
+PNG válido de exactamente 2 MiB con metadata CRC válida llega y se sanea;
+archivo 2 MiB+1 e imagen inválida reciben 422 de backend; JSON superior a 3 MiB
+recibe 413 estructurado sin modificar el perfil guardado; otro endpoint sigue
+limitado. F01 conectado conserva venta/pago originales y descuento único.
