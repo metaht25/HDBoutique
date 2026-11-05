@@ -77,3 +77,21 @@ PNG válido de exactamente 2 MiB con metadata CRC válida llega y se sanea;
 archivo 2 MiB+1 e imagen inválida reciben 422 de backend; JSON superior a 3 MiB
 recibe 413 estructurado sin modificar el perfil guardado; otro endpoint sigue
 limitado. F01 conectado conserva venta/pago originales y descuento único.
+
+## F04 — Selectores de compras completos
+
+Productos y proveedores usan búsqueda del servidor y páginas de 20 resultados,
+sin descargar el catálogo entero. Productos exige proveedor activo seleccionado
+y conserva `supplier_id` en cada consulta. La selección guarda su registro aunque
+cambie la página; cambiar proveedor limpia producto y líneas anteriores. Historial
+también permite buscar proveedores inactivos para consultar compras antiguas.
+El selector paginado conserva el foco en el buscador al cambiar página, incluso
+durante la carga; no cambia el comportamiento de los selectores sin paginación.
+
+Verificación: TypeScript, ESLint, compilación, 40 pruebas de componentes y 22 E2E
+de escritorio/móvil aprobados. Nueve escenarios conectados operativos aprobados;
+regresión específica crea 125 productos y 125 proveedores sintéticos, llega a la
+séptima página, busca fuera de los primeros 100, comprueba separación de proveedor
+y registra la compra correcta. Cinco pruebas de selectores y las dos regresiones
+conectadas F04/F01 se repitieron tras ajustar el foco y aprobaron. Sin cambios API,
+cálculos ni lógica de idempotencia.
