@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { getErrorMessage } from '../../shared/api/errors'
 import { LoadingState, Message } from '../../shared/ui/Feedback'
 import { TextField } from '../../shared/ui/TextField'
+import { Icon } from '../../shared/ui/Icon'
 import { useSession } from './sessionContext'
 import styles from './SignIn.module.css'
 
@@ -24,16 +25,18 @@ function SignIn() {
       setError(getErrorMessage(error, 'No se pudo iniciar sesión.'))
     } finally { setPassword(''); setBusy(false); submitting.current = false }
   }
-  return <section className={styles.panel} aria-labelledby="sign-in-title"><p className={styles.eyebrow}>TU BOUTIQUE, EN ORDEN</p><h2 id="sign-in-title">Inicia sesión para continuar</h2><p className={styles.intro}>Accede a tu espacio de trabajo con tu cuenta.</p>
+  return <section className={styles.panel} aria-labelledby="sign-in-title">
+    <div className={styles.overview}><span className={styles.overviewIcon}><Icon name="sales" size={32} /></span><p className={styles.eyebrow}>GESTIÓN DE BOUTIQUE</p><p>Un espacio de trabajo para la dueña y su equipo.</p><ul><li><Icon name="receipt" />Ventas y recibos</li><li><Icon name="products" />Productos e inventario</li><li><Icon name="people" />Clientes</li></ul><span className={styles.overviewFooter}>H&D Boutique · Administración</span></div>
+    <div className={styles.access}><span className={styles.accessIcon}><Icon name="lock" /></span><p className={styles.eyebrow}>BIENVENIDA DE NUEVO</p><h2 id="sign-in-title">Inicia sesión para continuar</h2><p className={styles.intro}>Accede a tu espacio de trabajo con tu cuenta.</p>
     <form onSubmit={event => void submit(event)} className={styles.form}>
       <TextField label="Usuario" name="username" autoComplete="username" required maxLength={64}
         value={username} disabled={busy} onChange={event => setUsername(event.target.value)} />
       <TextField label="Contraseña" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required maxLength={128}
         value={password} disabled={busy} onChange={event => setPassword(event.target.value)} />
-<button className={styles.reveal} type="button" disabled={busy} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button>
+      <button className={styles.reveal} type="button" disabled={busy} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}><Icon name="eye" size={16} />{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button>
       {error && <Message>{error}</Message>}
-      <button disabled={busy} type="submit">{busy ? 'Iniciando sesión…' : 'Iniciar sesión'}</button>
-    </form>
+      <button disabled={busy} type="submit">{busy ? 'Iniciando sesión…' : 'Iniciar sesión'}<Icon name="arrow" size={18} /></button>
+    </form><p className={styles.help}>Utiliza la cuenta asignada por la dueña de la boutique.</p></div>
   </section>
 }
 

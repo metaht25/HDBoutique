@@ -1,29 +1,61 @@
-.layout { display: grid; grid-template-columns: 245px minmax(0, 1fr); min-height: 100dvh; }
-.sidebar { background: #fffefa; border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100dvh; overflow-y: auto; }
-.brand { padding: 30px 18px; text-align: center; border-bottom: 1px solid var(--border); }
-.brand strong { color: var(--accent); font-size: 27px; letter-spacing: -.8px; font-weight: 800; display: block; }
-.brand small { display: block; color: var(--muted); margin-top: 12px; }
-.menu { display: grid; }
-.menu a { text-decoration: none; padding: 18px 20px; color: var(--text); border-bottom: 1px solid var(--border-soft); font-size: 14px; }
-.menu a:hover { background: var(--soft); }
-.menu a.active { background: var(--soft); color: var(--accent); font-weight: 700; border-left: 4px solid var(--accent); padding-left: 16px; }
-.logout { margin: auto 14px 18px; padding-top: 22px; }
-.logout button { width: 100%; }
+.layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100dvh; }
+.sidebar { background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100dvh; overflow-y: auto; }
+.brand { padding: 30px 22px 34px; display: flex; align-items: center; gap: 11px; }
+.brandMark { display: grid; place-items: center; width: 42px; height: 44px; flex-shrink: 0; background: var(--accent); border-radius: 13px 13px 13px 3px; color: white; font: italic 700 21px Georgia, serif; letter-spacing: -2px; padding-right: 3px; }
+.brand strong { font-size: 17px; letter-spacing: -.5px; font-weight: 750; display: block; }
+.brand small { display: block; color: var(--muted); margin-top: 2px; font-size: 11px; }
+.menu { display: grid; gap: 5px; padding: 0 14px 24px; }
+.menu a { display: flex; align-items: center; gap: 12px; text-decoration: none; min-height: 45px; padding: 10px 13px; border-radius: 8px; color: #5f6275; font-size: 13px; font-weight: 500; transition: background-color .15s, color .15s; }
+.menu a:hover { background: #f6f6fa; color: var(--text); }
+.menu a.active { background: var(--soft); color: var(--accent); font-weight: 650; box-shadow: inset 3px 0 var(--accent); }
+.logout { margin: auto 18px 22px; padding-top: 20px; border-top: 1px solid var(--border-soft); }
+.workspaceLabel { display: block; padding: 0 10px 12px; font-size: 11px; color: var(--muted); }
+.logout button { width: 100%; justify-content: start; color: var(--muted); border: 0; background: transparent; padding-left: 10px; }
 .main { min-width: 0; }
-.topbar { min-height: 72px; padding: 12px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: end; align-items: center; gap: 16px; background: var(--background); }
-.identity { border: 1px solid var(--border); background: white; border-radius: 14px; padding: 10px 20px; text-align: center; font-size: 14px; color: var(--text); }
-.identity small { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; }
-.content { padding: 30px 32px 50px; max-width: 1700px; margin: auto; }
-.content h1 { font-size: 32px; line-height: 1.2; margin: 0 0 26px; letter-spacing: -.6px; }
+.topbar { min-height: 82px; padding: 15px 36px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; background: white; }
+.breadcrumb { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--muted); }
+.breadcrumb b { color: var(--text); font-weight: 550; }
+.identity { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 650; min-width: 0; overflow-wrap: anywhere; }
+.identity small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.avatar { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--soft); color: var(--accent); font-size: 15px; }
+.content { padding: 30px 36px 48px; max-width: 1640px; margin: auto; }
+.pageHeading { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+.sectionLabel { font-size: 10px; font-weight: 700; letter-spacing: .13em; color: var(--muted); margin: 0 0 5px; }
+.content h1 { font-size: 28px; line-height: 1.25; margin: 0; letter-spacing: -.9px; font-weight: 700; }
+.roleBadge { color: var(--accent); background: var(--soft); border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; }
 .menuToggle { display: none; }
 .skipLink { position: fixed; z-index: 100; transform: translateY(-200%); padding: 12px; background: white; }
 .skipLink:focus { transform: none; }
-.login { max-width: 460px; margin: 10vh auto; }
-.layout[data-authenticated=false] { display: block; background: radial-gradient(ellipse at top, #fce5ef, #fff9f5 70%); }
+.layout[data-authenticated=false] { display: block; background: #f8f6fa; }
 .layout[data-authenticated=false] .sidebar { position: static; height: auto; background: transparent; border: 0; }
-.layout[data-authenticated=false] .brand { border: 0; padding: 36px 16px 20px; text-align: center; }
+.layout[data-authenticated=false] .brand { justify-content: center; padding: 42px 20px 30px; }
 .layout[data-authenticated=false] .topbar { display: none; }
-.layout[data-authenticated=false] .content { padding: 16px 16px 48px; }
-.layout[data-authenticated=false] .content h1 { text-align: center; font-size: 18px; color: #62515c; font-weight: 500; margin-bottom: 24px; }
-@media (max-width: 1000px) { .layout { grid-template-columns: 205px minmax(0, 1fr); } .brand strong { font-size: 24px; } .content { padding: 24px; } }
-@media (max-width: 760px) { .layout { display: block; } .sidebar { height: auto; position: static; overflow: visible; border-right: 0; border-bottom: 1px solid var(--border); } .brand { padding: 18px 80px 18px 18px; text-align: left; border: 0; } .brand small { margin-top: 4px; } .menuToggle { display: block; position: absolute; right: 16px; top: 24px; padding: 9px 12px; } .menu { display: none; } .menu[data-open=true] { display: grid; } .menu a { padding: 15px 20px; } .logout { display: none; margin: 14px; padding: 0; } .logout[data-open=true] { display: block; } .topbar { min-height: 60px; padding: 10px 18px; } .content { padding: 22px 16px 40px; } .content h1 { font-size: 28px; margin-bottom: 22px; } }
+.layout[data-authenticated=false] .content { padding: 12px 24px 48px; }
+.layout[data-authenticated=false] .pageHeading { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 1150px) { .layout { grid-template-columns: 224px minmax(0, 1fr); } .brand { padding-inline: 16px; } .content { padding: 26px 24px 40px; } .topbar { padding-inline: 24px; } .menu { padding-inline: 10px; } .menu a { gap: 9px; padding-inline: 10px; } }
+@media (max-width: 760px) {
+  .layout { display: block; }
+  .sidebar { height: auto; position: relative; overflow: visible; border-right: 0; border-bottom: 1px solid var(--border); }
+  .brand { padding: 18px 112px 18px 18px; gap: 9px; }
+  .brandMark { width: 36px; height: 38px; font-size: 19px; }
+  .brand strong { font-size: 16px; }
+  .menuToggle { display: flex; position: absolute; right: 16px; top: 20px; padding: 8px 10px; min-height: 40px; font-size: 12px; background: white; color: var(--accent); border-color: var(--border); }
+  .menuToggle:hover { background: var(--soft); }
+  .menu { display: none; padding: 0 14px 12px; }
+  .menu[data-open=true] { display: grid; }
+  .menu a { min-height: 46px; }
+  .logout { display: none; margin: 0 18px 14px; padding-top: 10px; }
+  .logout[data-open=true] { display: block; }
+  .workspaceLabel { display: none; }
+  .topbar { min-height: 68px; padding: 12px 18px; }
+  .breadcrumb { gap: 8px; font-size: 11px; }
+  .breadcrumb > span { display: none; }
+  .identity { font-size: 11px; max-width: 65%; }
+  .avatar { width: 32px; height: 32px; font-size: 13px; }
+  .content { padding: 24px 16px 36px; }
+  .content h1 { font-size: 25px; }
+  .pageHeading { margin-bottom: 20px; }
+  .roleBadge { display: none; }
+  .layout[data-authenticated=false] .content { padding: 8px 16px 30px; }
+  .layout[data-authenticated=false] .brand { padding: 28px 18px; }
+}

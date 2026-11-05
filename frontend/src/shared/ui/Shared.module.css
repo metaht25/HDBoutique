@@ -10,9 +10,8 @@
 .tableScroll { max-width: 100%; overflow-x: auto; }
 .tableScroll table { width: 100%; border-collapse: collapse; }
 .field { display: grid; gap: 8px; min-width: 0; }
-.field label { font-size: 14px; font-weight: 600; color: var(--text); }
-.field input { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 10px; font: inherit; }
-.field select { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 10px; font: inherit; }
+.field label { font-size: 13px; font-weight: 600; color: var(--text); }
+.field input, .field select { width: 100%; border: 1px solid #cfd1dc; border-radius: 8px; padding: 10px 12px; font: inherit; }
 .field input[aria-invalid='true'] { border-color: #be123c; }
 .fieldError { color: #9f1239; }
 .pagination { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 16px; }
