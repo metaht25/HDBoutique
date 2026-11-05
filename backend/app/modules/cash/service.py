@@ -130,6 +130,35 @@ class CashService:
         )
         if record is None:
             return None
+        items = list(
+            self.session.scalars(
+                select(SaleReturnItem)
+                .where(SaleReturnItem.void_id == record.void_id)
+                .order_by(SaleReturnItem.sale_item_id)
+            )
+        )
+        return self._read_void(record, items)
+
+    def void_details(self, sale_ids: list[int]) -> dict[int, VoidRead]:
+        records = list(
+            self.session.scalars(select(SaleVoid).where(SaleVoid.sale_id.in_(sale_ids)))
+        )
+        if not records:
+            return {}
+        items: dict[int, list[SaleReturnItem]] = {}
+        for row in self.session.scalars(
+            select(SaleReturnItem)
+            .where(SaleReturnItem.void_id.in_([record.void_id for record in records]))
+            .order_by(SaleReturnItem.sale_item_id)
+        ):
+            items.setdefault(row.void_id, []).append(row)
+        return {
+            record.sale_id: self._read_void(record, items.get(record.void_id, []))
+            for record in records
+        }
+
+    @staticmethod
+    def _read_void(record: SaleVoid, items: list[SaleReturnItem]) -> VoidRead:
         return VoidRead(
             void_id=record.void_id,
             shift_id=record.shift_id,
@@ -141,14 +170,7 @@ class CashService:
             reference=record.reference,
             created_at=record.created_at,
             performed_by_user_id=record.performed_by_user_id,
-            items=[
-                ReturnItemRead.model_validate(row)
-                for row in self.session.scalars(
-                    select(SaleReturnItem)
-                    .where(SaleReturnItem.void_id == record.void_id)
-                    .order_by(SaleReturnItem.sale_item_id)
-                )
-            ],
+            items=[ReturnItemRead.model_validate(row) for row in items],
         )
 
     def void(

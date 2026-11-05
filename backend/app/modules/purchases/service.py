@@ -97,6 +97,15 @@ class PurchaseService:
 
         rows = self.repository.lines(purchase_id)
 
+        return self._read_purchase(purchase, workflow, rows)
+
+    @staticmethod
+    def _read_purchase(
+        purchase: Purchase,
+        workflow: PurchaseWorkflow | None,
+        rows: list[tuple[PurchaseItem, PurchaseItemCost | None]],
+    ) -> PurchaseRead:
+
         items = [
             PurchaseLineRead(
                 purchase_item_id=item.purchase_item_id,
@@ -156,9 +165,19 @@ class PurchaseService:
     def list_purchases(self, offset: int, limit: int) -> list[PurchaseRead]:
 
         with self.session.begin():
+            purchases = self.repository.list_purchases(offset, limit)
+            if not purchases:
+                return []
+            purchase_ids = [purchase.purchase_id for purchase in purchases]
+            workflows = self.repository.workflows(purchase_ids)
+            lines = self.repository.lines_for_purchases(purchase_ids)
             return [
-                self._detail(purchase.purchase_id)
-                for purchase in self.repository.list_purchases(offset, limit)
+                self._read_purchase(
+                    purchase,
+                    workflows.get(purchase.purchase_id),
+                    lines.get(purchase.purchase_id, []),
+                )
+                for purchase in purchases
             ]
 
     def register(

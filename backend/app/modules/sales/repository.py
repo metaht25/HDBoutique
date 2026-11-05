@@ -68,6 +68,24 @@ class SaleRepository:
             )
         )
 
+    def workflows(self, sale_ids: list[int]) -> dict[int, SaleWorkflow]:
+        return {
+            row.sale_id: row
+            for row in self.session.scalars(
+                select(SaleWorkflow).where(SaleWorkflow.sale_id.in_(sale_ids))
+            )
+        }
+
+    def lines_for_sales(self, sale_ids: list[int]) -> dict[int, list[SaleItem]]:
+        grouped: dict[int, list[SaleItem]] = {}
+        for row in self.session.scalars(
+            select(SaleItem)
+            .where(SaleItem.sale_id.in_(sale_ids))
+            .order_by(SaleItem.sale_item_id)
+        ):
+            grouped.setdefault(row.sale_id, []).append(row)
+        return grouped
+
     def list_sales(
         self, offset: int, limit: int, user_id: int | None = None
     ) -> list[Sale]:

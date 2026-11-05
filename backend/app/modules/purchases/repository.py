@@ -95,16 +95,34 @@ class PurchaseRepository:
     def lines(
         self, purchase_id: int
     ) -> list[tuple[PurchaseItem, PurchaseItemCost | None]]:
+        return self.lines_for_purchases([purchase_id]).get(purchase_id, [])
+
+    def lines_for_purchases(
+        self, purchase_ids: list[int]
+    ) -> dict[int, list[tuple[PurchaseItem, PurchaseItemCost | None]]]:
         rows = self.session.execute(
             select(PurchaseItem, PurchaseItemCost)
             .outerjoin(
                 PurchaseItemCost,
                 PurchaseItemCost.purchase_item_id == PurchaseItem.purchase_item_id,
             )
-            .where(PurchaseItem.purchase_id == purchase_id)
+            .where(PurchaseItem.purchase_id.in_(purchase_ids))
             .order_by(PurchaseItem.purchase_item_id)
         )
-        return [(row[0], row[1]) for row in rows]
+        grouped: dict[int, list[tuple[PurchaseItem, PurchaseItemCost | None]]] = {}
+        for item, cost in rows:
+            grouped.setdefault(item.purchase_id, []).append((item, cost))
+        return grouped
+
+    def workflows(self, purchase_ids: list[int]) -> dict[int, PurchaseWorkflow]:
+        return {
+            row.purchase_id: row
+            for row in self.session.scalars(
+                select(PurchaseWorkflow).where(
+                    PurchaseWorkflow.purchase_id.in_(purchase_ids)
+                )
+            )
+        }
 
     def list_purchases(self, offset: int, limit: int) -> list[Purchase]:
         return list(

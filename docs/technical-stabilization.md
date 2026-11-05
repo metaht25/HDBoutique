@@ -137,3 +137,18 @@ Verificación: TypeScript, ESLint, compilación y 53 pruebas relevantes aprobado
 incluidas traducción sin pérdida de diagnóstico, validación anidada, rechazo de
 login en español, asociación accesible de errores, conservación del formulario
 y las 17 pruebas de recuperación de comandos/idempotencia.
+
+## B — N+1 medido y corregido
+
+Se confirmó crecimiento por fila en los endpoints de listado detallado: 20 ventas
+requerían 82 SELECT y 20 compras, 41. Se cargan flujos, líneas, pagos y anulaciones
+en grupos limitados a la página ya autorizada; quedan seis y tres respectivamente.
+La interfaz principal utiliza otros reportes agregados: no se atribuye a este
+cambio una aceleración de esas pantallas. Formato, orden, NULL históricos, alcance
+de Cashier y transacciones de escritura no cambian. Medianas locales y método en
+[rendimiento de listados](list-performance.md).
+
+Verificación: Ruff, formato y mypy aprobados; 80 pruebas PostgreSQL de listados,
+ventas/F01, pagos/anulaciones y compras/recepción aprobadas. La regresión impone
+presupuesto fijo de consultas y equivalencia de cada campo con el detalle,
+incluidos datos históricos, devoluciones, recibidos y filtro por identidad.

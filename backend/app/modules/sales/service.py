@@ -14,7 +14,7 @@ from app.api.schemas import validate_mobile_phone
 from app.core.errors import ApplicationError
 from app.modules.boutique.audit import audit
 from app.modules.cash.models import SalePayment
-from app.modules.cash.schemas import PaymentRead
+from app.modules.cash.schemas import PaymentRead, VoidRead
 from app.modules.cash.service import CashService
 from app.modules.catalog.models import Size
 from app.modules.customers.models import Customer
@@ -92,6 +92,18 @@ class SaleService:
         payment = self.session.scalar(
             select(SalePayment).where(SalePayment.sale_id == sale_id)
         )
+        return self._read_sale(
+            sale, workflow, payment, annulment, self.repository.lines(sale_id)
+        )
+
+    @staticmethod
+    def _read_sale(
+        sale: Sale,
+        workflow: SaleWorkflow | None,
+        payment: SalePayment | None,
+        annulment: VoidRead | None,
+        lines: list[SaleItem],
+    ) -> SaleRead:
         return SaleRead(
             sale_id=sale.sale_id,
             customer_id=sale.customer_id,
@@ -120,7 +132,7 @@ class SaleService:
                     unit_price=item.unit_price,
                     subtotal=item.unit_price * item.quantity,
                 )
-                for item in self.repository.lines(sale_id)
+                for item in lines
             ],
         )
 
@@ -136,13 +148,32 @@ class SaleService:
         self, offset: int, limit: int, actor: Principal | None = None
     ) -> list[SaleRead]:
         with self.session.begin():
-            return [
-                self._detail(sale.sale_id)
-                for sale in self.repository.list_sales(
-                    offset,
-                    limit,
-                    actor.user_id if actor and actor.role == "Cashier" else None,
+            sales = self.repository.list_sales(
+                offset,
+                limit,
+                actor.user_id if actor and actor.role == "Cashier" else None,
+            )
+            if not sales:
+                return []
+            sale_ids = [sale.sale_id for sale in sales]
+            workflows = self.repository.workflows(sale_ids)
+            payments = {
+                row.sale_id: row
+                for row in self.session.scalars(
+                    select(SalePayment).where(SalePayment.sale_id.in_(sale_ids))
                 )
+            }
+            annulments = CashService(self.session).void_details(sale_ids)
+            lines = self.repository.lines_for_sales(sale_ids)
+            return [
+                self._read_sale(
+                    sale,
+                    workflows.get(sale.sale_id),
+                    payments.get(sale.sale_id),
+                    annulments.get(sale.sale_id),
+                    lines.get(sale.sale_id, []),
+                )
+                for sale in sales
             ]
 
     def register(self, payload: SaleCreate, actor: Principal, key: str) -> SaleRead:
