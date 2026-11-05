@@ -152,3 +152,18 @@ Verificación: Ruff, formato y mypy aprobados; 80 pruebas PostgreSQL de listados
 ventas/F01, pagos/anulaciones y compras/recepción aprobadas. La regresión impone
 presupuesto fijo de consultas y equivalencia de cada campo con el detalle,
 incluidos datos históricos, devoluciones, recibidos y filtro por identidad.
+
+## C / F09 — Retiro de pantallas sin consumidores
+
+Se retiran cinco pantallas/wrappers sin rutas, importaciones ni pruebas consumidoras
+y su CSS exclusivo. La revisión de dependencias encontró usos activos de los
+adaptadores anteriores desde SalesLedger, anulaciones y catálogos; se conservan
+contratos y todos los archivos de la implementación F01. El inventario y criterio
+de conservación están en [código frontend histórico](frontend-legacy.md).
+
+Verificación: TypeScript, ESLint, 128 pruebas frontend completas, compilación y
+22 E2E en escritorio/móvil aprobados. Una ejecución inicial concurrente con la
+construcción del backend agotó los cinco segundos de una prueba paginada; se
+repitió la suite completa con dos workers de Vitest y uno de Playwright, sin
+cambiar pruebas, límites ni código para omitir el caso. No se unifican contratos
+activos ni se realiza una limpieza más amplia.
