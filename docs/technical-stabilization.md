@@ -167,3 +167,111 @@ construcción del backend agotó los cinco segundos de una prueba paginada; se
 repitió la suite completa con dos workers de Vitest y uno de Playwright, sin
 cambiar pruebas, límites ni código para omitir el caso. No se unifican contratos
 activos ni se realiza una limpieza más amplia.
+
+## Verificación integral y entrega
+
+Rama de entrega: `fix/estabilizacion-tecnica`, desde `Desarollo` local `1682e3b`.
+La referencia `Desarollo` sigue en ese commit y `feat/ui-modernizacion` sigue en
+`d0a41a9`. No se hicieron push, merge, cambios de rama durante las correcciones,
+reescrituras de historial ni migraciones nuevas.
+
+| Verificación final | Resultado |
+| --- | --- |
+| Bloqueo uv, Ruff, formato y mypy | Aprobados; 110 archivos fuente analizados por mypy |
+| Backend completo con PostgreSQL aislado | 367 aprobadas; cobertura de líneas/ramas combinada 91,81 %; umbral 90 % |
+| TypeScript, ESLint y compilación | Aprobados |
+| Frontend completo | 128 aprobadas; concurrencia limitada a dos workers |
+| E2E escritorio/móvil con servicios simulados | 22 aprobadas; un worker |
+| Navegador con Nginx/FastAPI/PostgreSQL reales de pruebas | 16 aprobadas; sin reintentos automáticos de las pruebas |
+| Auditoría backend instalado | Cero avisos conocidos tras actualizar Pillow |
+| Auditoría frontend sin dependencias de desarrollo | Cero avisos conocidos |
+| Auditoría frontend completa | Diez nodos moderados derivados de un aviso; F08 pendiente |
+
+F01 final: `originalSale=7`, `recoveredSale=7`, `newSales=1`,
+`stockDiscount=1`, `originalPayment=7`, `recoveredPayment=7`; otra identidad no
+puede recuperar la intención. F05 acepta PNG válido de exactamente 2 MiB a través
+de Nginx y rechaza excesos sin cambiar el perfil. F04 crea 125 productos y 125
+proveedores sintéticos y compra correctamente fuera de los primeros 100.
+Se revisaron también capturas de Compras de 1440 px y 390 px y el modal móvil;
+la integración comprueba límites de pantalla y acceso al botón de envío.
+
+### Commits independientes
+
+| Commit | Mensaje |
+| --- | --- |
+| `75dfef2` | fix(identity): proteger ultimo administrador utilizable |
+| `ad6f6c3` | fix(setup): completar configuracion inicial del sistema |
+| `bcbc248` | fix(security): reforzar validacion y procesamiento de imagenes |
+| `6c6233b` | fix(nginx): alinear limites de carga de imagenes |
+| `40be25f` | fix(purchases): permitir busqueda completa de productos y proveedores |
+| `62439ec` | fix(auth): validar longitud minima del bootstrap |
+| `0c1afb0` | docs(security): documentar bloqueo compatible de minimatch |
+| `94c3614` | fix(ui): presentar errores y validaciones en espanol |
+| `c23ea6e` | perf(transactions): agrupar consultas de listados sin alterar contratos |
+| `560e287` | refactor(frontend): retirar pantallas sin consumidores verificados |
+
+F08 tiene un commit de documentación del bloqueo, no un commit que simule una
+actualización corregida. Esta entrega agrega un commit documental de cierre.
+
+### Archivos principales
+
+- Identidad/personal: `backend/app/modules/identity/{repository,service,cli,setup}.py`
+  y `backend/app/modules/staff/service.py`; preparación en README y guía inicial.
+- Logos: `backend/app/modules/boutique/{service,logo_worker}.py`,
+  `backend/pyproject.toml`, `backend/uv.lock` y `frontend/nginx.conf`.
+- Compras: `frontend/src/features/boutique/{Purchases,PurchaseSelectors,SearchSelect}.tsx`.
+- Errores: `frontend/src/shared/api/errors.ts`, `shared/forms/fields.ts` y
+  `features/boutique/PartyForm.tsx`.
+- Lecturas agrupadas: repositorios/servicios de ventas y compras y formateo de
+  anulaciones en `backend/app/modules/cash/service.py`.
+- Regresiones: pruebas backend de identidad/preparación/imágenes/listados y
+  pruebas frontend de selectores/errores/transporte de logos, además de las suites
+  F01 existentes. Los seis retiros y sus consumidores se detallan en `frontend-legacy.md`.
+
+### Preservación del entorno
+
+Respaldos privados previo/final conservados bajo `backups/`, sin restaurarlos ni
+publicarlos. Comparación de 31 tablas públicas mediante conteo y SHA-256 de sus
+filas ordenadas: cero diferencias, incluidas cuentas/hashes de contraseña,
+productos/stock, clientes, empleados, compras, ventas, pagos, movimientos y
+auditoría. Solo se excluyen sesiones e intentos de login, que son estado efímero.
+La instantánea previa real ya tenía 11 ventas, 11 pagos y 72 movimientos; esos
+conteos se conservaron, junto con 30 productos, 4 proveedores, 10 clientes,
+3 empleados y 5 compras. No se ajustaron registros para hacer coincidir las
+cifras del contexto anterior.
+
+`Cronograma.docx` continúa sin seguimiento y con la huella original. `.env.docker`,
+credenciales privadas y respaldos no están versionados. No se borraron volúmenes;
+la base de ensayos usa tmpfs separado. Los archivos de implementación F01 se
+compararon contra `1682e3b` y permanecen sin cambios.
+
+Las imágenes verificadas se conservaron con las etiquetas locales
+`hdboutique-backend:stabilization-tested` y `hdboutique-frontend:stabilization-tested`.
+Compose comparte nombres de imagen entre pruebas y desarrollo: para preservar
+la línea visual del próximo arranque, `hdboutique-frontend:runtime` se reconstruyó
+desde un archivo Git privado de `d0a41a9`, sin cambiar de rama. La etiqueta
+`hdboutique-backend:development` conserva la imagen nueva ensayada. Los tres
+contenedores de desarrollo existentes no se recrearon y siguen saludables.
+Antes de recrearlos tras integrar, construir ambas imágenes desde el código
+combinado; no asumir que una etiqueta compartida identifica una revisión Git.
+
+### Riesgos y revisión antes de integrar
+
+1. F08 sigue abierto: consultar `dependency-security.md` y decidir su tratamiento
+   antes de integrar. No ocultar el aviso ni forzar un major incompatible.
+2. Los límites completos de memoria/CPU del decodificador requieren Docker/Linux;
+   Windows nativo solo aplica timeout, bytes y dimensiones. La cobertura no es
+   una demostración de ausencia de cualquier vulnerabilidad futura.
+3. Se retiraron pantallas sin consumidores; los adaptadores paralelos con usos
+   activos se conservan. Una futura unificación requiere trabajo separado.
+4. Revisar los commits e integrar explícitamente en `Desarollo`; después combinar
+   con `feat/ui-modernizacion` y repetir pruebas, especialmente Compras,
+   validaciones, navegación móvil y F01. La rama visual no se sobrescribió.
+5. Al aplicar la integración, reconstruir backend/web para instalar Pillow 13 y
+   cargar Nginx actualizado, con respaldo previo. No repetir bootstrap ni
+   completar configuración sobre las cuentas DEMO ya vinculadas. No se sustituyen
+   los contenedores de desarrollo durante estos ensayos; su frontend conserva
+   la imagen visual existente. El backend de desarrollo monta el código local.
+
+Las correcciones verificadas están preparadas para revisión. La integración
+global requiere tratar conscientemente F08 y verificar la combinación visual.
