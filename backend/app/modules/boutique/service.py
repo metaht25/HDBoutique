@@ -2,16 +2,18 @@
 
 import base64
 import binascii
-import warnings
+import os
+import subprocess
+import sys
 from contextlib import nullcontext
-from io import BytesIO
+from pathlib import Path
 
-from PIL import Image, UnidentifiedImageError
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.errors import ApplicationError
 from app.modules.boutique.audit import audit
+from app.modules.boutique.logo_worker import MAX_LOGO_BYTES, WORKER_TIMEOUT
 from app.modules.boutique.models import BoutiqueProfile
 from app.modules.boutique.schemas import ProfileRead, ProfileWrite, ReceiptRead
 from app.modules.identity.service import Principal
@@ -20,37 +22,50 @@ from app.modules.sales.service import SaleService
 
 def clean_logo(encoded: str) -> bytes:
     try:
-        raw = base64.b64decode(encoded, validate=True)
-        if len(raw) > 2 * 1024 * 1024:
+        if len(encoded) > 4 * ((MAX_LOGO_BYTES + 2) // 3):
             raise ValueError("size")
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", Image.DecompressionBombWarning)
-            with Image.open(BytesIO(raw)) as image:
-                if image.format not in {"PNG", "JPEG", "WEBP"}:
-                    raise ValueError("format")
-                if (
-                    image.width > 3000
-                    or image.height > 3000
-                    or image.width * image.height > 4000000
-                ):
-                    raise ValueError("dimensions")
-                image.load()
-                image.thumbnail((600, 600))
-                output = BytesIO()
-                image.convert("RGBA").save(output, format="PNG", optimize=True)
-                return output.getvalue()
-    except (
-        ValueError,
-        OSError,
-        binascii.Error,
-        UnidentifiedImageError,
-        Image.DecompressionBombError,
-        Image.DecompressionBombWarning,
-    ) as error:
+        raw = base64.b64decode(encoded, validate=True)
+        if not raw or len(raw) > MAX_LOGO_BYTES:
+            raise ValueError("size")
+        # No database credentials or application environment enter the decoder.
+        environment = {
+            key: value
+            for key in ("SYSTEMROOT", "WINDIR")
+            if (value := os.environ.get(key)) is not None
+        }
+        result = subprocess.run(
+            [sys.executable, "-I", str(Path(__file__).with_name("logo_worker.py"))],
+            input=raw,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=WORKER_TIMEOUT,
+            check=False,
+            env=environment,
+        )
+        if result.returncode == 2 or result.returncode < 0:
+            raise ValueError("invalid or resource-limited image")
+        if (
+            result.returncode
+            or not result.stdout.startswith(b"\x89PNG\r\n\x1a\n")
+            or len(result.stdout) > MAX_LOGO_BYTES
+        ):
+            raise ApplicationError(
+                503,
+                "logo_processing_unavailable",
+                "No se pudo procesar el logo. Intenta nuevamente.",
+            )
+        return result.stdout
+    except (ValueError, binascii.Error, subprocess.TimeoutExpired) as error:
         raise ApplicationError(
             422,
             "invalid_logo",
             "Usa una imagen PNG, JPEG o WebP de hasta 2 MB y 3000 píxeles por lado.",
+        ) from error
+    except OSError as error:
+        raise ApplicationError(
+            503,
+            "logo_processing_unavailable",
+            "El procesamiento de logos no está disponible.",
         ) from error
 
 

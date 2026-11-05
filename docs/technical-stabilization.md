@@ -36,3 +36,29 @@ Verificación: 62 pruebas PostgreSQL aprobadas, incluidas seis de inicializació
 compra/recepción/venta/recibo posterior, rollback completo por logo inválido,
 repetición, contraseña actual y prohibición del bootstrap desvinculado. Ruff,
 formato y mypy aprobados. No se ejecutó la preparación sobre la instalación DEMO.
+
+## F03 — Logos y Pillow
+
+El bloqueo permitía Pillow 12.3.0 y excluía la versión corregida. Se actualiza
+únicamente Pillow a 13.0.0, compatible con Python 3.13 y los usos actuales.
+Los avisos de [APNG](https://github.com/python-pillow/Pillow/security/advisories/GHSA-5xm2-6676-qcp9)
+y [XBM](https://github.com/python-pillow/Pillow/security/advisories/GHSA-xgh8-jp6q-p5x8)
+afectaban la apertura anterior al control de dimensiones. Las
+[notas oficiales](https://pillow.readthedocs.io/en/stable/releasenotes/13.0.0.html)
+también describen correcciones de JPEG, formato admitido. Los avisos de formatos
+no utilizados no equivalen a rutas explotables demostradas en HDBoutique.
+
+La conversión pasa a un proceso Python aislado sin credenciales del entorno.
+Solo abre PNG/JPEG/WebP mediante `formats=`, verifica estructura y carga píxeles.
+Conserva límites: 2 MiB, 3000 píxeles por lado, 4 millones de píxeles y salida PNG
+de 600×600 como máximo; mantiene transparencia y primer fotograma. En el runtime
+Linux se limita el proceso a 256 MiB de espacio virtual y 3 s de CPU; el padre
+impone 5 s de tiempo real en todas las plataformas. Windows nativo conserva
+timeout y límites de entrada/dimensiones, sin RLIMIT de memoria/CPU: usar Docker
+para el entorno con todos los límites. Los logos guardados no se reescriben.
+
+Verificación: 72 pruebas aprobadas, incluidas 17 de imágenes (formatos válidos,
+inválidos, truncados, límites de bytes/dimensiones, alpha, PNG previamente saneado,
+timeout y fallo nativo simulados), inicialización y ventas/F01. No se ejecutaron
+cargas de agotamiento. Ruff, formato y mypy aprobados. `pip-audit` del inventario
+instalado actualizado: cero vulnerabilidades conocidas al consultar los avisos.
