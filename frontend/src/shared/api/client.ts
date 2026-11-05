@@ -5,6 +5,7 @@ export interface RequestOptions {
   body?: unknown
   signal?: AbortSignal
   idempotencyKey?: string
+  expectedUserId?: number
   fallback?: string
   responseType?: 'json' | 'blob'
 }
@@ -64,6 +65,7 @@ export class ApiClient {
     if (options.body !== undefined) headers['Content-Type'] = 'application/json'
     if (versioned && write && this.csrfToken) headers['X-CSRF-Token'] = this.csrfToken
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey
+    if (write && options.expectedUserId !== undefined) headers['X-Idempotency-Actor'] = String(options.expectedUserId)
     const response = await fetch(path, {
       method, headers, credentials: 'same-origin', cache: 'no-store',
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),

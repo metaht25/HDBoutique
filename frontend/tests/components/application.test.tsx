@@ -67,7 +67,7 @@ it('blocks a collaborator from mounting administrative queries', async () => {
 it('loads assigned-password accounts without a forced password form', async () => {
   const fetch = mockBackend({ authenticated: true, temporary: true }); renderApp('/new-sale')
   await screen.findByRole('heading', { level: 1, name: 'Nueva venta' })
-  expect(fetch.mock.calls.some(([path]) => String(path).includes('/reports/product-catalog'))).toBe(true)
+  await waitFor(() => expect(fetch.mock.calls.some(([path]) => String(path).includes('/reports/product-catalog'))).toBe(true))
 })
 it('shows a useful product error after the lazy screen loads', async () => {
   mockBackend({ authenticated: true, productError: true }); renderApp('/products')

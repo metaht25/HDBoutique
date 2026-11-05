@@ -56,9 +56,9 @@ export async function transactionOptions(kind: TransactionKind, signal: AbortSig
   ])
   return { products, parties, today, costs, offerings }
 }
-export async function registerTransaction(kind: TransactionKind, body: TransactionInput, key: string): Promise<Transaction> {
-  return parseTransaction(kind, await apiClient.request(`/api/v1/${kind}`, { method: 'POST', body, idempotencyKey: key }))
+export async function registerTransaction(kind: TransactionKind, body: TransactionInput, key: string, expectedUserId?: number): Promise<Transaction> {
+  return parseTransaction(kind, await apiClient.request(`/api/v1/${kind}`, { method: 'POST', body, idempotencyKey: key, ...(expectedUserId !== undefined ? { expectedUserId } : {}) }))
 }
-export async function receivePurchase(id: number, employeeId?: number): Promise<Transaction> {
-  return parseTransaction('purchases', await apiClient.request(`/api/v1/purchases/${id}/receive`, { method: 'POST', body: employeeId ? { employee_id: employeeId } : {} }))
+export async function receivePurchase(id: number, employeeId?: number, expectedUserId?: number): Promise<Transaction> {
+  return parseTransaction('purchases', await apiClient.request(`/api/v1/purchases/${id}/receive`, { method: 'POST', body: employeeId ? { employee_id: employeeId } : {}, ...(expectedUserId !== undefined ? { expectedUserId } : {}) }))
 }

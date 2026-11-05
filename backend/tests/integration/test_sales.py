@@ -1,6 +1,7 @@
 """Sales HTTP, atomic rollback, exact money and historical fidelity on PostgreSQL."""
 
 from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from unittest.mock import patch
@@ -16,8 +17,9 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import Settings
 from app.core.errors import ApplicationError
 from app.main import create_app
+from app.modules.cash.models import SalePayment
 from app.modules.catalog.models import Product
-from app.modules.identity.models import UserAccount
+from app.modules.identity.models import UserAccount, WebSession
 from app.modules.identity.service import principal_from_user
 from app.modules.inventory.models import InventoryMovement
 from app.modules.inventory.repository import InventoryRepository
@@ -115,6 +117,99 @@ def test_complete_sale_history_and_retry(sales_context, database_connection) -> 
     changed = sale_payload(graph)
     changed["items"].reverse()
     assert register(client, graph, payload=changed).status_code == 409
+
+
+def test_uncertain_sale_survives_session_expiry_and_reauthentication(
+    sales_context, database_connection
+) -> None:
+    client, graph, _, actor, _ = sales_context
+    key = "synthetic-expired-session-sale"
+    headers = {"Idempotency-Key": key, "X-Idempotency-Actor": str(actor.user_id)}
+    payload = sale_payload(graph)
+    # The database committed, but pretend the caller did not receive this result.
+    first = client.post("/api/v1/sales", json=payload, headers=headers)
+    assert first.status_code == 201
+    original = first.json()
+    database_connection.execute(
+        update(WebSession).values(expires_at=datetime.now(UTC) - timedelta(seconds=1))
+    )
+    assert (
+        client.post("/api/v1/sales", json=payload, headers=headers).status_code == 401
+    )
+
+    login(client, "purchasing-cashier")
+    switched = client.post("/api/v1/sales", json=payload, headers=headers)
+    assert switched.status_code == 409
+    assert switched.json()["error"]["code"] == "session_changed"
+
+    login(client, "purchasing-administrator")
+    recovered = client.post("/api/v1/sales", json=payload, headers=headers)
+    assert recovered.status_code == 201
+    assert recovered.json() == original
+    assert database_connection.scalar(select(func.count()).select_from(Sale)) == 1
+    assert (
+        database_connection.scalar(select(func.count()).select_from(SalePayment)) == 1
+    )
+    assert (
+        database_connection.scalar(select(func.count()).select_from(SaleWorkflow)) == 1
+    )
+    assert (
+        database_connection.scalar(
+            select(func.count())
+            .select_from(InventoryMovement)
+            .where(InventoryMovement.movement_type == "sale_issue")
+        )
+        == 2
+    )
+    assert (
+        database_connection.scalar(
+            select(Product.legacy_stock).where(Product.product_id == graph["product1"])
+        )
+        == 10
+    )
+    assert (
+        database_connection.scalar(
+            select(Product.legacy_stock).where(Product.product_id == graph["product2"])
+        )
+        == 9
+    )
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/sales",
+        "/sales/1/void",
+        "/purchases",
+        "/purchases/suppliers",
+        "/purchases/1/receive",
+    ],
+)
+def test_commands_reject_another_intent_owner_before_any_business_write(
+    sales_context, database_connection, path
+) -> None:
+    client, graph, _, actor, _ = sales_context
+    login(client, "purchasing-cashier")
+    response = client.post(
+        "/api/v1" + path,
+        json={},
+        headers={
+            "Idempotency-Key": "synthetic-other-account-command",
+            "X-Idempotency-Actor": str(actor.user_id),
+        },
+    )
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "session_changed"
+    assert database_connection.scalar(select(func.count()).select_from(Sale)) == 0
+    assert (
+        database_connection.scalar(select(func.count()).select_from(SalePayment)) == 0
+    )
+    assert (
+        database_connection.scalar(
+            select(Product.legacy_stock).where(Product.product_id == graph["product1"])
+        )
+        == 12
+    )
 
 
 @pytest.mark.parametrize(

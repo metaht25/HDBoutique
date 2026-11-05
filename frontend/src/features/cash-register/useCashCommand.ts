@@ -19,18 +19,26 @@ export function useCashCommand<T = unknown>(userId: number, operation: string, o
   })
   const [pending, setPending] = useState<Intent | null>(restored.intent), [error, setError] = useState(restored.error), [busy, setBusy] = useState(false)
   const lock = useRef(false)
+  const [owner] = useState(storageKey)
+  // An intent found after remount may already have committed, even if the page
+  // disappeared before its catch handler ran. Keep the v1 storage format intact.
+  const uncertain = useRef(restored.intent !== null)
+  const identityChanged = owner !== storageKey
   async function send(path: string, body: object) {
+    if (identityChanged) { setError('La cuenta cambió. Recupera la sesión original para reintentar.'); return }
     if (lock.current || restored.error) return
     const intent = pending ?? { path, body, key: crypto.randomUUID() }
     try { sessionStorage.setItem(storageKey, JSON.stringify(intent)) } catch { setError('Permite el almacenamiento de sesión para proteger los reintentos.'); return }
+    const wasUncertain = uncertain.current
+    uncertain.current = true
     lock.current = true; setBusy(true); setPending(intent); setError('')
     try {
-      const result = await apiClient.request<T>(intent.path, { method: 'POST', body: intent.body, idempotencyKey: intent.key })
-      sessionStorage.removeItem(storageKey); setPending(null); onSaved(result)
+      const result = await apiClient.request<T>(intent.path, { method: 'POST', body: intent.body, idempotencyKey: intent.key, expectedUserId: userId })
+      sessionStorage.removeItem(storageKey); uncertain.current = false; setPending(null); onSaved(result)
     } catch (error) {
       setError(getErrorMessage(error, 'No se pudo confirmar el resultado. Reintenta la misma operación.'))
-      if (isDefinitiveRejection(error)) { sessionStorage.removeItem(storageKey); setPending(null) }
+      if (!wasUncertain && isDefinitiveRejection(error)) { sessionStorage.removeItem(storageKey); uncertain.current = false; setPending(null) }
     } finally { lock.current = false; setBusy(false) }
   }
-  return { send, error, setError, busy, pending, locked: busy || pending !== null || !!restored.error, blocked: !!restored.error }
+  return { send, error, setError, busy, pending, locked: busy || pending !== null || !!restored.error || identityChanged, blocked: !!restored.error || identityChanged }
 }

@@ -72,6 +72,20 @@ describe('shared API client', () => {
     }))
   })
 
+  it('binds command ownership in a separate header without changing its body or key', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(json({ csrf_token: 'synthetic-csrf' }))
+      .mockResolvedValueOnce(json({}, 201))
+    vi.stubGlobal('fetch', fetchMock)
+    await new ApiClient().request('/api/v1/sales', {
+      method: 'POST', body: { items: [] }, idempotencyKey: 'synthetic-key', expectedUserId: 7,
+    })
+    expect(fetchMock.mock.calls[1]).toEqual(['/api/v1/sales', expect.objectContaining({
+      body: JSON.stringify({ items: [] }),
+      headers: expect.objectContaining({ 'Idempotency-Key': 'synthetic-key', 'X-Idempotency-Actor': '7' }),
+    })])
+  })
+
   it('bootstraps CSRF once for concurrent writes and rotates it', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(json({ csrf_token: 'synthetic-csrf' }))

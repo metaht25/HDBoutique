@@ -43,6 +43,8 @@ export function storeIntent(userId: number, kind: TransactionKind, intent: Pendi
 }
 export function clearIntent(userId: number, kind: TransactionKind): void { sessionStorage.removeItem(storageKey(userId, kind)) }
 export function isDefinitiveRejection(error: unknown): boolean {
-  return error instanceof ApiError && error.status >= 400 && error.status < 500
-    && !['session_changed', 'pending_unavailable'].includes(error.code) && error.status !== 408
+  // Authentication, throttling, proxy errors and key conflicts do not resolve a
+  // previous attempt. Only a first, certain application rejection can be cleared.
+  return error instanceof ApiError && [400, 404, 409, 422].includes(error.status)
+    && !['session_changed', 'pending_unavailable', 'idempotency_conflict', 'http_error'].includes(error.code)
 }

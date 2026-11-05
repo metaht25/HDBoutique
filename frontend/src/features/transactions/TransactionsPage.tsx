@@ -41,6 +41,8 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
   const [selected, setSelected] = useState(''), [quantity, setQuantity] = useState('1')
   const [error, setError] = useState(restored.error), [busy, setBusy] = useState(false)
   const submitting = useRef(false)
+  const uncertain = useRef(restored.intent !== null)
+  const owner = useRef(userId)
   const choices = sales ? options.products.map(row => ({ id: row.product_id, product_id: row.product_id, price: row.unit_price, stock: row.legacy_stock }))
     : options.costs.filter(cost => options.offerings.some(offering => offering.supplier_id === Number(party) && offering.supplier_product_id === cost.id))
       .map(cost => ({ ...cost, stock: undefined }))
@@ -63,6 +65,7 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (submitting.current || restored.error) return
+    if (owner.current !== userId) { setError('La cuenta cambió. Recupera la sesión original para reintentar.'); return }
     let intent = pending
     if (!intent) {
       const partyId = inputId(party), employeeId = inputId(employee), shippingCost = exactMoney(shipping)
@@ -81,13 +84,15 @@ function TransactionForm({ kind, options, userId, linkedEmployee, onSaved }: {
       try { storeIntent(userId, kind, intent) } catch (error) { setError(getErrorMessage(error, 'No se pudo proteger la solicitud.')); return }
       setPending(intent)
     }
+    const wasUncertain = uncertain.current
+    uncertain.current = true
     submitting.current = true; setBusy(true); setError('')
     try {
-      const saved = await registerTransaction(kind, intent.body, intent.key)
-      clearIntent(userId, kind); setPending(null); onSaved(saved)
+      const saved = await registerTransaction(kind, intent.body, intent.key, userId)
+      clearIntent(userId, kind); uncertain.current = false; setPending(null); onSaved(saved)
     } catch (error) {
       setError(getErrorMessage(error, 'No se pudo confirmar el resultado. Reintenta la misma solicitud para comprobarlo.'))
-      if (isDefinitiveRejection(error)) { clearIntent(userId, kind); setPending(null) }
+      if (!wasUncertain && isDefinitiveRejection(error)) { clearIntent(userId, kind); uncertain.current = false; setPending(null) }
     } finally { submitting.current = false; setBusy(false) }
   }
   const locked = busy || pending !== null || !!restored.error
@@ -144,7 +149,7 @@ function TransactionsWorkspace({ kind }: { kind: TransactionKind }) {
     const employeeId = inputId(employee)
     if (account.employee_id === null && !employeeId) { setError('Indica el ID de un empleado existente para recibir.'); return }
     receiptLock.current = true; setReceiving(true); setError('')
-    try { const saved = await receivePurchase(selected.id, account.employee_id ?? employeeId ?? undefined); setSelected(saved); setNotice(`Compra #${saved.id} recibida correctamente.`); setRevision(value => value + 1) }
+    try { const saved = await receivePurchase(selected.id, account.employee_id ?? employeeId ?? undefined, account.user_id); setSelected(saved); setNotice(`Compra #${saved.id} recibida correctamente.`); setRevision(value => value + 1) }
     catch (error) { setError(getErrorMessage(error, 'No se pudo confirmar la recepción. Puedes reintentar la misma compra.')) }
     finally { receiptLock.current = false; setReceiving(false) }
   }

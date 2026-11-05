@@ -25,6 +25,9 @@ it('keeps uncertain outcomes and session races pending, while allowing correctio
   expect(isDefinitiveRejection(new TypeError('Network'))).toBe(false)
   expect(isDefinitiveRejection(new ApiError(503, 'database_unavailable', 'Unavailable'))).toBe(false)
   expect(isDefinitiveRejection(new ApiError(409, 'session_changed', 'Changed'))).toBe(false)
+  for (const status of [401, 403, 408, 429]) expect(isDefinitiveRejection(new ApiError(status, 'rejected', 'Rejected'))).toBe(false)
+  expect(isDefinitiveRejection(new ApiError(409, 'idempotency_conflict', 'Different body'))).toBe(false)
+  expect(isDefinitiveRejection(new ApiError(404, 'http_error', 'Proxy response'))).toBe(false)
   expect(isDefinitiveRejection(new ApiError(409, 'insufficient_stock', 'Stock'))).toBe(true)
 })
 it('sends the entire sale once with its request key and no client prices or total', async () => {

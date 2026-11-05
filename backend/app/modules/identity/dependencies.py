@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Header, Request
 from fastapi.security import APIKeyCookie
 
 from app.api.dependencies import DatabaseSession
@@ -56,6 +56,9 @@ def current_identity(
     request: Request,
     session: DatabaseSession,
     token: Annotated[str | None, Depends(cookie_scheme)],
+    expected_user_id: Annotated[
+        int | None, Header(alias="X-Idempotency-Actor", gt=0)
+    ] = None,
 ) -> Principal:
 
     write = request.method not in {"GET", "HEAD", "OPTIONS"}
@@ -68,6 +71,16 @@ def current_identity(
         request.headers.get("x-csrf-token"),
         write=write,
     )
+
+    # A cookie can change accounts in another tab before the UI receives its
+    # session notification. Reject the stale command before any business write.
+    # This header binds an intention; it never supplies authentication or roles.
+    if write and expected_user_id is not None and expected_user_id != principal.user_id:
+        raise ApplicationError(
+            409,
+            "session_changed",
+            "La cuenta cambió. Recupera la sesión original para reintentar.",
+        )
 
     return principal
 
