@@ -18,7 +18,7 @@ test('product modal calculates the price and sends only cost and audited initial
 })
 test('collaborator sees no costs, supplier columns or product editing', async ({ page }) => {
   await mockBoutique(page, 'Cashier'); await page.goto('/products')
-  await expect(page.getByRole('cell', { name: product.name })).toBeVisible()
+  await expect(page.getByRole('cell').filter({ has: page.getByText(product.name, { exact: true }) })).toBeVisible()
   await expect(page.getByRole('columnheader', { name: 'Costo', exact: true })).toHaveCount(0)
   await expect(page.getByRole('columnheader', { name: 'Proveedor', exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: '+ Nuevo producto' })).toHaveCount(0)
