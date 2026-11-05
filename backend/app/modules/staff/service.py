@@ -144,7 +144,9 @@ class StaffService:
                         values.get("is_active") is False
                         and account.role == "Administrator"
                         and account.is_active
-                        and len(identity.active_administrators()) == 1
+                        and not identity.usable_administrators(
+                            excluding_user_id=account.user_id
+                        )
                     ):
                         raise ApplicationError(
                             409, "last_administrator", "Debe quedar una dueña activa."

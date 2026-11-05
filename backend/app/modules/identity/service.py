@@ -338,6 +338,16 @@ class IdentityService:
                         422, "invalid_reference", "Employee not found"
                     )
 
+                if (
+                    payload.employee_id is not None
+                    and not self.repository.employee_is_active(payload.employee_id)
+                ):
+                    raise ApplicationError(
+                        422,
+                        "employee_inactive",
+                        "Vincula un empleado activo a la cuenta.",
+                    )
+
                 user = UserAccount(
                     username=payload.username,
                     password_hash=hash_password(payload.password.get_secret_value()),
@@ -377,20 +387,28 @@ class IdentityService:
                         422, "invalid_reference", "Employee not found"
                     )
 
-                removes_admin = (
-                    payload.role not in (None, "Administrator")
-                    or payload.is_active is False
+                employee_id = (
+                    payload.employee_id
+                    if "employee_id" in payload.model_fields_set
+                    else user.employee_id
                 )
-
+                active = (
+                    payload.is_active
+                    if "is_active" in payload.model_fields_set
+                    else user.is_active
+                )
                 if (
-                    user.is_active
-                    and user.role == "Administrator"
-                    and removes_admin
-                    and len(self.repository.active_administrators()) == 1
+                    active
+                    and employee_id is not None
+                    and not self.repository.employee_is_active(employee_id)
                 ):
                     raise ApplicationError(
-                        409, "last_administrator", "An active Administrator is required"
+                        422,
+                        "employee_inactive",
+                        "Vincula un empleado activo a la cuenta.",
                     )
+
+                protected_admin = user.role == "Administrator" and user.is_active
 
                 for field in payload.model_fields_set:
                     value = getattr(payload, field)
@@ -407,6 +425,16 @@ class IdentityService:
                     self.repository.revoke_user_sessions(user_id)
 
                 self.repository.add_user(user)
+
+                # Check the effective state after flush, under the same advisory
+                # lock used by employee changes and login. A nominally active
+                # account attached to an inactive employee cannot be the fallback.
+                if protected_admin and not self.repository.usable_administrators():
+                    raise ApplicationError(
+                        409,
+                        "last_administrator",
+                        "Debe quedar un administrador que pueda iniciar sesión.",
+                    )
 
                 LOGGER.info("account_updated user_id=%s", user.user_id)
 

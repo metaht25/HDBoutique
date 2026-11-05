@@ -35,6 +35,10 @@ class IdentityRepository:
     def employee_exists(self, employee_id: int) -> bool:
         return self.session.get(Employee, employee_id) is not None
 
+    def employee_is_active(self, employee_id: int) -> bool:
+        employee = self.session.get(Employee, employee_id)
+        return employee is not None and employee.is_active
+
     def session_by_hash(self, token_hash: str) -> WebSession | None:
         return self.session.scalar(
             select(WebSession)
@@ -69,6 +73,22 @@ class IdentityRepository:
                 )
             )
         )
+
+    def usable_administrators(
+        self, *, excluding_user_id: int | None = None
+    ) -> list[UserAccount]:
+        statement = (
+            select(UserAccount)
+            .outerjoin(Employee, Employee.employee_id == UserAccount.employee_id)
+            .where(
+                UserAccount.role == "Administrator",
+                UserAccount.is_active.is_(True),
+                or_(UserAccount.employee_id.is_(None), Employee.is_active.is_(True)),
+            )
+        )
+        if excluding_user_id is not None:
+            statement = statement.where(UserAccount.user_id != excluding_user_id)
+        return list(self.session.scalars(statement))
 
     def throttle(self, subject_hash: str, now: datetime) -> LoginThrottle:
         self.session.execute(
