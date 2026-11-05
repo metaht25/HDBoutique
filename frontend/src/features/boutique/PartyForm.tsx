@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { apiClient } from '../../shared/api/client'
 import { getErrorMessage } from '../../shared/api/errors'
+import { serverFields } from '../../shared/forms/fields'
+import type { FieldErrors } from '../../shared/forms/fields'
 import { Message } from '../../shared/ui/Feedback'
 import { TextField } from '../../shared/ui/TextField'
 import { PhoneField } from './PhoneField'
@@ -26,10 +28,11 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
   const [values, setValues] = useState<Record<string, string>>(() => row ? Object.fromEntries(Object.entries(row).map(([key, value]) => [key, value == null ? '' : key === 'phone_number' ? formatPhone(String(value)) : String(value)])) : { kind: initialKind ?? 'regular', start_date: commercialDate() })
   const supplierCommand = useCashCommand<Party>(userId ?? 0, 'supplier', onSaved)
   const [showPassword, setShowPassword] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), submitting = useRef(false)
   const customer = kind === 'customers', employee = kind === 'employees', delivery = (initialKind ?? values.kind) === 'delivery', addressRequired = employee || delivery
-  const update = (field: string, value: string) => setValues(current => ({ ...current, [field]: value }))
-  const input = (field: string, label: string, required = true, maxLength = 40, type = 'text') => <TextField label={label} required={required} maxLength={maxLength} type={type} readOnly={customer && !!row && ['first_names', 'last_names'].includes(field)} value={values[field] ?? ''} onChange={e => update(field, e.target.value)} />
+  const update = (field: string, value: string) => { setValues(current => ({ ...current, [field]: value })); setFieldErrors(current => ({ ...current, [field]: '' })) }
+  const input = (field: string, label: string, required = true, maxLength = 40, type = 'text') => <TextField label={label} error={fieldErrors[field]} required={required} maxLength={maxLength} type={type} readOnly={customer && !!row && ['first_names', 'last_names'].includes(field)} value={values[field] ?? ''} onChange={e => update(field, e.target.value)} />
   async function submit(event: FormEvent) {
     event.preventDefault(); if (submitting.current) return
     if (kind === 'suppliers' && supplierCommand.pending) { await supplierCommand.send('', {}); return }
@@ -53,11 +56,11 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
     }
     if (onDraft) { onDraft(body, values); return }
     if (kind === 'suppliers' && !row) { await supplierCommand.send('/api/v1/purchases/suppliers', body); return }
-    submitting.current = true; setBusy(true); setError('')
+    submitting.current = true; setBusy(true); setError(''); setFieldErrors({})
     try {
       const saved = await apiClient.request<Party>(`/api/v1/${kind}${row ? '/' + partyId(row) : ''}`, { method: row ? 'PATCH' : 'POST', body }); onSaved({ ...saved, ...(hasAddress ? { department_id: Number(values.department_id), department_name: values.department_name, municipality_id: Number(values.municipality_id), municipality_name: values.municipality_name, address_line: values.address_line?.trim() ?? null } : {}) }) }
-    catch (error) { setError(getErrorMessage(error, `No se pudo guardar el ${partyLabels[kind]}.`)) }
-    finally { submitting.current = false; setBusy(false); update('password', '') }
+    catch (error) { setError(getErrorMessage(error, `No se pudo guardar el ${partyLabels[kind]}.`)); setFieldErrors(serverFields(error)) }
+    finally { submitting.current = false; setBusy(false); setValues(current => ({ ...current, password: '' })) }
   }
   return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy && !supplierCommand.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={busy || (kind === 'suppliers' && supplierCommand.locked)}>
     <div className={styles.formGrid}>
@@ -68,7 +71,7 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
       {!customer && !employee && input('work_email', 'Correo', false, employee ? 100 : 40, 'email')}
       {employee && <><TextField label="Cargo" value={row && 'job_title' in row ? row.job_title ?? 'Sin cargo histórico' : 'Vendedor'} readOnly />{input('start_date', 'Fecha de ingreso', false, 10, 'date')}
         {!row ? input('username', 'Usuario de acceso', true, 64) : <p>Usuario de acceso: <b>{'username' in row ? row.username ?? 'Sin cuenta vinculada' : ''}</b></p>}
-        <TextField label={row ? 'Nueva contraseña (opcional)' : 'Contraseña'} required={!row} type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={6} maxLength={128} value={values.password ?? ''} onChange={e => update('password', e.target.value)} /><button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button></>}
+        <TextField error={fieldErrors.password} label={row ? 'Nueva contraseña (opcional)' : 'Contraseña'} required={!row} type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={6} maxLength={128} value={values.password ?? ''} onChange={e => update('password', e.target.value)} /><button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button></>}
       {addressRequired && <AddressFields values={values} update={update} required />}
       {kind === 'suppliers' && <div className={styles.full}>{input('address_line', 'Dirección exacta (opcional)', false, 100)}</div>}
     </div>

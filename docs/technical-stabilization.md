@@ -122,3 +122,18 @@ Verificación: audit completo devuelve diez nodos moderados de un solo aviso;
 audit sin dependencias de desarrollo devuelve cero. TypeScript, ESLint, las 120
 pruebas frontend completas y compilación aprobados con el bloqueo conservado.
 La limitación no impide revisar las mejoras independientes sin forzar upgrades.
+
+## A — Errores comprensibles
+
+La presentación traduce mensajes conocidos de acceso, permisos, disponibilidad y
+referencias; las validaciones incluyen nombre de campo y número de línea cuando
+corresponde. No cambia `ApiError.message`, código, estado ni ubicaciones originales.
+Los mensajes de negocio desconocidos se conservan. Empleados muestra errores del
+servidor junto a campos de texto/contraseña con los vínculos accesibles existentes,
+mantiene el formulario y retira el error de un campo al corregirlo. La contraseña
+se borra tras enviar sin ocultar su error de validación. No cambia el reintento F01.
+
+Verificación: TypeScript, ESLint, compilación y 53 pruebas relevantes aprobados,
+incluidas traducción sin pérdida de diagnóstico, validación anidada, rechazo de
+login en español, asociación accesible de errores, conservación del formulario
+y las 17 pruebas de recuperación de comandos/idempotencia.

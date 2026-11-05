@@ -203,11 +203,30 @@ describe('typed errors', () => {
     ] } }, 'Fallback')
     expect(error).toBeInstanceOf(ApiError)
     expect(error.fields).toEqual([{ location: ['body', 'items', 0, 'quantity'], type: 'greater_than' }])
-    expect(getErrorMessage(error, 'Fallback')).toBe('Datos inválidos')
+    expect(getErrorMessage(error, 'Fallback')).toContain('Datos inválidos')
+    expect(getErrorMessage(error, 'Fallback')).toContain('Línea 1 · Cantidad:')
+    expect(error.message).toBe('Datos inválidos')
   })
   it('uses a safe fallback for retired or unrecognized error formats', () => {
     expect(responseError(400, { nombre: ['Obligatorio'], nested: { price: ['Inválido'] } }, 'Fallback').message)
       .toBe('Fallback')
     expect(responseError(503, null, 'No disponible').message).toBe('No disponible')
   })
+})
+
+it.each([
+  ['invalid_credentials', 'Invalid credentials', 'El usuario o la contraseña no son correctos.'],
+  ['authentication_required', 'Authentication required', 'Tu sesión terminó. Inicia sesión para continuar.'],
+  ['permission_denied', 'Permission denied', 'Tu cuenta no tiene permiso para realizar esta acción.'],
+  ['not_found', 'Supplier not found', 'No se encontró el proveedor seleccionado.'],
+  ['database_unavailable', 'Database unavailable', 'El servicio no está disponible en este momento. Intenta de nuevo más tarde.'],
+])('translates %s for display while preserving diagnostic information', (code, message, translated) => {
+  const error = new ApiError(401, code, message)
+  expect(getErrorMessage(error, 'Fallback')).toBe(translated)
+  expect(error.message).toBe(message); expect(error.code).toBe(code); expect(error.status).toBe(401)
+})
+
+it('preserves unknown application messages rather than concealing their cause', () => {
+  const error = new ApiError(409, 'future_business_rule', 'Detalle de negocio específico')
+  expect(getErrorMessage(error, 'Fallback')).toBe(error.message)
 })
