@@ -7,5 +7,10 @@
 .recent strong { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
 .recent small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
 .avatar { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; color: var(--accent); background: var(--soft); }
+.sensitive { color: #a32c40; }
+.password { display: grid; gap: 10px; }
+.password button { justify-self: start; font-size: 12px; }
+.rowActions { width: 100%; }
+.rowActions button { white-space: nowrap; }
 @media (max-width: 1150px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .filters, .recent { grid-template-columns: 1fr; } }

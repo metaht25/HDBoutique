@@ -15,8 +15,10 @@ import { DataState, Modal } from './ui'
 import styles from './Boutique.module.css'
 import { SupplierFields } from './SupplierFields'
 import { CustomerFields } from './CustomerFields'
+import { EmployeeFields } from './EmployeeFields'
 import { Icon } from '../../shared/ui/Icon'
 import ui from './Commerce.module.css'
+import people from './People.module.css'
 
 import { partyId, partyLabels } from './party'
 import type { Party, PartyKind } from './party'
@@ -68,22 +70,14 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
   }
   const supplierFields = kind === 'suppliers' ? <SupplierFields field={input} phone={<PhoneField value={values.phone_number ?? ''} required onChange={value => update('phone_number', value)} />} /> : null
   const customerFields = customer ? <CustomerFields field={input} delivery={delivery} existing={!!row} phone={<PhoneField value={values.phone_number ?? ''} required onChange={value => update('phone_number', value)} />} address={<AddressFields values={values} update={update} required />} /> : null
+  const employeeFields = employee ? <EmployeeFields field={input} existing={!!row} replacingPassword={!!row && !!values.password} phone={<PhoneField value={values.phone_number ?? ''} required onChange={value => update('phone_number', value)} />} address={<AddressFields values={values} update={update} required />} jobTitle={<TextField label="Cargo" value={row && 'job_title' in row ? row.job_title ?? 'Sin cargo histórico' : 'Vendedor'} readOnly />} username={!row ? input('username', 'Usuario de acceso', true, 64) : <dl className={ui.contact}><dt>Usuario de acceso</dt><dd>{'username' in row ? row.username || 'Sin cuenta vinculada' : 'Sin cuenta vinculada'}</dd></dl>} password={<div className={people.password}>
+    <TextField error={fieldErrors.password} label={row ? 'Nueva contraseña (opcional)' : 'Contraseña'} required={!row} type={showPassword ? 'text' : 'password'} autoComplete="new-password" minLength={6} maxLength={128} value={values.password ?? ''} onChange={e => update('password', e.target.value)} />
+    <button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}><Icon name="eye" size={16} />{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button>
+  </div>} /> : null
   return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy && !supplierCommand.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}>
     {kind === 'suppliers' && <div className={ui.formIntro}><span className={ui.icon}><Icon name="suppliers" /></span><p><strong>{row ? 'Información del proveedor' : 'Añade un aliado para tu boutique'}</strong>Organiza su información comercial y de contacto.</p></div>}
     <fieldset disabled={busy || (kind === 'suppliers' && supplierCommand.locked)}>
-    {supplierFields ?? customerFields ?? <div className={styles.formGrid}>
-      {kind === 'suppliers' && <div className={styles.full}>{input('company_name', 'Empresa', true, 50)}</div>}
-      {input(kind === 'suppliers' ? 'contact_first_names' : 'first_names', kind === 'suppliers' ? 'Nombres del contacto' : 'Nombres')}
-      {input(kind === 'suppliers' ? 'contact_last_names' : 'last_names', kind === 'suppliers' ? 'Apellidos del contacto' : 'Apellidos')}
-      {(!customer || delivery) && <PhoneField value={values.phone_number ?? ''} required={!customer || delivery} onChange={value => update('phone_number', value)} />}
-      {!customer && !employee && input('work_email', 'Correo', false, employee ? 100 : 40, 'email')}
-      {employee && <><TextField label="Cargo" value={row && 'job_title' in row ? row.job_title ?? 'Sin cargo histórico' : 'Vendedor'} readOnly />{input('start_date', 'Fecha de ingreso', false, 10, 'date')}
-        {!row ? input('username', 'Usuario de acceso', true, 64) : <p>Usuario de acceso: <b>{'username' in row ? row.username ?? 'Sin cuenta vinculada' : ''}</b></p>}
-        <TextField error={fieldErrors.password} label={row ? 'Nueva contraseña (opcional)' : 'Contraseña'} required={!row} type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={6} maxLength={128} value={values.password ?? ''} onChange={e => update('password', e.target.value)} /><button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button></>}
-      {addressRequired && <AddressFields values={values} update={update} required />}
-      {kind === 'suppliers' && <div className={styles.full}>{input('address_line', 'Dirección exacta (opcional)', false, 100)}</div>}
-    </div>}
-    {employee && <p className={styles.hint}>La cuenta tendrá acceso como Colaborador. Solo Dueña puede reemplazar su contraseña. Usa de 6 a 128 caracteres.</p>}
+    {supplierFields ?? customerFields ?? employeeFields}
     </fieldset>{(error || (kind === 'suppliers' && supplierCommand.error)) && <Message>{error || supplierCommand.error}</Message>}{kind === 'suppliers' && supplierCommand.pending && <Message variant="info">Proveedor pendiente de confirmación. Reintenta la misma solicitud.</Message>}<div className={styles.actions}><button type="button" className="secondary" disabled={busy || supplierCommand.busy} onClick={onClose}>Cancelar</button><button type="submit" disabled={busy || (kind === 'suppliers' && (supplierCommand.busy || supplierCommand.blocked))}>{kind === 'suppliers' && supplierCommand.pending ? 'Reintentar mismo proveedor' : busy ? 'Guardando…' : row ? 'Guardar cambios' : onDraft ? `Usar ${partyLabels[kind]} en esta operación` : `Guardar ${partyLabels[kind]}`}</button></div>
   </form></Modal>
 }
