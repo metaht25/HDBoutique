@@ -21,3 +21,12 @@
 .methodBar span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
 @media (max-width: 740px) { .filters, .details { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .correction { padding: 16px; } .correction button { width: 100%; } }
+@media print {
+  .history table { display: table; width: 100%; }
+  .history thead { display: table-header-group; position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+  .history tbody { display: table-row-group; }
+  .history tbody tr { display: table-row; break-inside: avoid; }
+  .history th, .history td { display: table-cell; padding: 8px; font-size: 10px; }
+  .history td::before { display: none; }
+  .history td[data-action] { display: none; }
+}
