@@ -14,6 +14,7 @@ import { commercialDate, useChoices } from './api'
 import { DataState, Modal } from './ui'
 import styles from './Boutique.module.css'
 import { SupplierFields } from './SupplierFields'
+import { CustomerFields } from './CustomerFields'
 import { Icon } from '../../shared/ui/Icon'
 import ui from './Commerce.module.css'
 
@@ -66,10 +67,11 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
     finally { submitting.current = false; setBusy(false); setValues(current => ({ ...current, password: '' })) }
   }
   const supplierFields = kind === 'suppliers' ? <SupplierFields field={input} phone={<PhoneField value={values.phone_number ?? ''} required onChange={value => update('phone_number', value)} />} /> : null
+  const customerFields = customer ? <CustomerFields field={input} delivery={delivery} existing={!!row} phone={<PhoneField value={values.phone_number ?? ''} required onChange={value => update('phone_number', value)} />} address={<AddressFields values={values} update={update} required />} /> : null
   return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy && !supplierCommand.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}>
     {kind === 'suppliers' && <div className={ui.formIntro}><span className={ui.icon}><Icon name="suppliers" /></span><p><strong>{row ? 'Información del proveedor' : 'Añade un aliado para tu boutique'}</strong>Organiza su información comercial y de contacto.</p></div>}
     <fieldset disabled={busy || (kind === 'suppliers' && supplierCommand.locked)}>
-    {supplierFields ?? <div className={styles.formGrid}>
+    {supplierFields ?? customerFields ?? <div className={styles.formGrid}>
       {kind === 'suppliers' && <div className={styles.full}>{input('company_name', 'Empresa', true, 50)}</div>}
       {input(kind === 'suppliers' ? 'contact_first_names' : 'first_names', kind === 'suppliers' ? 'Nombres del contacto' : 'Nombres')}
       {input(kind === 'suppliers' ? 'contact_last_names' : 'last_names', kind === 'suppliers' ? 'Apellidos del contacto' : 'Apellidos')}

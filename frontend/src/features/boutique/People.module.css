@@ -1,0 +1,11 @@
+.filters { grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)) auto; }
+.kind { display: inline-block; padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--muted); background: #f1f3f8; }
+.kind[data-kind=general] { color: var(--accent); background: var(--soft); }
+.kind[data-kind=delivery] { color: #215a72; background: #eaf5fa; }
+.recent { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; }
+.recent li { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--border-soft); border-radius: 9px; }
+.recent strong { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.recent small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.avatar { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; color: var(--accent); background: var(--soft); }
+@media (max-width: 1150px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .filters, .recent { grid-template-columns: 1fr; } }

@@ -14,6 +14,7 @@ import { Badge, DataState, Modal, Pager, Panel, Stats, Table } from './ui'
 import { ReferenceModal } from './ReferenceModal'
 import styles from './Boutique.module.css'
 import Suppliers from './Suppliers'
+import Customers from './Customers'
 
 function GeneralDirectory({ kind }: { kind: PartyKind }) {
   const owner = useSession().state.account?.role === 'Administrator'
@@ -52,5 +53,5 @@ function GeneralDirectory({ kind }: { kind: PartyKind }) {
 }
 
 export default function Directory({ kind }: { kind: PartyKind }) {
-  return kind === 'suppliers' ? <Suppliers /> : <GeneralDirectory kind={kind} />
+  return kind === 'suppliers' ? <Suppliers /> : kind === 'customers' ? <Customers /> : <GeneralDirectory kind={kind} />
 }
