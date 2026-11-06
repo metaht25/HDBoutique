@@ -13,6 +13,9 @@ import { SearchSelect } from './SearchSelect'
 import { commercialDate, useChoices } from './api'
 import { DataState, Modal } from './ui'
 import styles from './Boutique.module.css'
+import { SupplierFields } from './SupplierFields'
+import { Icon } from '../../shared/ui/Icon'
+import ui from './Commerce.module.css'
 
 import { partyId, partyLabels } from './party'
 import type { Party, PartyKind } from './party'
@@ -62,8 +65,11 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
     catch (error) { setError(getErrorMessage(error, `No se pudo guardar el ${partyLabels[kind]}.`)); setFieldErrors(serverFields(error)) }
     finally { submitting.current = false; setBusy(false); setValues(current => ({ ...current, password: '' })) }
   }
-  return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy && !supplierCommand.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}><fieldset disabled={busy || (kind === 'suppliers' && supplierCommand.locked)}>
-    <div className={styles.formGrid}>
+  const supplierFields = kind === 'suppliers' ? <SupplierFields field={input} phone={<PhoneField value={values.phone_number ?? ''} required onChange={value => update('phone_number', value)} />} /> : null
+  return <Modal title={`${row ? 'Editar' : 'Nuevo'} ${partyLabels[kind]}`} onClose={() => { if (!busy && !supplierCommand.busy) onClose() }}><form className={styles.form} onSubmit={e => void submit(e)}>
+    {kind === 'suppliers' && <div className={ui.formIntro}><span className={ui.icon}><Icon name="suppliers" /></span><p><strong>{row ? 'Información del proveedor' : 'Añade un aliado para tu boutique'}</strong>Organiza su información comercial y de contacto.</p></div>}
+    <fieldset disabled={busy || (kind === 'suppliers' && supplierCommand.locked)}>
+    {supplierFields ?? <div className={styles.formGrid}>
       {kind === 'suppliers' && <div className={styles.full}>{input('company_name', 'Empresa', true, 50)}</div>}
       {input(kind === 'suppliers' ? 'contact_first_names' : 'first_names', kind === 'suppliers' ? 'Nombres del contacto' : 'Nombres')}
       {input(kind === 'suppliers' ? 'contact_last_names' : 'last_names', kind === 'suppliers' ? 'Apellidos del contacto' : 'Apellidos')}
@@ -74,7 +80,7 @@ export function PartyForm({ kind, row, initialKind, onDraft, onSaved, onClose, u
         <TextField error={fieldErrors.password} label={row ? 'Nueva contraseña (opcional)' : 'Contraseña'} required={!row} type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={6} maxLength={128} value={values.password ?? ''} onChange={e => update('password', e.target.value)} /><button type="button" className="secondary" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}</button></>}
       {addressRequired && <AddressFields values={values} update={update} required />}
       {kind === 'suppliers' && <div className={styles.full}>{input('address_line', 'Dirección exacta (opcional)', false, 100)}</div>}
-    </div>
+    </div>}
     {employee && <p className={styles.hint}>La cuenta tendrá acceso como Colaborador. Solo Dueña puede reemplazar su contraseña. Usa de 6 a 128 caracteres.</p>}
     </fieldset>{(error || (kind === 'suppliers' && supplierCommand.error)) && <Message>{error || supplierCommand.error}</Message>}{kind === 'suppliers' && supplierCommand.pending && <Message variant="info">Proveedor pendiente de confirmación. Reintenta la misma solicitud.</Message>}<div className={styles.actions}><button type="button" className="secondary" disabled={busy || supplierCommand.busy} onClick={onClose}>Cancelar</button><button type="submit" disabled={busy || (kind === 'suppliers' && (supplierCommand.busy || supplierCommand.blocked))}>{kind === 'suppliers' && supplierCommand.pending ? 'Reintentar mismo proveedor' : busy ? 'Guardando…' : row ? 'Guardar cambios' : onDraft ? `Usar ${partyLabels[kind]} en esta operación` : `Guardar ${partyLabels[kind]}`}</button></div>
   </form></Modal>

@@ -13,8 +13,9 @@ import type { Party, PartyKind } from './party'
 import { Badge, DataState, Modal, Pager, Panel, Stats, Table } from './ui'
 import { ReferenceModal } from './ReferenceModal'
 import styles from './Boutique.module.css'
+import Suppliers from './Suppliers'
 
-export default function Directory({ kind }: { kind: PartyKind }) {
+function GeneralDirectory({ kind }: { kind: PartyKind }) {
   const owner = useSession().state.account?.role === 'Administrator'
   const [q, setQ] = useState(''), [status, setStatus] = useState(''), [department, setDepartment] = useState(''), [filters, setFilters] = useState(''), [page, setPage] = useState(1), [revision, setRevision] = useState(0)
   const [editing, setEditing] = useState<Party | 'new' | null>(null), [changing, setChanging] = useState<Party | null>(null), [reference, setReference] = useState<'locations' | null>(null), [error, setError] = useState(''), [notice, setNotice] = useState(''), [busy, setBusy] = useState(false)
@@ -48,4 +49,8 @@ export default function Directory({ kind }: { kind: PartyKind }) {
     {changing && <Modal title={`${changing.is_active ? 'Desactivar' : 'Activar'} ${partyLabels[kind]}`} onClose={() => { if (!busy) setChanging(null) }}><p>{partyName(changing)}</p><p>{changing.is_active ? kind === 'employees' ? 'Se bloqueará su acceso y se invalidarán sus sesiones. Su historial se conservará.' : 'Dejará de estar disponible para nuevas operaciones. Su historial se conservará.' : 'Volverá a estar disponible para operaciones nuevas.'}</p>{error && <Message>{error}</Message>}<div className={styles.actions}><button className="secondary" disabled={busy} onClick={() => setChanging(null)}>Cancelar</button><button disabled={busy} onClick={() => void toggle()}>Confirmar {changing.is_active ? 'desactivación' : 'activación'}</button></div></Modal>}
     {reference && <ReferenceModal kind={reference} onClose={() => { setReference(null); setRevision(value => value + 1) }} />}
   </div>
+}
+
+export default function Directory({ kind }: { kind: PartyKind }) {
+  return kind === 'suppliers' ? <Suppliers /> : <GeneralDirectory kind={kind} />
 }
