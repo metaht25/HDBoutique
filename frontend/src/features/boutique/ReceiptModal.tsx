@@ -5,8 +5,12 @@ import { getErrorMessage } from '../../shared/api/errors'
 import { Message } from '../../shared/ui/Feedback'
 import { dateText, methodLabels, money, timeText, useQuery } from './api'
 import type { Receipt } from './contracts'
-import { DataState, Modal } from './ui'
+import { Badge, DataState, Modal } from './ui'
 import styles from './Boutique.module.css'
+import { Icon } from '../../shared/ui/Icon'
+import { CommerceEmpty, CommerceSection } from './CommerceUI'
+import ui from './Commerce.module.css'
+import receipts from './Receipts.module.css'
 
 export function Ticket({ receipt }: { receipt: Receipt }) {
   const { boutique, sale } = receipt, payment = sale.payment
@@ -39,8 +43,17 @@ export function ReceiptModal({ saleId, onClose }: { saleId: number; onClose: () 
       link.href = url; link.download = `${result?.data?.receipt_number ?? 'recibo'}.pdf`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 10000)
     } catch (error) { setError(getErrorMessage(error, 'No se pudo descargar el PDF.')) } finally { setBusy(false) }
   }
-  return <Modal title="Vista previa del recibo" onClose={onClose}><div className={styles.form}>
-    <DataState result={result}>{result?.data && <><Ticket receipt={result.data} />{createPortal(<div id="receipt-print"><style>{'@media print { @page { size: 80mm 297mm; margin: 0; } }'}</style><Ticket receipt={result.data} /></div>, document.body)}</>}</DataState>
-    {error && <Message>{error}</Message>}<div className={styles.actions}><button className="secondary" disabled={!result?.data} onClick={() => window.print()}>Imprimir ticket</button><button disabled={!result?.data || busy} onClick={() => void download()}>{busy ? 'Preparando…' : 'Exportar PDF'}</button></div>
+  return <Modal title="Vista previa del recibo" wide onClose={onClose}><div className={styles.form}>
+    {!result ? <CommerceEmpty title="Cargando recibo…" loading /> : <DataState result={result}>{result?.data && <>
+      <div className={receipts.layout}><section className={receipts.preview} aria-label="Vista previa de 80 mm"><div className={receipts.previewHeader}><span>Ticket · 80 mm</span><Badge status={result.data.sale.status ?? 'legacy'} /></div><div className={receipts.paper}><Ticket receipt={result.data} /></div></section>
+        <aside className={receipts.context} aria-label="Información del recibo"><div className={ui.formIntro}><span className={ui.icon}><Icon name="receipt" /></span><p><strong>Recibo {result.data.receipt_number}</strong>{result.data.sale_number}</p></div>
+          <CommerceSection title="Información comercial"><dl className={ui.contact}><dt>Fecha y hora</dt><dd>{dateText(result.data.sale.sale_date)} · {timeText(result.data.sale.created_at)}</dd><dt>Cliente</dt><dd>{result.data.sale.customer_name ?? 'Identidad histórica no registrada'}</dd><dt>Vendedor</dt><dd>{result.data.sale.seller_name ?? 'Identidad histórica no registrada'}</dd><dt>Método de pago</dt><dd>{result.data.sale.payment ? methodLabels[result.data.sale.payment.method] : 'Sin cobro registrado'}</dd></dl></CommerceSection>
+          <div className={ui.summary}><div><p>Total del recibo</p><strong>{money(result.data.sale.total)}</strong></div></div>
+          <div className={ui.note}><Icon name="receipt" size={20} /><p><strong>Listo para conservar</strong>Imprime el ticket en papel de 80 mm o descarga el PDF con su numeración original.</p></div>
+        </aside>
+      </div>
+      {createPortal(<div id="receipt-print"><style>{'@media print { @page { size: 80mm 297mm; margin: 0; } }'}</style><Ticket receipt={result.data} /></div>, document.body)}
+    </>}</DataState>}
+    {error && <Message>{error}</Message>}<div className={ui.footer}><button type="button" className="secondary" onClick={onClose}>Cerrar</button><button type="button" className="secondary" disabled={!result?.data} onClick={() => window.print()}>Imprimir ticket</button><button type="button" disabled={!result?.data || busy} onClick={() => void download()}>{busy ? 'Preparando…' : 'Exportar PDF'}</button></div>
   </div></Modal>
 }

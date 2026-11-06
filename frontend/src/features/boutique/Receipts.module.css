@@ -1,0 +1,7 @@
+.layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; gap: 24px; }
+.preview { min-width: 0; padding: 20px; border: 1px solid var(--border-soft); border-radius: 10px; background: #f7f8fc; }
+.previewHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 11px; color: var(--muted); }
+.paper { overflow-x: auto; padding: 2px; }
+.context { display: grid; gap: 22px; min-width: 0; }
+.context h3 { overflow-wrap: anywhere; }
+@media (max-width: 740px) { .layout { grid-template-columns: 1fr; } .preview { padding: 14px; } }
