@@ -29,4 +29,5 @@
   .history th, .history td { display: table-cell; padding: 8px; font-size: 10px; }
   .history td::before { display: none; }
   .history td[data-action] { display: none; }
+  .history th:last-child { display: none; }
 }

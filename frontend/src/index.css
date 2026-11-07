@@ -1,7 +1,7 @@
 :root { font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.5; --accent: #b82970; --accent-hover: #98215d; --soft: #fdf0f6; --background: #f8f9fc; --border: #e4e5ec; --border-soft: #eff0f5; --text: #252737; --muted: #666a7c; --shadow: #25213d06; color: var(--text); background: var(--background); }
 body[data-role=Cashier] { --accent: #7040ad; --accent-hover: #59308f; --soft: #f2edfb; --background: #f8f8fc; }
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
+body { margin: 0; min-width: 0; }
 button, input, select, textarea { font: inherit; }
 button, .button { border: 1px solid var(--accent); border-radius: 9px; padding: 10px 16px; min-height: 42px; background: var(--accent); color: white; cursor: pointer; font-weight: 600; font-size: 14px; line-height: 1.45; text-decoration: none; display: inline-flex; gap: 8px; justify-content: center; align-items: center; text-align: center; transition: background-color .15s, border-color .15s, box-shadow .15s; }
 button:where(:hover):not(:disabled), .button:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
@@ -9,7 +9,7 @@ button.secondary, .button.secondary { background: white; color: var(--accent); b
 button.secondary:hover:not(:disabled), .button.secondary:hover { background: var(--soft); border-color: var(--accent); }
 button:disabled { opacity: .55; cursor: not-allowed; }
 input:not([type=checkbox]):not([type=radio]), select, textarea { width: 100%; min-width: 0; border: 1px solid #cfd1dc; border-radius: 8px; padding: 10px 12px; min-height: 44px; background: white; color: var(--text); transition: border-color .15s, box-shadow .15s; }
-input::placeholder, textarea::placeholder { color: #76798a; }
+input::placeholder, textarea::placeholder { color: var(--muted); }
 input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) { border-color: #999bac; }
 input[aria-invalid=true], select[aria-invalid=true], textarea[aria-invalid=true] { border-color: #b42343; }
 input:disabled, select:disabled { background: #f7f5f6; }

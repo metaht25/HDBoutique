@@ -68,8 +68,9 @@
   .table td:first-child, .table td[data-wide], .table td[data-action] { grid-column: 1 / -1; }
   .table td:first-child { padding-bottom: 12px; border-bottom: 1px solid var(--border-soft); }
   .table td[data-action]::before { display: none; }
-  .table td[data-action] button { min-height: 40px; flex: 1; }
+  .table td[data-action] button { min-height: 40px; flex: 1; white-space: nowrap; }
   .table td[data-action] { display: flex; gap: 8px; white-space: normal; }
+  .table td[data-action] > div { width: 100%; }
 }
 @media (max-width: 640px) {
   .filters, .supplierRow, .selection, .formGrid, .table tbody { grid-template-columns: 1fr; }
