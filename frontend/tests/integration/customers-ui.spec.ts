@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { command, customerFromSale, selectAddress, signIn } from './helpers'
+import { command, selectAddress, signIn } from './helpers'
 
 test('customer UI preserves general identity, reuses regular clients and updates Delivery on the same record', async ({ page }) => {
   test.setTimeout(90000)
@@ -16,11 +16,19 @@ test('customer UI preserves general identity, reuses regular clients and updates
   let originalId = 0
   for (let attempt = 0; attempt < 2; attempt++) {
     await page.goto('/new-sale')
-    if (attempt === 0) await customerFromSale(page)
+    if (attempt === 0) {
+      await page.getByLabel('Tipo de cliente', { exact: true }).selectOption('regular')
+      await page.getByRole('button', { name: '+ Registrar cliente' }).click()
+      const customer = page.getByRole('dialog', { name: 'Nuevo cliente' })
+      await customer.getByLabel('Nombres', { exact: true }).fill('Directorio')
+      await customer.getByLabel('Apellidos', { exact: true }).fill('Sintético QA')
+      await customer.getByRole('button', { name: 'Usar cliente en esta operación' }).click()
+      await expect(customer).toHaveCount(0)
+    }
     else {
       await page.getByLabel('Tipo de cliente', { exact: true }).selectOption('regular')
-      await page.getByLabel('Seleccionar cliente', { exact: true }).fill('Prueba Regular')
-      await page.getByRole('option', { name: 'Prueba Regular', exact: true }).click()
+      await page.getByLabel('Seleccionar cliente', { exact: true }).fill('Directorio Sintético QA')
+      await page.getByRole('option', { name: 'Directorio Sintético QA', exact: true }).click()
     }
     await page.getByRole('button', { name: '+ Agregar', exact: true }).first().click()
     await page.getByLabel('Efectivo recibido (NIO)').fill('500.00')
@@ -33,8 +41,8 @@ test('customer UI preserves general identity, reuses regular clients and updates
     await page.getByRole('dialog', { name: '¡Venta completada!' }).getByRole('button', { name: 'Cerrar', exact: true }).click()
   }
   await page.goto('/new-sale'); await page.getByLabel('Tipo de cliente', { exact: true }).selectOption('delivery')
-  await page.getByLabel('Seleccionar cliente', { exact: true }).fill('Prueba Regular')
-  await page.getByRole('option', { name: 'Prueba Regular', exact: true }).click()
+  await page.getByLabel('Seleccionar cliente', { exact: true }).fill('Directorio Sintético QA')
+  await page.getByRole('option', { name: 'Directorio Sintético QA', exact: true }).click()
   await page.getByRole('button', { name: 'Completar datos de entrega' }).click()
   const dialog = page.getByRole('dialog', { name: 'Editar cliente' })
   await expect(dialog.getByLabel('Nombres', { exact: true })).toHaveAttribute('readonly', '')
@@ -50,9 +58,9 @@ test('customer UI preserves general identity, reuses regular clients and updates
   const updated = await (await page.request.get('/api/v1/customers/' + originalId)).json()
   expect(updated.phone_number).toBe('81234567')
   const directory = await (await page.request.get('/api/v1/reports/customer-directory?limit=100')).json()
-  expect(directory.items.filter((row: { first_names: string; last_names: string }) => row.first_names === 'Prueba' && row.last_names === 'Regular')).toHaveLength(1)
+  expect(directory.items.filter((row: { first_names: string; last_names: string }) => row.first_names === 'Directorio' && row.last_names === 'Sintético QA')).toHaveLength(1)
   await page.goto('/customers')
-  const row = page.getByRole('row').filter({ hasText: 'Prueba Regular' })
+  const row = page.getByRole('row').filter({ hasText: 'Directorio Sintético QA' })
   await expect(row.getByText('81234567', { exact: true })).toBeVisible()
   await row.getByRole('button', { name: 'Ver detalle' }).click()
   await expect(page.getByRole('dialog').getByText('Domicilio sintético para prueba aislada', { exact: true })).toBeVisible()
